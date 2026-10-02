@@ -1,6 +1,6 @@
 import { showLoading } from "./loading.js";
 import { glyph } from "../../../packages/shared-ui/glyphs.js";
-import { progressStateMeta } from "../../../src/relay-operation-ui.js";
+import { progressStateMeta } from "../../../packages/shared-ui/relay-operation-ui.js";
 import { iconSlot, hydrateProjectIcons } from "./project-icons.js";
 import { esc, loadProjectDetail, loadProjectIndex, projectName } from "./operator-projects.js";
 import { relativeProgress, sortCurrentProgress } from "./progress-ui.js";

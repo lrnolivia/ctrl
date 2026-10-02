@@ -1,6 +1,6 @@
 import { iconSlot, hydrateProjectIcons } from "./project-icons.js";
-import { projectOverview, projectProgressSections } from "../../../src/relay-project-ui.js";
-import { progressStateMeta } from "../../../src/relay-operation-ui.js";
+import { projectOverview, projectProgressSections } from "../../../packages/shared-ui/relay-project-ui.js";
+import { progressStateMeta } from "../../../packages/shared-ui/relay-operation-ui.js";
 import { loadObservedProgress, renderProgressRow } from "./progress-ui.js";
 
 const names = {

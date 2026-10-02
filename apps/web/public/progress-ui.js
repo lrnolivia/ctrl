@@ -1,5 +1,5 @@
-import { observedProgressSummary, progressStateMeta, progressTimestamp, sortObservedProgress } from "../../../src/relay-operation-ui.js";
-import { releaseIdentityRows } from "../../../src/relay-release-ui.js";
+import { observedProgressSummary, progressStateMeta, progressTimestamp, sortObservedProgress } from "../../../packages/shared-ui/relay-operation-ui.js";
+import { releaseIdentityRows } from "../../../packages/shared-ui/relay-release-ui.js";
 
 export async function loadObservedProgress(project, assignment) {
   const query = assignment ? "?assignment=" + encodeURIComponent(assignment) : "";
