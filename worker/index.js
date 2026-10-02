@@ -1,7 +1,7 @@
 const json=(value,status=200)=>Response.json(value,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 const safeId='[a-zA-Z0-9_-]+';
 const reads=new RegExp('^/api/(?:projects(?:/'+safeId+'(?:/icon)?)?|workers|progress/'+safeId+'|visual(?:/vis_[a-zA-Z0-9-]+(?:/(?:qa|live|image))?)?|retained-preview/rp_[a-f0-9]+(?:/view)?|work-review|events|relay-info)$');
-const writes=new RegExp('^/api/(?:work-review|visual/vis_[a-zA-Z0-9-]+/qa|retained-preview/rp_[a-f0-9]+/review|workers/'+safeId+'/(?:enable|disable|run))$');
+const writes=new RegExp('^/api/(?:work-review|visual/vis_[a-zA-Z0-9-]+/qa|retained-preview/rp_[a-f0-9]+/review|workers/'+safeId+'/(?:toggle|settings|run|doctor|repair))$');
 export function permitted(path,method){return ['GET','HEAD'].includes(method)?reads.test(path):method==='POST'&&writes.test(path);}
 export function forwarded(request,path){const url=new URL(request.url);if(path)url.pathname=path;const headers=new Headers();for(const key of ['accept','content-type','cf-access-jwt-assertion','origin','upgrade','sec-websocket-key','sec-websocket-version','sec-websocket-protocol','if-none-match']){const value=request.headers.get(key);if(value)headers.set(key,value);}return new Request(url,{method:request.method,headers,body:['GET','HEAD'].includes(request.method)?undefined:request.body,redirect:'manual',duplex:'half'});}
 export default {async fetch(request,env){

@@ -13,3 +13,5 @@ test('legacy Today path preserves project context under Now',async()=>{const r=a
 
 import {projectMembers} from '../packages/shared-ui/project-groups.js';
 test('source evidence scopes include registered project children without losing canonical identities',()=>{assert.deepEqual(projectMembers('field'),['field']);assert.deepEqual(projectMembers('bazzite-custom'),['bazzite-custom','loew-shell']);assert.deepEqual(projectMembers('rtxforge'),['rtxforge','rtxforge-mfg']);});
+
+test('proxy preserves the existing guarded worker controls with no invented actions',()=>{for(const action of ['toggle','settings','run','doctor','repair'])assert.equal(permitted('/api/workers/field/'+action,'POST'),true);for(const action of ['enable','disable','delete','token'])assert.equal(permitted('/api/workers/field/'+action,'POST'),false);});
