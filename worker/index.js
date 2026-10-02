@@ -8,6 +8,7 @@ export default {async fetch(request,env){
  const url=new URL(request.url);
  if(env.CTRL_ENABLED!=='true'||!env.RELAY||!env.ASSETS)return json({error:'ctrl protected deployment is not enabled'},503);
  if(!request.headers.get('cf-access-jwt-assertion'))return json({error:'Authentication required'},401);
+ const aliases={'/today':'/#/now','/now':'/#/now','/runner':'/#/runner','/night-shift':'/#/night-shift'};const destination=aliases[url.pathname.replace(/\/$/,'')];if(destination&&['GET','HEAD'].includes(request.method))return Response.redirect(url.origin+destination+url.search,308);
  if(url.pathname.startsWith('/api/')){
   if(!permitted(url.pathname,request.method))return json({error:'Not found'},404);
   const changing=!['GET','HEAD'].includes(request.method),socket=url.pathname==='/api/events';

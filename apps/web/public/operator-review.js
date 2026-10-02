@@ -173,10 +173,10 @@ export function bindReviewFilters() {
  const root=document.querySelector('#review-list');
  if(root)viewer=bindWorkViewer(root,{id:'inspector',defaultView:'visual',onOpen:item=>item&&openQa(item.id)});
 }
-export async function loadReview(ui,projectId='') {
+export async function loadReview(ui,projectId='',{quiet=false}={}) {
  reviewUi=ui;const gen=++loadGeneration;
  const root=document.querySelector('#review-list'),count=document.querySelector('#review-count');
- root.dataset.summaryState='loading';showLoading(root,'review','Loading captures');
+ if(!quiet){root.dataset.summaryState='loading';showLoading(root,'review','Loading captures');}
  try {
   const payload=await api('/api/visual');
   const raw=Array.isArray(payload.evidence)?payload.evidence:[],seen=new Set(),sources=[];
@@ -190,5 +190,5 @@ export async function loadReview(ui,projectId='') {
   count.textContent=String(models.filter(item=>!projectId||item.project===projectId).length)+' loaded captures';
   ui.setConnection('connected','good');
 
- }catch(error){if(gen!==loadGeneration)return;root.dataset.summaryState='error';root.innerHTML='<div class="operator-empty">Review items could not load. Refresh to try again.</div>';ui.setConnection(error.status===403?'access needed':'couldn’t connect','bad');}
+ }catch(error){if(gen!==loadGeneration)return;if(!quiet){root.dataset.summaryState='error';root.innerHTML='<div class="operator-empty">Review items could not load. Refresh to try again.</div>';}else ui.notify('Review updates could not refresh. Your current view stays available.','warn');ui.setConnection(error.status===403?'access needed':'couldn’t connect','bad');}
 }

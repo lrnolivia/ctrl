@@ -21,3 +21,8 @@
 html[data-ctrl-hidden=true] .relay-pulse i{animation-play-state:paused!important}
 
 .relay-nav-slot{display:contents}.operator-nav .relay-utility-trigger{width:100%}
+/* Keep the ambient status card genuinely compact beside notifications. */
+.relay-telemetry{height:48px;padding:7px 10px;gap:7px;line-height:1.2}
+.relay-telemetry strong{font-size:14px;line-height:16px}.relay-telemetry small{font-size:11px;line-height:14px}
+.relay-telemetry>img{width:32px;height:32px;flex:0 0 32px}.relay-telemetry .relay-pulse{margin-left:3px}
+@media(max-width:380px){.workspace-context .workspace-left{display:none}.workspace-context .connection-tools{margin-left:auto}:root[data-presentation-nav=bottom] .operator-nav .nav-copy strong{font-size:10.5px!important;line-height:13px!important;letter-spacing:0}:root[data-presentation-nav=bottom] .operator-nav{gap:1px!important}.operator-nav .relay-utility-trigger{margin:0 1px!important}}

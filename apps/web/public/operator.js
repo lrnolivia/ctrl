@@ -292,5 +292,13 @@ bindReviewFilters();
 showPage(route()).catch(error => { setConnection("couldn’t connect", "bad"); notify(error.message, "bad"); });
 
 
-let eventRefreshPending=false;
-subscribeRelayStream(e=>{if(!["change","resync"].includes(e.kind)||eventRefreshPending)return;eventRefreshPending=true;setTimeout(()=>{eventRefreshPending=false;if(!document.querySelector(".qa-overlay"))showPage(route()).catch(()=>{});},150);});
+let eventRefreshPending=false,eventRefreshing=false;
+async function refreshReviewFromEvents(){
+ if(route()!=='review')return;
+ if(document.querySelector('.qa-stage')||eventRefreshing){eventRefreshPending=true;return;}
+ eventRefreshPending=false;eventRefreshing=true;
+ try{await loadReview(ui,contextProject(),{quiet:true});updateInspectorSignals();}finally{eventRefreshing=false;if(eventRefreshPending&&!document.querySelector('.qa-stage'))queueMicrotask(refreshReviewFromEvents);}
+}
+subscribeRelayStream(e=>{if(e.kind==='resync'||e.kind==='change'&&e.event?.topics.some(topic=>['evidence','reviews'].includes(topic)))void refreshReviewFromEvents();});
+new MutationObserver(()=>{if(eventRefreshPending&&!document.querySelector('.qa-stage'))void refreshReviewFromEvents();}).observe(document.body,{childList:true});
+setInterval(()=>{if(!document.hidden)void refreshReviewFromEvents();},60000);

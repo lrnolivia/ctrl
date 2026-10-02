@@ -89,7 +89,7 @@ export function LiveRelayProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void refresh();
     const unsubscribe = subscribeRelayStream(event=>{if(event.kind==='change'||event.kind==='resync')void refresh();});
-    const timer = window.setInterval(() => void refresh(), 60_000);
+    const timer = window.setInterval(() => {if(!document.hidden)void refresh();}, 60_000);
     const staleTimer = window.setInterval(() => {
       if (lastSuccess.current && Date.now() - lastSuccess.current > 90_000) {
         setState(current => current === "offline" ? current : "stale");
