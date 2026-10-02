@@ -28,5 +28,5 @@ await fs.writeFile(path.join(out,'inspector.css'),css);
 let html=(await src('index.html')).replace('__RELAY_PRESENTATION_MENU__',()=>presentationMenu()).replaceAll('__RELAY_ICON__','/brand/ctrl.svg').replace('__CTRL_RELAY_TRIGGER__',()=>relayTrigger()).replace('__CTRL_RELAY_TELEMETRY__',()=>relayTelemetry()).replace('__RELAY_THEME_BOOTSTRAP__',()=>'<script>('+themeBootstrap.toString()+')()</script>').replace(/<link rel="stylesheet" href="\/(?:operator|operator-1\.8|qa).css">/g,'').replace('</head>',()=>'<link rel="stylesheet" href="/inspector.css"><script>('+inspectorWebsiteNavigation.toString()+')()</script></head>');
 await fs.writeFile(path.join(out,'inspector.html'),html);
 const digest=createHash('sha256');for(const name of ['index.html','assets/ctrl.js','assets/ctrl.css','inspector.html','inspector.css','relay-app.js'])digest.update(await fs.readFile(path.join(out,name)));
-await fs.writeFile(path.join(out,'build.json'),JSON.stringify({product:'ctrl',source_sha:process.env.GITHUB_SHA||process.env.WORKERS_CI_COMMIT_SHA||'',build:digest.digest('hex')}));
+await fs.writeFile(path.join(out,'build.json'),JSON.stringify({product:'ctrl',source_sha:process.env.CTRL_SOURCE_SHA||process.env.GITHUB_SHA||process.env.WORKERS_CI_COMMIT_SHA||'',build:digest.digest('hex')}));
 console.log('Built ctrl React + Inspector with preserved Relay assets');

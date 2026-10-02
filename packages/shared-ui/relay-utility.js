@@ -24,6 +24,6 @@ export function bindRelayUtility(){
  const outside=e=>{if(e.target!==dialog)return;const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dismiss();};
  const cancel=e=>{e.preventDefault();dismiss();};const pop=()=>{historyPending=false;dismiss(false);};const hash=()=>dismiss(false);const resize=()=>{if(open)position();};
  document.addEventListener('click',click);dialog.addEventListener('click',outside);dialog.addEventListener('cancel',cancel);window.addEventListener('popstate',pop);window.addEventListener('hashchange',hash);window.addEventListener('resize',resize);motion.addEventListener('change',()=>animate(open?1:0),{signal:signal.signal});
- const unsubscribe=subscribeRelayStream(e=>{streamStatus=e.status;if(e.kind==='change'||e.kind==='resync')lastContact=Date.now();state();});void refresh();
+ const unsubscribe=subscribeRelayStream(e=>{streamStatus=e.status;if(e.kind==='change'||e.kind==='resync'||e.kind==='heartbeat')lastContact=Date.now();state();});void refresh();
  return()=>{disposed=true;signal.abort();unsubscribe();cancelAnimationFrame(frame);document.removeEventListener('click',click);window.removeEventListener('popstate',pop);window.removeEventListener('hashchange',hash);window.removeEventListener('resize',resize);if(dialog.open){dialog.close();document.body.style.overflow=restoreOverflow;}if(history.state?.ctrlRelay===historyKey){const s={...history.state};delete s.ctrlRelay;history.replaceState(s,'',location.href);}dialog.remove();expanded(false);};
 }
