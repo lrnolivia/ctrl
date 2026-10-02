@@ -10,3 +10,6 @@ test('events require bounded monotonic identities and small topics',()=>{assert.
 test('Field analytic spring preserves velocity and converges without frame coupling',()=>{let a={value:0,velocity:0};for(let i=0;i<180;i++)a=springStep(a.value,a.velocity,1,1/60);assert.ok(Math.abs(a.value-1)<.001);const x=springStep(.5,2,1,.01),y=springStep(x.value,x.velocity,1,.01),z=springStep(.5,2,1,.02);assert.ok(Math.abs(y.value-z.value)<1e-10);});
 
 test('legacy Today path preserves project context under Now',async()=>{const r=await worker.fetch(new Request('https://ctrl.loew.fi/today?project=field',{headers:{'Cf-Access-Jwt-Assertion':'test'}}),{CTRL_ENABLED:'true',ASSETS:{},RELAY:{}});assert.equal(r.status,308);assert.equal(r.headers.get('Location'),'https://ctrl.loew.fi/#/now?project=field');});
+
+import {projectMembers} from '../packages/shared-ui/project-groups.js';
+test('source evidence scopes include registered project children without losing canonical identities',()=>{assert.deepEqual(projectMembers('field'),['field']);assert.deepEqual(projectMembers('bazzite-custom'),['bazzite-custom','loew-shell']);assert.deepEqual(projectMembers('rtxforge'),['rtxforge','rtxforge-mfg']);});
