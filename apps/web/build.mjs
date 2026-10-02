@@ -13,8 +13,7 @@ const here=path.dirname(fileURLToPath(import.meta.url)),root=path.resolve(here,'
 await fs.rm(out,{recursive:true,force:true});await fs.mkdir(out,{recursive:true});
 const src=name=>fs.readFile(path.join(here,'public',name),'utf8');
 const assets=JSON.parse(await src('brand-assets.json'));
-const mark='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="3" y="3" width="58" height="58" rx="17" fill="#514a45"/><rect x="9" y="7" width="46" height="47" rx="12" fill="#ff6f78"/><path d="M20 34 32 22l12 12M21 43h22" fill="none" stroke="#291419" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-await fs.mkdir(path.join(out,'brand'),{recursive:true});await fs.writeFile(path.join(out,'brand/ctrl.svg'),mark);
+await fs.mkdir(path.join(out,'brand'),{recursive:true});
 for(const [name,url] of Object.entries(assets))await fs.writeFile(path.join(out,'brand',name+'.png'),Buffer.from(url.split(',')[1],'base64'));
 const build=await viteBuild({root:here,configFile:false,publicDir:false,plugins:[react()],logLevel:'warn',build:{write:false,minify:'esbuild',cssCodeSplit:false,assetsInlineLimit:Number.MAX_SAFE_INTEGER,rollupOptions:{output:{inlineDynamicImports:true,entryFileNames:'assets/ctrl.js',assetFileNames:asset=>asset.name?.endsWith('.css')?'assets/ctrl.css':'assets/[name][extname]'}}}});
 const outputs=(Array.isArray(build)?build:[build]).flatMap(r=>r.output||[]);
@@ -25,7 +24,7 @@ const cssFiles=['apps/web/public/operator.css','packages/shared-ui/tokens.css','
 let css=(await Promise.all(cssFiles.map(p=>fs.readFile(path.join(root,p),'utf8')))).join('\n');
 css+='\n.operator-brand strong,.operator-nav .nav-copy strong,.nav-label{font-family:"Momo Trust Display",Inter,system-ui,sans-serif;font-weight:400}';
 await fs.writeFile(path.join(out,'inspector.css'),css);
-let html=(await src('index.html')).replace('__RELAY_PRESENTATION_MENU__',()=>presentationMenu()).replaceAll('__RELAY_ICON__','/brand/ctrl.svg').replace('__CTRL_RELAY_TRIGGER__',()=>relayTrigger()).replace('__CTRL_RELAY_TELEMETRY__',()=>relayTelemetry()).replace('__RELAY_THEME_BOOTSTRAP__',()=>'<script>('+themeBootstrap.toString()+')()</script>').replace(/<link rel="stylesheet" href="\/(?:operator|operator-1\.8|qa).css">/g,'').replace('</head>',()=>'<link rel="stylesheet" href="/inspector.css"><script>('+inspectorWebsiteNavigation.toString()+')()</script></head>');
+let html=(await src('index.html')).replace('__RELAY_PRESENTATION_MENU__',()=>presentationMenu()).replaceAll('__RELAY_ICON__','/brand/ctrl.png').replace('__CTRL_RELAY_TRIGGER__',()=>relayTrigger()).replace('__CTRL_RELAY_TELEMETRY__',()=>relayTelemetry()).replace('__RELAY_THEME_BOOTSTRAP__',()=>'<script>('+themeBootstrap.toString()+')()</script>').replace(/<link rel="stylesheet" href="\/(?:operator|operator-1\.8|qa).css">/g,'').replace('</head>',()=>'<link rel="stylesheet" href="/inspector.css"><script>('+inspectorWebsiteNavigation.toString()+')()</script></head>');
 await fs.writeFile(path.join(out,'inspector.html'),html);
 const digest=createHash('sha256');for(const name of ['index.html','assets/ctrl.js','assets/ctrl.css','inspector.html','inspector.css','relay-app.js'])digest.update(await fs.readFile(path.join(out,name)));
 await fs.writeFile(path.join(out,'build.json'),JSON.stringify({product:'ctrl',source_sha:process.env.CTRL_SOURCE_SHA||process.env.GITHUB_SHA||process.env.WORKERS_CI_COMMIT_SHA||'',build:digest.digest('hex')}));

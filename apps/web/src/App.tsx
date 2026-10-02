@@ -30,7 +30,7 @@ function Shell() {
       <div className="terra-accent" aria-hidden="true"><span/><span/><span/><span/><span/></div>
       <header className="operator-topbar react-operator-topbar">
         <a className="operator-brand react-brand" href={projectHref("#/now", project)}>
-          <img src="/brand/ctrl.svg" alt="" width="52" height="52" />
+          <img src="/brand/ctrl.png" alt="" width="52" height="52" />
           <strong>ctrl</strong>
           <span>project control</span>
         </a>

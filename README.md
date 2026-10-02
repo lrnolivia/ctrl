@@ -10,6 +10,6 @@ Node22: npm ci, npm test, npm run typecheck, npm run build. The browser fixture 
 
 ## Deployment
 
-Production is intentionally disabled until protected ctrl.loew.fi Access and Workers Builds integration are approved and verified. A Relay service binding and valid user Access assertion are required for API/event forwarding. No standalone unauthenticated backend is provided. Keep the existing Relay deployment as rollback until ctrl has exact-source live evidence.
+Production uses the approved existing Access policy at ctrl.loew.fi and GitHub-backed Workers Builds. A Relay service binding and valid user Access assertion are required for API/event forwarding. No standalone unauthenticated backend is provided. Keep the existing Relay deployment as rollback until ctrl has exact-source live evidence.
 
-The current ctrl icon is a provisional matching-family vector pending the Terra Icon Figma master.
+The ctrl icon is authored in the Terra Prime Icon Studies master, Final Icons page, component89:19. It shares the canonical Gen2 geometry, warm ivory and coral token.
