@@ -1,0 +1,28 @@
+{
+  "name": "@relay/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ctrl control center web interface, extracted from the canonical Relay visual system.",
+  "dependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.4",
+    "esbuild": "0.25.10",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "build:2.0": "vite build",
+    "dev:2.0": "vite",
+    "typecheck:2.0": "tsc --noEmit",
+    "test": "node --test test/*.test.mjs",
+    "check": "tsc --noEmit"
+  }
+}

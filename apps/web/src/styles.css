@@ -1,0 +1,538 @@
+/* React adapter for the approved Relay 1.8/1.9 presentation system.
+   Core color, shell, navigation, card and status rules come from the preserved operator CSS. */
+
+html { background: var(--color-canvas); }
+body { margin: 0; min-width: 320px; min-height: 100vh; color: var(--color-text-primary); }
+a { color: inherit; }
+
+.react-brand,
+.react-operator-nav a,
+.react-utility-link,
+.today-task,
+.text-action,
+.back-link {
+  text-decoration: none;
+}
+
+.react-operator-nav a {
+  --feature-accent: var(--feature-relay);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.react-operator-nav a[data-feature="today"] { --feature-accent: var(--feature-today); }
+.react-operator-nav a[data-feature="runner"] { --feature-accent: var(--feature-runner); }
+.react-operator-nav a[data-feature="inspector"] { --feature-accent: var(--feature-inspector); }
+.react-operator-nav a[data-feature="night-shift"] { --feature-accent: var(--feature-night-shift); }
+
+.react-operator-nav a:hover {
+  background: var(--color-raised);
+  color: var(--color-text-primary);
+}
+
+.react-operator-nav a.active {
+  background: color-mix(in srgb, var(--feature-accent) 14%, var(--color-raised));
+  color: var(--color-text-primary);
+}
+
+.react-operator-nav a.active .tool-mark {
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--feature-accent) 24%, transparent));
+}
+
+.react-operator-nav .nav-copy {
+  min-width: 0;
+  display: grid;
+}
+
+.react-operator-nav .nav-copy strong {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.react-operator-nav .nav-copy small {
+  margin-top: 3px;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1.1;
+}
+
+.react-operator-nav .nav-chevron {
+  margin-left: auto;
+  color: var(--color-text-secondary);
+}
+
+.react-utility-link {
+  color: var(--color-text-secondary);
+}
+
+.react-page {
+  max-width: 940px;
+  margin: 0 auto;
+}
+
+.page {
+  min-width: 0;
+}
+
+.feature-heading[data-feature="today"] { --feature-accent: var(--feature-today); }
+.feature-heading[data-feature="runner"] { --feature-accent: var(--feature-runner); }
+.feature-heading[data-feature="night-shift"] { --feature-accent: var(--feature-night-shift); }
+
+.react-stack,
+.work-list,
+.night-list {
+  display: grid;
+  gap: 10px;
+}
+
+.attention-copy strong {
+  display: block;
+  margin-top: 10px;
+  color: var(--color-text-primary);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.attention-copy p {
+  max-width: 65ch;
+  margin: 7px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.today-task {
+  padding-left: 20px;
+  padding-right: 20px;
+  color: var(--color-text-primary);
+}
+
+.today-task .status-badge {
+  white-space: nowrap;
+}
+
+.automation-row {
+  border: 0 !important;
+}
+
+.automation-title .status-badge {
+  margin-left: 2px;
+}
+
+.work-card {
+  padding: 20px;
+  border: 0 !important;
+  border-radius: 20px;
+  background: var(--color-surface);
+  box-shadow: none !important;
+}
+
+.work-card:hover {
+  background: var(--color-raised);
+}
+
+.work-card-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  gap: 24px;
+  align-items: center;
+}
+
+.work-card-copy { min-width: 0; }
+
+.work-card-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.work-card h2 {
+  margin: 13px 0 7px;
+  font-size: clamp(25px, 3vw, 34px);
+  line-height: 1.02;
+  letter-spacing: -.02em;
+}
+
+.work-card p {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.next-step {
+  display: grid;
+  gap: 4px;
+  margin-top: 15px;
+}
+
+.next-step span {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+.next-step strong {
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.work-card-bottom {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.text-action,
+.back-link {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.text-action:hover,
+.back-link:hover {
+  color: var(--color-text-primary);
+}
+
+.work-card details {
+  margin-top: 15px;
+  padding-top: 11px;
+  border-top: 1px solid var(--color-border);
+}
+
+.work-card summary,
+.technical-disclosure summary {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.technical-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.technical-grid code {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 5px 7px;
+  border-radius: 8px;
+  background: var(--color-canvas);
+  color: var(--color-text-secondary);
+  font-size: 10px;
+}
+
+.progress-ring {
+  width: 106px;
+  height: 106px;
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.progress-ring svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.progress-ring circle {
+  fill: none;
+  stroke-width: 6;
+}
+
+.ring-track { stroke: var(--color-raised); }
+.ring-value { stroke: var(--feature-runner); stroke-linecap: round; }
+
+.ring-copy {
+  position: relative;
+  z-index: 1;
+  width: 76px;
+  display: grid;
+  text-align: center;
+}
+
+.ring-copy strong {
+  font-family: "Momo Trust Display", Inter, system-ui, sans-serif;
+  font-size: 25px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.ring-copy span {
+  margin-top: 5px;
+  color: var(--color-text-secondary);
+  font-size: 10px;
+  line-height: 1.15;
+}
+
+.sparkline {
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.sparkline svg { width: 90px; height: 28px; }
+.sparkline polyline {
+  fill: none;
+  stroke: var(--feature-runner);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.empty-card,
+.telemetry-panel,
+.technical-disclosure {
+  border: 0;
+  border-radius: 20px;
+  background: var(--color-surface);
+  box-shadow: none;
+}
+
+.empty-card { padding: 22px; }
+
+.empty-card strong {
+  font-size: 25px;
+  line-height: 1;
+}
+
+.empty-card p {
+  margin: 8px 0 0;
+  color: var(--color-text-secondary);
+}
+
+.night-card {
+  display: block !important;
+  min-height: 0 !important;
+  padding: 18px 20px !important;
+  border-radius: 20px !important;
+}
+
+.night-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+
+.night-card-head > strong {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.night-card p {
+  margin: 11px 0 6px;
+  color: var(--color-text-primary);
+  font-size: 13px;
+}
+
+.night-card small {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.work-detail {
+  display: grid;
+  gap: 24px;
+}
+
+.work-detail .signal-deck {
+  margin-top: 2px;
+}
+
+.work-detail-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 124px;
+  gap: 24px;
+  align-items: center;
+  padding: 22px 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.work-detail-head h1 {
+  margin: 12px 0 8px;
+  font-size: clamp(34px, 5vw, 54px);
+  line-height: .98;
+  letter-spacing: -.025em;
+}
+
+.work-detail-head p {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.telemetry-panel {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 18px 20px;
+}
+
+.telemetry-panel > div {
+  display: grid;
+  gap: 4px;
+}
+
+.telemetry-panel span {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.telemetry-panel strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.event-stream {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.event-stream li {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+.event-stream time,
+.event-stream span {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.technical-disclosure {
+  padding: 15px 16px;
+}
+
+.technical-disclosure pre {
+  overflow: auto;
+  color: var(--color-text-secondary);
+  font-size: 10px;
+}
+
+@media (min-width: 901px) {
+  .react-operator-nav a {
+    min-height: 64px;
+    justify-content: center;
+    gap: 0;
+    padding: 8px;
+  }
+
+  .react-operator-topbar:hover .react-operator-nav a,
+  .react-operator-topbar:focus-within .react-operator-nav a {
+    justify-content: flex-start;
+    gap: 14px;
+    padding: 10px 14px;
+  }
+}
+
+@media (max-width: 900px) {
+  .react-operator-nav {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .react-operator-nav::-webkit-scrollbar { display: none; }
+
+  .react-operator-nav a {
+    flex: 0 0 auto;
+  }
+
+  .work-card-main,
+  .work-detail-head,
+  .telemetry-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .progress-ring {
+    width: 96px;
+    height: 96px;
+  }
+}
+
+@media (max-width: 640px) {
+  .react-page { max-width: 100%; }
+
+  .today-task {
+    grid-template-columns: 1fr;
+    gap: 7px;
+    padding: 17px 18px;
+  }
+
+  .today-task-title {
+    white-space: normal;
+  }
+
+  .today-task-state {
+    justify-self: start;
+  }
+
+  .work-card { padding: 18px; }
+
+  .work-card-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .event-stream li {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .react-operator-nav a,
+  .work-card {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* Relay 2.0 typography: product title + navigation labels */
+.react-brand strong,
+.react-operator-nav .nav-copy strong,
+.nav-label {
+  font-family: "Momo Trust Display", Inter, system-ui, sans-serif;
+  font-weight: 400;
+}
+
+/* Grid children must be allowed to shrink around long work IDs and next steps. */
+.react-stack,.work-list,.night-list {grid-template-columns:minmax(0,1fr);}
+.work-card,.work-card-main,.work-card-copy,.next-step,.work-detail,.react-operator-shell {min-width:0;}
+.work-card :is(h2,p,strong),.next-step strong,.work-detail :is(h1,p) {overflow-wrap:anywhere;}

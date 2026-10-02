@@ -1,0 +1,9 @@
+{
+  "name": "@relay/shared-ui",
+  "version": "1.0.0",
+  "private": true,
+  "exports": {
+    "./tokens.css": "./tokens.css"
+  },
+  "type": "module"
+}
