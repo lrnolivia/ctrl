@@ -34,8 +34,9 @@ export function bindWorkViewer(root,{id,defaultView='list',onOpen,initialFilter=
   const anchorKey=anchor?.dataset.workKey,anchorY=anchor?.getBoundingClientRect().top;
   const rows=visible(),visibleKeys=new Set(rows.map(reviewKey)),hidden=[...selection].filter(key=>!visibleKeys.has(key)).length;
   root.removeAttribute('aria-live');root.className='work-viewer'+(root.id==='review-list'?' review-list':'');root.dataset.summaryState=loaded&&items.every(canOrganize)&&(items.length||!incomplete)?'ready':'loading';root.dataset.summaryNeeds=String(items.filter(item=>projectInGroup(item.project,project)&&!effectiveReview(item,records[reviewKey(item)]).archived&&effectiveReview(item,records[reviewKey(item)]).status==='pending').length);root.dataset.summaryVisible=String(rows.length);root.dataset.view=view;root.setAttribute('aria-busy',String(busy));
-  const menus=[...openMenus];
-  root.innerHTML=`<div class="work-view-controls"><div class="work-control-summary">
+  const visuals=new Map([...root.querySelectorAll('[data-work-key]')].map(node=>[node.dataset.workKey,node.querySelector('.work-item-visual')]));
+  const menus=[...openMenus],template=document.createElement('template');
+  template.innerHTML=`<div class="work-view-controls"><div class="work-control-summary">
   <label class="work-search-compact"><span class="sr-only">search work</span><input data-focus="search" name="search" type="search" value="${escape(query.search)}" placeholder="find work"></label>
   <div class="work-view-switch" role="group" aria-label="work presentation">${['list','visual'].map(value=>`<button type="button" data-view="${value}" data-focus="view-${value}" aria-pressed="${view===value}">${value}</button>`).join('')}</div>
   <details class="work-control-menu" data-control-menu="filters" ${menus.includes('filters')?'open':''}><summary data-focus="menu-filters">${glyph('filter')}<span>filter & sort</span>${glyph('next')}</summary><div class="work-control-panel">
@@ -65,6 +66,19 @@ export function bindWorkViewer(root,{id,defaultView='list',onOpen,initialFilter=
     <div class="work-item-meta"><span>review: ${review.archived?'archived · ':''}${review.status==='loading'?'checking review status':review.status==='unavailable'?'review status unavailable':labels[review.status]}</span><span>${escape(statusLabel(item.sourceState))}</span><time ${item.time==null?'':`datetime="${new Date(item.time).toISOString()}"`}>${item.time==null?'time unknown':new Date(item.time).toLocaleString()}</time>${item.priority?`<span>${escape(item.priority)}</span>`:''}</div>
     <details><summary>technical details</summary><div class="work-source-detail"><p>${escape(item.title)}</p><p>${escape(item.detail)}</p><p>${escape(item.next)}</p><code>${escape(item.id)}</code>${item.source?.identities?.branch?`<p>Branch: ${escape(item.source.identities.branch)}</p>`:''}${item.source?.identities?.head_sha?`<p>Head: ${escape(item.source.identities.head_sha)}</p>`:''}${item.source?.identities?.pr?`<p>PR: ${escape(item.source.identities.pr)}</p>`:''}<p>${escape(item.source?.next_action||item.source?.runtime?.last_summary||'')}</p></div></details></div></article>`;
   }).join(''):`<div class="empty-card"><strong>${items.length?'No matching work.':incomplete?'Waiting for source results.':'No work to show yet.'}</strong><p>${items.length?'Try all or change your search.':'Work appears when Relay receives source activity.'}</p></div>`}</div>`;
+  // Keep decoded images and pending image loads alive across metadata refreshes.
+  // Template parsing is inert: unused replacement images never start fetching.
+  for(const node of template.content.querySelectorAll('[data-work-key]')){
+   const visual=node.querySelector('.work-item-visual'),image=visual?.querySelector('img'),old=visuals.get(node.dataset.workKey);
+   if(image&&old?.querySelector('img')?.getAttribute('src')===image.getAttribute('src')){
+    visual.replaceWith(old);
+   }else if(image){
+    visual.dataset.imageState=image.complete&&image.naturalWidth?'ready':'loading';
+    image.addEventListener('load',()=>{visual.dataset.imageState='ready';},{once:true});
+    image.addEventListener('error',()=>{visual.dataset.imageState='error';},{once:true});
+   }
+  }
+  root.replaceChildren(template.content);
   settleMotionLayout(root,motionBefore);
   for(const item of rows)fresh.delete(reviewKey(item));
   void hydrateProjectIcons(root);

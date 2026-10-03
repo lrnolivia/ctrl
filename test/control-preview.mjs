@@ -49,6 +49,15 @@ export async function controlPreviewChecks(browser){
    await page.screenshot({path:`qa-evidence/combined-relay-TEST-DATA-${width}.png`});captures.push(`combined-relay-TEST-DATA-${width}.png`);await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'hidden'});
    await page.locator('.operator-nav [data-feature=inspector]').click();await page.locator('#inspector-review-focus .review-focus-media img').waitFor();await page.mouse.move(width-5,5);await page.evaluate(()=>document.activeElement?.blur());await page.waitForTimeout(400);
    await page.screenshot({path:`qa-evidence/combined-inspector-TEST-DATA-${width}.png`});captures.push(`combined-inspector-TEST-DATA-${width}.png`);
+   const filters=page.locator('[data-control-menu=filters]');await filters.locator('summary').click();await filters.locator('.work-control-panel').waitFor();
+   assert.ok(await filters.locator('.work-filter-bar button').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize)<=14),'expanded controls retain compact text');
+   if(width===1440)assert.ok((await filters.locator('.work-control-panel').boundingBox()).height<260,'expanded filter panel avoids oversized empty space');
+   await page.screenshot({path:`qa-evidence/inspector-expanded-controls-${width}.png`});
+   await filters.locator('[data-close-menu]').click();assert.equal(await filters.getAttribute('open'),null);
+   await page.locator('.notification-bell').click();await page.locator('.notification-menu:popover-open').waitFor();
+   assert.ok(await page.locator('.notification-menu').evaluate(menu=>{const r=menu.getBoundingClientRect();return menu.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2));}),'notification panel is above Inspector cards and project strip');
+   await page.keyboard.press('Escape');
+
    await page.close();
   }
   assert.deepEqual(errors,[]);return captures;

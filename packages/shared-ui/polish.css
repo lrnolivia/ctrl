@@ -16,7 +16,7 @@
  :root[data-presentation-desktop=bottom] .operator-topbar { left:50%!important;width:min(760px,calc(100vw - 48px))!important;max-width:760px!important;right:auto!important;transform:translateX(-50%)!important;display:grid!important;grid-template-columns:90px minmax(0,1fr) 90px;align-items:center;padding:10px 18px!important;gap:18px!important;background:var(--ctrl-navigation-surface)!important;box-shadow:var(--ctrl-navigation-glow)!important; }
  :root[data-presentation-desktop=bottom] .operator-brand { justify-self:start; }
  :root[data-presentation-desktop=bottom] .operator-utility { justify-self:end;margin-left:0!important; }
- :root[data-presentation-desktop=bottom] .operator-nav { grid-template-columns:repeat(4,minmax(0,1fr))!important;width:100%!important;max-width:500px;justify-self:center;gap:12px!important;background:transparent!important; }
+ :root[data-presentation-desktop=bottom] .operator-nav { grid-template-columns:repeat(4,minmax(0,1fr))!important;width:100%!important;max-width:420px;justify-self:center;gap:6px!important;background:transparent!important; }
 }
 @media(max-width:900px){.operator-nav { background:var(--ctrl-navigation-surface)!important;box-shadow:var(--ctrl-navigation-glow)!important;padding:10px 14px!important; }}
 .work-control-menu summary svg { width:18px;height:18px; }
@@ -141,10 +141,33 @@
 
 /* Breathing room around canonical dock glyphs and selection. */
 @media(min-width:901px){
- :root[data-presentation-desktop=bottom] .operator-topbar .operator-nav :is(a,button),:root[data-presentation-desktop=bottom] .operator-topbar:is(:hover,:focus-within) .operator-nav :is(a,button){height:64px!important;min-height:64px!important;padding:8px 10px!important;gap:4px!important;}
+ :root[data-presentation-desktop=bottom] .operator-topbar .operator-nav :is(a,button),:root[data-presentation-desktop=bottom] .operator-topbar:is(:hover,:focus-within) .operator-nav :is(a,button){height:64px!important;min-height:64px!important;padding:8px 10px!important;gap:2px!important;}
  :root[data-presentation-desktop=bottom] .operator-nav .glyph-chip,:root[data-presentation-desktop=bottom] .operator-nav .tool-mark{width:30px!important;height:30px!important;flex-basis:30px!important;background:transparent!important;box-shadow:none!important;}
  :root[data-presentation-desktop=bottom] .operator-nav .nav-copy strong{font-size:12px!important;line-height:15px!important;}
 }
 @media(max-width:900px){:root[data-presentation-nav=bottom] .operator-nav{padding:4px 6px!important;gap:3px!important}}
 .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important}
 .attention-copy>.project-id-badge{width:fit-content!important;align-self:flex-start}
+
+/* Expanded controls retain the compact toolbar's density and clear grouping. */
+.work-viewer .work-control-panel{gap:12px;padding:14px;max-width:840px}
+.work-viewer .work-control-panel :is(button,select){font:inherit;font-size:13px;line-height:1.25;min-height:38px;padding:9px 12px;border:0;border-radius:10px;background:var(--color-surface);color:var(--color-text-primary)}
+.work-viewer .work-control-panel button:disabled{opacity:.45}
+.work-viewer .work-control-panel button[aria-pressed=true]{background:var(--color-floating);box-shadow:inset 0 0 0 1px var(--color-text-secondary)}
+.work-viewer .work-control-panel .work-filter-bar{display:flex;gap:6px}
+.work-viewer .work-control-panel .work-query-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,220px));gap:10px}
+.work-viewer .work-control-panel .work-bulk-bar{display:grid;grid-template-columns:repeat(3,minmax(120px,1fr));gap:8px;max-width:760px}
+.work-viewer .work-control-panel .work-bulk-bar>label{grid-column:1/-1;max-width:280px}
+.work-viewer .work-control-panel .work-selection-bar{gap:10px;font-size:12px}
+.work-viewer .work-control-panel :is(.work-query-bar,.work-bulk-bar)>label{font-size:11px;gap:4px}
+.work-viewer .work-control-panel>[data-close-menu]{font-size:12px;min-height:34px;min-width:64px}
+.work-viewer .work-item-visual[data-image-state=loading]{position:relative;background:var(--color-raised)}
+.work-viewer .work-item-visual[data-image-state=loading]::after{content:'';position:absolute;inset:0;background:var(--color-floating);animation:preview-loading 1.4s ease-in-out infinite}
+.work-viewer .work-item-visual[data-image-state=loading] img{opacity:0}
+.work-viewer .work-item-visual[data-image-state=error]::after{content:'preview unavailable';font-size:11px;color:var(--color-text-secondary);padding:10px}
+.notification-menu[popover]{position:fixed;inset:auto;margin:0;border:0;max-height:min(70dvh,620px,calc(100dvh - 32px));color:var(--color-text-primary);box-shadow:var(--ctrl-shadow-floating)}
+.notification-menu[popover]::backdrop{background:transparent;pointer-events:none}
+@keyframes preview-loading{50%{opacity:.35}}
+@media(max-width:600px){.work-viewer .work-control-panel{max-width:none;padding:12px}.work-viewer .work-control-panel .work-bulk-bar{grid-template-columns:repeat(2,minmax(0,1fr))}.work-viewer .work-control-panel .work-query-bar{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.work-viewer .work-item-visual[data-image-state=loading]::after{animation:none}}
+html[data-presentation-motion=calm] .work-item-visual[data-image-state=loading]::after{animation:none}
