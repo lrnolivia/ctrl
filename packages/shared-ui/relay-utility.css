@@ -36,3 +36,20 @@ html[data-ctrl-hidden=true] .relay-pulse i{animation-play-state:paused!important
 }
 :root[data-presentation-desktop=bottom] .operator-nav { background:color-mix(in srgb,var(--color-raised) 88%,var(--color-text-primary))!important; }
 :root[data-presentation-desktop=bottom] .operator-nav .relay-utility-trigger { margin-left:16px!important;width:calc(100% - 16px)!important; }
+
+.relay-compact-mosaic{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.relay-compact-mosaic article{min-width:0;background:var(--color-surface);border-radius:16px;padding:14px}
+.relay-compact-mosaic h3{font-family:'Momo Trust Display',sans-serif;font-size:16px;font-weight:400;margin:0 0 10px}
+.relay-compact-mosaic p{font-size:11px;line-height:1.45;color:var(--color-text-secondary);margin:8px 0 0}
+.relay-compact-ring{position:relative;width:100px;max-width:100%;aspect-ratio:1;margin:auto}
+.relay-compact-ring svg{display:block;width:100%;transform:rotate(-90deg)}
+.relay-compact-ring circle{fill:none;stroke:var(--color-raised);stroke-width:7}
+.relay-compact-ring circle.relay-compact-arc{stroke:var(--ctrl-accent);stroke-linecap:round;transition:stroke-dasharray .35s}
+.relay-compact-ring strong{position:absolute;inset:0;display:grid;place-items:center;font-size:24px;font-variant-numeric:tabular-nums}
+.relay-compact-counts>strong{font-family:'Momo Trust Display',sans-serif;font-size:30px;color:var(--ctrl-accent)}
+.relay-compact-counts dl>div{display:flex;gap:6px;padding:5px 0}.relay-compact-counts dt,.relay-compact-counts dd{font-size:11px}
+.relay-compact-activity{grid-column:1/-1}.relay-compact-activity h3{display:flex;justify-content:space-between}.relay-compact-activity h3 span{font-variant-numeric:tabular-nums;color:var(--ctrl-accent)}
+.relay-compact-chart{width:100%;height:64px;display:block}.relay-compact-chart polyline{fill:none;stroke:var(--ctrl-accent);stroke-width:2;stroke-linejoin:round}
+.relay-compact-no-history{min-height:35px;display:flex;align-items:center}
+@media(prefers-reduced-motion:reduce){.relay-compact-arc{transition:none!important}}
+:root[data-presentation-motion=calm] .relay-compact-arc{transition:none!important}

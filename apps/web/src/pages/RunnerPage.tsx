@@ -1,3 +1,4 @@
+import {reviewFocus} from '../../../../packages/shared-ui/control-telemetry.js';
 import {ReviewFocus} from "../components/ReviewFocus";
 import { needsHumanReview } from "../../../../packages/shared-ui/attention.js";
 import { WorkViewer } from "../components/WorkViewer";
@@ -19,6 +20,8 @@ export function RunnerPage() {
     for (const item of payload.progress || []) if (item.state !== "complete" || needsHumanReview(item)) all.push({ project, item });
   }
   all.sort((a, b) => Date.parse(b.item.last_meaningful_progress_at || "0") - Date.parse(a.item.last_meaningful_progress_at || "0"));
+  const featured=reviewFocus(all);
+  const remaining=workItems.filter(item=>!(item.project===featured?.project&&item.id===featured.item.assignment));
   const needs = all.filter(({ item }) => needsHumanReview(item)).length;
   const external = all.filter(({ item }) => item.state === "waiting-on-external-system").length;
   const stale = all.filter(({ item }) => item.state?.includes("stale")).length;
@@ -39,7 +42,7 @@ export function RunnerPage() {
       <SignalDeck cards={cards} feature="runner" />
       <section className="operator-section">
         <div className="section-heading"><h2>current work</h2><span>{all.length} {incomplete ? "loaded" : "current"}</span></div>
-        <WorkViewer id="runner" items={workItems} project={contextProject} incomplete={!allSnapshot || Boolean(allSnapshot.loadingProgress?.length || allSnapshot.failedProgress?.length)} />
+        <WorkViewer id="runner" items={remaining} project={contextProject} incomplete={!allSnapshot || Boolean(allSnapshot.loadingProgress?.length || allSnapshot.failedProgress?.length)} />
       </section>
     </div>
   );

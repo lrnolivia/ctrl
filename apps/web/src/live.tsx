@@ -1,3 +1,4 @@
+import {publishRelayDashboard} from '../../../packages/shared-ui/relay-dashboard.js';
 import {subscribeRelayStream} from '../../../packages/shared-ui/relay-stream.js';
 import {projectInGroup} from "../../../packages/shared-ui/project-groups.js";
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -76,6 +77,7 @@ export function LiveRelayProvider({ children }: { children: ReactNode }) {
         }
         lastSuccess.current = Date.now();
         latestSnapshot.current = next;
+        publishRelayDashboard(next);
         setSnapshot(next);
         setProjectStrip(previous=>commitProjectStrip(previous,next));
         setError(null);
