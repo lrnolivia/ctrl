@@ -12,6 +12,7 @@ export async function controlPreviewChecks(browser){
    page.on('pageerror',e=>errors.push(e.message));
    await page.goto(app.origin+'/#/now');await page.locator('.work-viewer[data-summary-state=ready]').waitFor();await page.locator('.review-focus-media img').waitFor();await page.evaluate(()=>document.fonts.ready);await label(page);
    await page.waitForFunction(()=>[...document.querySelectorAll('.review-focus-media img')].every(i=>i.complete&&i.naturalWidth));
+   await page.locator('.review-reply button[type=submit]:enabled').waitFor();
    assert.equal(await page.locator('.mosaic-progress .ring-copy strong').textContent(),'60%','completion ratio from synthetic coordination records');
    assert.equal(await page.locator('.mosaic-activity svg').count(),1,'populated hourly activity graph');
    assert.equal(await page.locator('.review-focus-media[data-preview-device=phone]').count(),1,'preview frame matches evidence viewport');
@@ -30,6 +31,17 @@ export async function controlPreviewChecks(browser){
    if(width===1440){const r=await page.locator('.operator-topbar').boundingBox();assert.ok(r.width<=760&&Math.abs(r.x+r.width/2-width/2)<2,'short desktop dock is centered');assert.ok((await page.locator('.operator-nav [data-feature]').first().boundingBox()).height>=64,'glyph selection has breathing room');}
    await page.screenshot({path:`qa-evidence/combined-TEST-DATA-${width}.png`});captures.push(`combined-TEST-DATA-${width}.png`);
    if(width===1440){await page.emulateMedia({colorScheme:'light'});await page.screenshot({path:'qa-evidence/combined-light-TEST-DATA-1440.png'});captures.push('combined-light-TEST-DATA-1440.png');await page.emulateMedia({colorScheme:'dark'});}
+   if(width===390){
+    let lost=true,writes=[],acknowledged=false;
+    const report={report_id:'fbr_'+'b'.repeat(64),identity:{project:'ctrl',assignment:'ctrl-mobile-review'},status:{saved:{at:new Date().toISOString()},queued:true,delivered:null,seen:null}};
+    await page.route('**/api/feedback/submit',async route=>{writes.push(route.request().postDataJSON());if(lost){lost=false;await route.abort('failed');}else await route.fulfill({json:{ok:true,feedback:report}});});
+    await page.route('**/api/feedback/status?*',route=>route.fulfill({json:{ok:true,feedback:{...report,status:{...report.status,seen:acknowledged?{actor:'test-caller'}:null}}}}));
+    const form=page.locator('.review-focus .review-reply');await form.locator('textarea').fill('Keep User Text · narrow preview needs more room');await form.locator('button[type=submit]').click();await form.getByRole('status').filter({hasText:'fetch'}).waitFor();
+    await page.reload();await page.locator('.review-reply button[type=submit]:enabled').waitFor();await label(page);
+    const recovered=page.locator('.review-focus .review-reply');assert.equal(await recovered.locator('textarea').inputValue(),'Keep User Text · narrow preview needs more room');await recovered.locator('button[type=submit]').click();await recovered.getByRole('status').filter({hasText:'acknowledgement pending'}).waitFor();assert.deepEqual(writes[0],writes[1],'interrupted browser reply retains operation and intent');
+    acknowledged=true;await recovered.locator('button[type=submit]').click();await recovered.getByRole('status').filter({hasText:'native delivery unverified'}).waitFor();assert.equal(writes.length,2,'confirmed operation reads status instead of posting again');
+    await page.screenshot({path:'qa-evidence/reply-recovery-TEST-DATA-390.png'});captures.push('reply-recovery-TEST-DATA-390.png');
+   }
    await page.locator('.workspace-context [data-relay-open]').click();await page.locator('dialog[data-motion=settled]').waitFor();
    assert.equal(await page.locator('.relay-compact-ring strong').textContent(),'60%','compact panel consumes same snapshot');assert.equal(await page.locator('.relay-compact-chart').count(),1);
    await page.screenshot({path:`qa-evidence/combined-relay-TEST-DATA-${width}.png`});captures.push(`combined-relay-TEST-DATA-${width}.png`);await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'hidden'});

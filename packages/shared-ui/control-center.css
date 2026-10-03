@@ -21,3 +21,10 @@ html[data-presentation-motion=calm] :is(.review-focus,.mosaic-panel){animation:n
 
 .operator-section>h2,.section-heading>h2,.project-context-label{text-transform:none!important}
 .attention-copy>.project-id-badge{display:inline-flex!important;width:fit-content!important}
+
+.review-reply{margin-top:16px}.review-reply label{display:grid;gap:6px;font-size:12px;color:var(--color-text-secondary)}
+.review-reply textarea{font:inherit;font-size:13px;line-height:1.45;color:var(--color-text-primary);background:var(--color-raised);border:0;border-radius:12px;padding:10px;resize:vertical;min-width:0;width:100%;box-sizing:border-box;max-height:160px}
+.review-reply-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.review-reply button{min-height:44px;padding:9px 12px;background:var(--color-raised);color:var(--color-text-primary);border:0;border-radius:12px;font-size:12px;cursor:pointer}.review-reply button[type=submit]{background:var(--feature-today);color:var(--color-canvas)}.review-reply button:disabled{opacity:.5;cursor:default}
+.review-reply p{font-size:11px;margin:10px 0 0}.review-reply details{font-size:11px;margin-top:8px}.review-reply summary{cursor:pointer;min-height:28px}.review-reply pre{font-size:10px;white-space:pre-wrap;overflow-wrap:anywhere}
+
+.react-page>.feature-heading{margin-bottom:24px!important}.react-page>.project-context{margin-bottom:18px}
