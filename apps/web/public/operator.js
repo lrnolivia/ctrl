@@ -17,7 +17,7 @@ import { openQa } from "./qa.js";
 import { loadNightShift } from "../../../features/night-shift/view.js";
 
 import { loadToday } from "./operator-today.js";
-import { bindReviewFilters, loadReview } from "./operator-review.js";
+import { bindReviewFilters, loadReview, cancelReviewLoad } from "./operator-review.js";
 import { esc, loadProjectDetail, loadProjectIndex, projectName, renderProjectDetail } from "./operator-projects.js";
 
 bindTheme();
@@ -259,7 +259,12 @@ const inspectorSignalObserver = new MutationObserver(updateInspectorSignals);
   if (node) inspectorSignalObserver.observe(node, { childList: true, subtree: true, attributes: true });
 });
 
+let pageGeneration=0;
 async function showPage(name) {
+  const pageGen=++pageGeneration;
+  if(name!=='review')cancelReviewLoad();
+  const directEvidence=name==='review'?new URLSearchParams(location.hash.split('?')[1]||'').get('evidence'):null;
+  if(directEvidence&&/^vis_[a-zA-Z0-9-]{8,128}$/.test(directEvidence))void openQa(directEvidence);
   selectedProject = projectFromHash(location.hash) || null;
   const heading = document.querySelector('.operator-page[data-page="' + name + '"] .feature-heading');
   if (heading && projectTabs) heading.after(projectTabs.closest(".project-context"));
@@ -270,11 +275,12 @@ async function showPage(name) {
     button.setAttribute("aria-current", active ? "page" : "false");
   });
   if (name === "today") [["today-attention", "attention"], ["today-work", "work"], ["today-automations", "automation"]].forEach(([id, kind]) => showLoading(document.getElementById(id), kind, "Loading project activity"));
-  if (name === "review") showLoading(document.getElementById("review-list"), "review", "Loading captures");
+  if (name === "review" && document.getElementById("review-list").dataset.reviewProject !== (selectedProject||"")) showLoading(document.getElementById("review-list"), "review", "Loading captures");
   if (name === "night-shift") showLoading(document.getElementById("night-shift-work"), "night", "Loading automatic work");
   if (name === "projects" && selectedProject) showLoading(projectDetail, "project", "Loading project");
   if (!projectIds.length) showLoading(projectTabs, "tabs", "Loading projects");
   await ensureProjects().catch(() => []);
+  if(pageGen!==pageGeneration)return;
   document.body.dataset.page = name;
   document.querySelector("#workspace-page").textContent = navigation[name][0];
 
@@ -290,9 +296,7 @@ async function showPage(name) {
   if (name === "review") {
     setFlow("orient", "evidence queue");
     await loadReview(ui, contextProject());
-    updateInspectorSignals();
-    const evidence = new URLSearchParams(location.hash.split("?")[1] || "").get("evidence");
-    if (evidence && /^vis_[a-zA-Z0-9-]{8,128}$/.test(evidence)) await openQa(evidence);
+    if(pageGen===pageGeneration)updateInspectorSignals();
   }
   if (name === "night-shift") {
     setFlow("orient", "unattended activity");

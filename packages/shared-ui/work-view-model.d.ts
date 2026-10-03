@@ -1,4 +1,4 @@
-export type WorkItem={project:string;kind:string;id:string;title:string;detail:string;next:string;sourceState:string;time:number|null;priority:string|null;revision:string;href?:string;screenshot?:string;source:any};
+export type WorkItem={project:string;kind:string;id:string;title:string;detail:string;next:string;sourceState:string;time:number|null;priority:string|null;revision:string;href?:string;screenshot?:string;reviewHydration?:'pending'|'ready'|'failed';source:any};
 export type ReviewRecord={source_revision:string;status:string;archived:boolean;etag:string|null;updated_at?:string};
 export const reviewStates:string[];
 export const reviewFilters:string[];
@@ -14,3 +14,5 @@ export function evidenceItem(source:any):Promise<WorkItem>;
 
 export function workerSource(worker:any):any;
 export function checkItem(worker:any):Promise<WorkItem>;
+
+export function reviewConfirmationIsCurrent(current:WorkItem[],selected:WorkItem[],records:Record<string,any>,versions:Record<string,string|null>,loaded:boolean):boolean;
