@@ -15,3 +15,14 @@ import {projectMembers} from '../packages/shared-ui/project-groups.js';
 test('source evidence scopes include registered project children without losing canonical identities',()=>{assert.deepEqual(projectMembers('field'),['field']);assert.deepEqual(projectMembers('bazzite-custom'),['bazzite-custom','loew-shell']);assert.deepEqual(projectMembers('rtxforge'),['rtxforge','rtxforge-mfg']);});
 
 test('proxy preserves the existing guarded worker controls with no invented actions',()=>{for(const action of ['toggle','settings','run','doctor','repair'])assert.equal(permitted('/api/workers/field/'+action,'POST'),true);for(const action of ['enable','disable','delete','token'])assert.equal(permitted('/api/workers/field/'+action,'POST'),false);});
+
+import {readFileSync} from 'node:fs';
+test('explicit HTML routing cannot canonicalize Inspector back into a redirect loop',async()=>{
+ const config=JSON.parse(readFileSync(new URL('../wrangler.jsonc',import.meta.url),'utf8'));
+ assert.equal(config.assets.html_handling,'none');
+ for(const [path,asset] of [['/','/index.html'],['/inspector','/inspector.html'],['/inspector/','/inspector.html'],['/inspector.html','/inspector.html']]){
+  let auth=0;const env={CTRL_ENABLED:'true',RELAY:{fetch:async()=>{auth++;return Response.json({ok:true})}},ASSETS:{fetch:async req=>{assert.equal(new URL(req.url).pathname,asset);return new Response('<html>inspector</html>',{headers:{'Content-Type':'text/html'}})}}};
+  const response=await worker.fetch(new Request('https://ctrl.loew.fi'+path,{headers:{'Cf-Access-Jwt-Assertion':'fixture'}}),env);
+  assert.equal(response.status,200);assert.equal(response.headers.get('Location'),null);assert.equal(auth,1);
+ }
+});

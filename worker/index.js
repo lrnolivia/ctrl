@@ -22,8 +22,9 @@ export default {async fetch(request,env){
   return env.RELAY.fetch(forwarded(request));
  }
  if(!['GET','HEAD'].includes(request.method))return json({error:'Method not allowed'},405);
- const isPage=['/','/index.html','/inspector','/inspector/'].includes(url.pathname);
+ const isPage=['/','/index.html','/inspector','/inspector/','/inspector.html'].includes(url.pathname);
  if(isPage){const auth=await env.RELAY.fetch(forwarded(new Request(request,{method:'GET'}),'/api/health'));if(!auth.ok)return auth;}
+ if(url.pathname==='/')url.pathname='/index.html';
  if(url.pathname==='/inspector'||url.pathname==='/inspector/')url.pathname='/inspector.html';
  const response=await env.ASSETS.fetch(new Request(url,request));const headers=new Headers(response.headers);headers.set('X-Content-Type-Options','nosniff');headers.set('Referrer-Policy','same-origin');headers.set('Cache-Control','no-store');
  if(isPage)headers.set('Content-Security-Policy',"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; frame-src 'self' https://*.loew.fi; object-src 'none'; base-uri 'self'; frame-ancestors 'self'");
