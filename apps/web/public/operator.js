@@ -1,7 +1,8 @@
+import {captureMotionLayout,settleMotionLayout} from '../../../packages/shared-ui/field-springs.js';
 import {bindRelayUtility} from '../../../packages/shared-ui/relay-utility.js';
 import {subscribeRelayStream} from '../../../packages/shared-ui/relay-stream.js';
 import {loadDashboard} from '../src/api.ts';
-import {projectActivity,partitionProjects} from '../../../packages/shared-ui/work-activity.js';
+import {projectActivity,partitionProjects,commitProjectStrip} from '../../../packages/shared-ui/work-activity.js';
 import {groupedProjects,groupedActivity,projectGroup} from '../../../packages/shared-ui/project-groups.js';
 import { bindMotion } from "../../../packages/shared-ui/motion.js";
 import { bindPresentation, countVisual } from "../../../packages/shared-ui/presentation.js";
@@ -35,6 +36,7 @@ const appSettings = document.querySelector("#app-settings");
 const sidebar = document.querySelector(".operator-topbar");
 
 let projectIds = [],recentActivity={},projectSeen={},activityStarted=false;
+let stripModel=null,stripSnapshot=null,stripBusy=false,stripPending=false,stripSignature=null;
 try{projectSeen=JSON.parse(localStorage.getItem('relay.project-seen.v1')||'{}')||{};}catch{}
 
 let selectedProject = projectFromHash(location.hash) || null;
@@ -115,8 +117,16 @@ function notify(message, tone = "good") {
 async function ensureProjects() {
   if (!projectIds.length) projectIds = await loadProjectIndex();
   renderProjectTabs();
-  if(!activityStarted&&location.pathname==='/inspector'){activityStarted=true;void loadDashboard(snapshot=>{recentActivity={...recentActivity,...groupedActivity(projectActivity(snapshot))};renderProjectTabs();}).catch(()=>{});}
+  if(!activityStarted&&location.pathname==='/inspector'){activityStarted=true;void refreshProjectActivity();}
   return projectIds;
+}
+
+async function refreshProjectActivity(){
+ if(stripBusy){stripPending=true;return;}
+ stripBusy=true;renderProjectTabs();
+ try{await loadDashboard(snapshot=>{stripSnapshot=snapshot;const next=commitProjectStrip(stripModel,snapshot);if(next!==stripModel){stripModel=next;projectIds=next.projects.map(project=>project.id);recentActivity=groupedActivity(next.activity);renderProjectTabs();}},stripSnapshot);}
+ catch{ /* Keep the last committed membership; connection notices own errors. */ }
+ finally{stripBusy=false;renderProjectTabs();if(stripPending){stripPending=false;queueMicrotask(()=>void refreshProjectActivity());}}
 }
 
 function contextProject() {
@@ -125,19 +135,28 @@ function contextProject() {
 
 function renderProjectTabs() {
   if (!projectTabs) return;
+  const label=projectTabs.closest('.project-context')?.querySelector('.project-context-label');
+  if(label&&!label.querySelector('.project-loading-indicator'))label.insertAdjacentHTML('beforeend',' <span class="project-loading-indicator" role="status"></span>');
+  const indicator=label?.querySelector('.project-loading-indicator');if(indicator){indicator.dataset.loading=String(stripBusy||!stripModel);indicator.setAttribute('aria-label',stripBusy||!stripModel?'Updating projects':'Projects up to date');}
+  if(!stripModel){if(stripSignature!=='loading'){showLoading(projectTabs,'tabs','Loading projects');stripSignature='loading';}return;}
+
   const groups=groupedProjects(projectIds.map(id=>({id}))),parts=partitionProjects(groups,recentActivity,projectSeen,Date.now(),projectName);
   const button=(item,fresh=false)=>{
     const active=projectGroup(selectedProject||'')===item.id,identity=item.id?iconSlot(item.id):'<span class="project-tab-all">'+glyph('projects')+'</span>';
     return '<button class="project-tab'+(active?' active':'')+'" type="button" role="tab" aria-selected="'+active+'" aria-label="'+esc(item.id?projectName(item.id):'all projects')+'" data-project-id="'+esc(item.id)+'">'+identity+'<span>'+esc(item.id?projectName(item.id):'all projects')+'</span>'+(fresh?'<span class="project-update-label">updated</span>':'')+'</button>';
   };
   const group=groups.find(item=>item.id===projectGroup(selectedProject||''));
-  projectTabs.innerHTML=(parts.recent.length?'<div class="project-updates-row" aria-label="Recently updated projects">'+parts.recent.map(item=>button(item,true)).join('')+'</div>':'')+button({id:''})+parts.rest.map(item=>button(item)).join('')+(group?.children.length?'<div class="project-child-tabs">'+group.children.map(item=>'<button type="button" data-project-id="'+esc(item.id)+'" aria-pressed="'+(selectedProject===item.id)+'">'+esc(projectName(item.id))+'</button>').join('')+'</div>':'');
+  const markup=(parts.recent.length?'<div class="project-updates-row" aria-label="Recently updated projects">'+parts.recent.map(item=>button(item,true)).join('')+'</div>':'')+button({id:''})+parts.rest.map(item=>button(item)).join('')+(group?.children.length?'<div class="project-child-tabs">'+group.children.map(item=>'<button type="button" data-project-id="'+esc(item.id)+'" aria-pressed="'+(selectedProject===item.id)+'">'+esc(projectName(item.id))+'</button>').join('')+'</div>':'');
+  if(markup===stripSignature)return;
+  const before=captureMotionLayout(projectTabs,'[data-project-id]');
+  const focused=projectTabs.contains(document.activeElement)?document.activeElement?.dataset.projectId:null;
+  stripSignature=markup;projectTabs.innerHTML=markup;
+  settleMotionLayout(projectTabs,before,'[data-project-id]');
   projectTabs.querySelectorAll("[data-project-id]").forEach(button => {
     button.addEventListener("click", () => chooseProject(button.dataset.projectId));
   });
   hydrateProjectIcons(projectTabs);
-  const active = projectTabs.querySelector(".project-tab.active");
-  active?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+  if(focused!=null)[...projectTabs.querySelectorAll('[data-project-id]')].find(node=>node.dataset.projectId===focused)?.focus({preventScroll:true});
 }
 
 async function chooseProject(id) {
@@ -299,6 +318,7 @@ async function refreshReviewFromEvents(){
  eventRefreshPending=false;eventRefreshing=true;
  try{await loadReview(ui,contextProject(),{quiet:true});updateInspectorSignals();}finally{eventRefreshing=false;if(eventRefreshPending&&!document.querySelector('.qa-stage'))queueMicrotask(refreshReviewFromEvents);}
 }
-subscribeRelayStream(e=>{if(e.kind==='resync'||e.kind==='change'&&e.event?.topics.some(topic=>['evidence','reviews'].includes(topic)))void refreshReviewFromEvents();});
+subscribeRelayStream(e=>{if(e.kind==='resync'||e.kind==='change')void refreshProjectActivity();if(e.kind==='resync'||e.kind==='change'&&e.event?.topics.some(topic=>['evidence','reviews'].includes(topic)))void refreshReviewFromEvents();});
 new MutationObserver(()=>{if(eventRefreshPending&&!document.querySelector('.qa-stage'))void refreshReviewFromEvents();}).observe(document.body,{childList:true});
-setInterval(()=>{if(!document.hidden)void refreshReviewFromEvents();},60000);
+setInterval(()=>{if(!document.hidden){void refreshProjectActivity();void refreshReviewFromEvents();}},60000);
+

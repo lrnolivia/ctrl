@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {commitProjectStrip} from '../packages/shared-ui/work-activity.js';
+const projects=[{id:'field'},{id:'relay'}];
+const item=time=>({last_meaningful_progress_at:time});
+const ready={projects,progress:{field:{progress:[item('2026-10-03T01:00:00Z')]},relay:{progress:[item('2026-10-03T00:00:00Z')]}},loadingProgress:[],failedProgress:[]};
+test('initial partial data stays skeleton until settled',()=>{assert.equal(commitProjectStrip(null,{...ready,loadingProgress:['field']}),null);assert.ok(commitProjectStrip(null,ready));});
+test('partial refresh retains exact previous model and identical final state retains identity',()=>{const previous=commitProjectStrip(null,ready);assert.equal(commitProjectStrip(previous,{...ready,loadingProgress:['field','relay']}),previous);assert.equal(commitProjectStrip(previous,{...ready,loadingProgress:['field']}),previous);assert.equal(commitProjectStrip(previous,ready),previous);});
+test('failed projects retain prior activity, successful empty clears and removed projects disappear',()=>{const previous=commitProjectStrip(null,ready);const failed=commitProjectStrip(previous,{...ready,progress:{},failedProgress:['field']});assert.equal(failed.activity.field,previous.activity.field);assert.equal(failed.activity.relay,undefined);const removed=commitProjectStrip(previous,{projects:[{id:'relay'}],progress:ready.progress});assert.equal(removed.activity.field,undefined);});
+test('response order cannot publish intermediate or stale group membership',()=>{const previous=commitProjectStrip(null,ready);const changed={...ready,progress:{...ready.progress,relay:{progress:[item('2026-10-03T02:00:00Z')]}}};assert.equal(commitProjectStrip(previous,{...changed,loadingProgress:['field']}),previous);const next=commitProjectStrip(previous,changed);assert.ok(next.activity.relay>next.activity.field);});

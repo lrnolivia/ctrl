@@ -2,13 +2,32 @@ import {chromium} from 'playwright';import assert from 'node:assert/strict';impo
 const app=await fixture(),browser=await chromium.launch({headless:true});const captures=[],errors=[];let activePage;await fs.mkdir('qa-evidence',{recursive:true});
 try{for(const width of [1440,390,320]){const page=await browser.newPage({viewport:{width,height:900},colorScheme:'dark',reducedMotion:width===320?'reduce':'no-preference'});activePage=page;page.on('pageerror',e=>errors.push({width,message:e.message}));let sockets=[];await page.routeWebSocket('**/api/events*',ws=>{sockets.push(ws);ws.onClose(()=>{sockets=sockets.filter(s=>s!==ws);});ws.onMessage(data=>{if(data==='ping')ws.send('pong');});ws.send(JSON.stringify({type:'resync',cursor:'0'}));});
 await page.goto(app.origin+'/#/today?project=field');await page.getByRole('heading',{name:'now',exact:true}).waitFor();await page.waitForURL('**/#/now?project=field');await page.locator('.work-viewer[data-summary-state=ready]').waitFor();assert.equal(await page.locator('.operator-nav [data-feature]').count(),4);await page.evaluate(()=>document.fonts.ready);assert.equal(await page.evaluate(()=>document.fonts.check('24px "Momo Trust Display"')),true);
-assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal overflow');await page.screenshot({path:`qa-evidence/now-${width}.png`});captures.push(`now-${width}.png`);
+assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal overflow');if(width<=390){
+ const nav=page.locator('.operator-nav');const first=nav.locator('[data-feature]').first();
+ const size=await first.boundingBox();assert.ok(size.height>=44,'comfortable mobile target');
+ assert.equal(await first.locator('.nav-copy').evaluate(el=>getComputedStyle(el).clipPath),'inset(50%)','mobile nav is visually icon-only');
+ await first.dispatchEvent('pointerdown',{pointerType:'touch',clientX:size.x+size.width/2,clientY:size.y+size.height/2});
+ await page.locator('.mobile-nav-label[data-open=true]').waitFor();
+ await page.waitForFunction(()=>document.querySelector('.mobile-nav-label').getBoundingClientRect().bottom<document.querySelector('.operator-nav [data-feature]').getBoundingClientRect().top);
+ const label=await page.locator('.mobile-nav-label').boundingBox();assert.ok(label.y+label.height<size.y,'label appears above finger');
+ await page.screenshot({path:`qa-evidence/mobile-nav-label-${width}.png`});captures.push(`mobile-nav-label-${width}.png`);
+ await first.dispatchEvent('pointercancel',{pointerType:'touch'});await page.locator('.mobile-nav-label').waitFor({state:'hidden'});
+}
+await page.screenshot({path:`qa-evidence/now-${width}.png`});captures.push(`now-${width}.png`);
 const trigger=page.locator('.workspace-context [data-relay-open]');await trigger.click();const dialog=page.getByRole('dialog',{name:'relay',exact:true});await dialog.waitFor();await dialog.locator('[data-relay-version]').filter({hasText:'2.0.fixture'}).waitFor();await page.waitForFunction(()=>{const r=document.querySelector('dialog').getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight;});
 await page.locator('dialog[data-motion=settled]').waitFor();await page.screenshot({path:`qa-evidence/relay-panel-${width}.png`});captures.push(`relay-panel-${width}.png`);await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});await trigger.evaluate(el=>{if(document.activeElement!==el)throw Error('focus did not return');});assert.ok(page.url().includes('/now?project=field'));
 await trigger.click();await dialog.waitFor();await page.goBack();await dialog.waitFor({state:'hidden'});assert.ok(page.url().includes('/now?project=field'));
 await trigger.click();await dialog.waitFor();await page.keyboard.press('Tab');assert.ok(await page.evaluate(()=>document.querySelector('dialog').contains(document.activeElement)));await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});
 // Event invalidation must refresh source immediately, well before the fallback minute.
-app.progress.field[0].next_action='Instant update '+width;for(const socket of sockets)socket.send(JSON.stringify({type:'change',id:'1',topics:['project:field']}));await page.getByText('Instant update '+width,{exact:true}).first().waitFor({timeout:10000});
+const idsBefore=await page.locator('.project-context [data-project-id]').evaluateAll(nodes=>nodes.map(node=>node.dataset.projectId));
+let releaseProgress;const progressGate=new Promise(resolve=>{releaseProgress=resolve;});
+await page.route('**/api/progress/field',async route=>{await progressGate;await route.continue();});
+app.progress.field[0].next_action='Instant update '+width;for(const socket of sockets)socket.send(JSON.stringify({type:'change',id:'1',topics:['project:field']}));await page.locator('.project-loading-indicator[data-loading=true]').waitFor();
+assert.deepEqual(await page.locator('.project-context [data-project-id]').evaluateAll(nodes=>nodes.map(node=>node.dataset.projectId)),idsBefore,'strip remains settled during partial refresh');
+assert.equal(await page.locator('[data-progress-notice]').count(),0,'no separate loading activity bar');
+releaseProgress();
+await page.getByText('Instant update '+width,{exact:true}).first().waitFor({timeout:10000});
+await page.locator('.project-loading-indicator[data-loading=false]').waitFor();await page.unroute('**/api/progress/field');
 await page.locator('.operator-nav a[data-feature=inspector]').click();await page.getByRole('heading',{name:'inspector',exact:true}).waitFor();await page.locator('.work-viewer').waitFor();assert.ok(app.requests.includes('/api/visual?project=field'),'project filter must reach the evidence API before its60-item limit');await page.locator('.workspace-context [data-relay-open]').click();await page.getByRole('dialog',{name:'relay',exact:true}).waitFor();await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'hidden'});assert.ok(page.url().includes('/inspector#review'));
 // Settings are a functional top-layer panel, not decorative controls.
 await page.getByLabel('Settings',{exact:true}).click();
@@ -32,3 +51,4 @@ if(width===1440){await page.locator('.presentation-menu summary').first().click(
 if(width===390){await page.emulateMedia({colorScheme:'light'});await page.locator('.workspace-context [data-relay-open]').click();await page.locator('dialog[data-motion=settled]').waitFor();await page.screenshot({path:'qa-evidence/relay-panel-light-390.png'});captures.push('relay-panel-light-390.png');await page.setViewportSize({width:844,height:390});await page.waitForFunction(()=>{const r=document.querySelector('dialog').getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;});await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'hidden'});}
 await page.close();}
 assert.deepEqual(errors,[]);await fs.writeFile('qa-evidence/result.json',JSON.stringify({ok:true,source_sha:process.env.CTRL_SOURCE_SHA||process.env.GITHUB_SHA,captures,checks:['Now alias and project context','four-item navigation plus separate Relay utility','dialog Escape/Back/focus','mobile bounds','stream invalidation','Inspector navigation','desktop bottom layout','Momo embedded font','no page errors']},null,2));console.log('CTRL_BROWSER_PASS',JSON.stringify(captures));}catch(error){if(activePage&&!activePage.isClosed()){await activePage.screenshot({path:'qa-evidence/failure.png'}).catch(()=>{});await fs.writeFile('qa-evidence/failure.json',JSON.stringify({error:String(error),errors,body:await activePage.locator('body').innerText().catch(()=>''),url:activePage.url()},null,2));}throw error;}finally{await browser.close();await app.close();}
+
