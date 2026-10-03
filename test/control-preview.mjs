@@ -10,7 +10,11 @@ export async function controlPreviewChecks(browser){
   for(const width of [1440,390,320]){
    const page=await browser.newPage({viewport:{width,height:width===1440?1100:850},colorScheme:'dark',reducedMotion:width===320?'reduce':'no-preference'});
    page.on('pageerror',e=>errors.push(e.message));
-   await page.goto(app.origin+'/#/now');await page.locator('.work-viewer[data-summary-state=ready]').waitFor();await page.locator('.review-focus-media img').waitFor();await page.evaluate(()=>document.fonts.ready);await label(page);
+   let releaseInitial;const initialGate=new Promise(resolve=>{releaseInitial=resolve;});
+   if(width===1440)await page.route('**/api/projects',async route=>{await initialGate;await route.continue();});
+   await page.goto(app.origin+'/#/now');
+   if(width===1440){await page.locator('.control-mosaic[data-loading=true]').waitFor();assert.equal(await page.locator('.control-mosaic .mosaic-count').count(),0,'unknown first-load counts are not presented as zero');await page.screenshot({path:'qa-evidence/overview-loading-1440.png'});releaseInitial();}
+   await page.locator('.work-viewer[data-summary-state=ready]').waitFor();await page.locator('.review-focus-media img').waitFor();await page.evaluate(()=>document.fonts.ready);await label(page);
    await page.waitForFunction(()=>[...document.querySelectorAll('.review-focus-media img')].every(i=>i.complete&&i.naturalWidth));
    await page.locator('.review-reply button[type=submit]:enabled').waitFor();
    assert.equal(await page.locator('.mosaic-progress .ring-copy strong').textContent(),'60%','completion ratio from synthetic coordination records');
