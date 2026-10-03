@@ -1,7 +1,9 @@
+import {bindMobileNavLabels} from './mobile-nav.js';
 import {bindFieldMotion} from "./field-springs.js";
 // Short blur accompanies movement, never resting content or pure color changes.
 export function bindMotion() {
   const fieldCleanup=bindFieldMotion();
+  const mobileNavCleanup=bindMobileNavLabels();
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const active = new Set(), byElement = new WeakMap();
   const enabled = () => !reduced.matches && document.documentElement.dataset.presentationMotion !== 'calm' && !document.hidden;
@@ -47,5 +49,5 @@ export function bindMotion() {
   observer.observe(document.documentElement, {attributes:true,attributeFilter:['data-presentation-motion']});
   document.addEventListener('transitionrun', transition); document.addEventListener('animationstart', animation);
   document.addEventListener('visibilitychange', preference); reduced.addEventListener('change', preference);
-  return () => {fieldCleanup();cancel();observer.disconnect();document.removeEventListener('transitionrun',transition);document.removeEventListener('animationstart',animation);document.removeEventListener('visibilitychange',preference);reduced.removeEventListener('change',preference);};
+  return () => {fieldCleanup();mobileNavCleanup();cancel();observer.disconnect();document.removeEventListener('transitionrun',transition);document.removeEventListener('animationstart',animation);document.removeEventListener('visibilitychange',preference);reduced.removeEventListener('change',preference);};
 }

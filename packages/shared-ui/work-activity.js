@@ -45,3 +45,14 @@ export function advanceArrivalBaseline(previous = {}, snapshot) {
   }
   return { next, arrivals };
 }
+
+// Publish project membership only after a refresh settles, never per response.
+export function commitProjectStrip(previous, snapshot) {
+  if (!snapshot || snapshot.loadingProgress?.length) return previous || null;
+  const ids=new Set(snapshot.projects.map(project=>project.id));
+  const activity=Object.fromEntries(Object.entries(previous?.activity||{}).filter(([id])=>ids.has(id)));
+  const observed=projectActivity(snapshot),failed=new Set(snapshot.failedProgress||[]);
+  for(const id of ids){if(failed.has(id))continue;if(Number.isFinite(observed[id]))activity[id]=observed[id];else delete activity[id];}
+  const next={projects:snapshot.projects,activity};
+  return previous&&JSON.stringify(previous)===JSON.stringify(next)?previous:next;
+}

@@ -127,10 +127,10 @@ function renderChatCardPreview() {
   });
 }
 
-async function api(url, options) {
+async function api(url, options = {}) {
   const response = await fetch(url, {
     headers: { "Content-Type": "application/json", Accept: "application/json" },
-    ...options
+    ...options, signal: options.signal ? AbortSignal.any([options.signal,AbortSignal.timeout(15000)]) : AbortSignal.timeout(15000)
   });
   const text = await response.text();
   let body;
@@ -168,29 +168,47 @@ function evidenceTitle(item) {
 }
 
 
-let viewer=null,loadGeneration=0;
+let viewer=null,loadGeneration=0,reviewController=null,reviewPass=null,reviewScope=null;
+export function cancelReviewLoad(){loadGeneration++;reviewController?.abort();reviewController=null;reviewPass=null;reviewScope=null;}
 export function bindReviewFilters() {
  renderChatCardPreview();
  const root=document.querySelector('#review-list');
  if(root)viewer=bindWorkViewer(root,{id:'inspector',defaultView:'visual',onOpen:item=>item&&openQa(item.id)});
 }
-export async function loadReview(ui,projectId='',{quiet=false}={}) {
+export async function loadReview(ui,projectId='',options={}) {
+ if(reviewPass&&reviewScope===projectId)return reviewPass;
+ if(reviewScope!==null&&reviewScope!==projectId)cancelReviewLoad();
+ reviewScope=projectId;const pass=performReviewLoad(ui,projectId,options);reviewPass=pass;
+ try{return await pass;}finally{if(reviewPass===pass)reviewPass=null;}
+}
+async function performReviewLoad(ui,projectId='',{quiet=false}={}) {
+ reviewController?.abort();reviewController=new AbortController();const signal=reviewController.signal;
  reviewUi=ui;const gen=++loadGeneration;
  const root=document.querySelector('#review-list'),count=document.querySelector('#review-count');
- if(!quiet){root.dataset.summaryState='loading';showLoading(root,'review','Loading captures');}
+ if(!quiet&&root.dataset.reviewProject!==projectId){root.dataset.summaryState='loading';showLoading(root,'review','Loading captures');}root.dataset.reviewProject=projectId;
  try {
   const scope=projectMembers(projectId);
-  const results=await Promise.all((scope.length?scope:['']).map(id=>api('/api/visual'+(id?'?project='+encodeURIComponent(id):''))));
+  const results=await Promise.all((scope.length?scope:['']).map(id=>api('/api/visual'+(id?'?project='+encodeURIComponent(id):''),{signal})));
   const payload={evidence:results.flatMap(result=>result.evidence||[]),partial:results.some(result=>result.partial||result.truncated||result.cursor)};
   const raw=Array.isArray(payload.evidence)?payload.evidence:[],seen=new Set(),sources=[];
+  raw.sort((a,b)=>(Date.parse(b.captured_at)||0)-(Date.parse(a.captured_at)||0));
   for(const item of raw){const key=evidenceKey(item);if(seen.has(key))continue;seen.add(key);sources.push(item);}
-  const prepared=[];
-  for(let index=0;index<sources.length;index+=4)prepared.push(...await Promise.all(sources.slice(index,index+4).map(async item=>{
-   try{const qa=await api('/api/visual/'+encodeURIComponent(item.evidence_id)+'/qa');return {...item,qaReview:qa.review||null};}catch{return item;}
-  })));
-  const models=await Promise.all(prepared.map(evidenceItem));if(gen!==loadGeneration)return;
-  reviewItems=prepared;viewer?.update(models,{project:projectId,incomplete:raw.length>=60||Boolean(payload.partial||payload.truncated||payload.cursor)});
-  count.textContent=String(models.filter(item=>!projectId||item.project===projectId).length)+' loaded captures';
+  const prepared=sources.map(item=>({...item,reviewHydration:'pending'}));
+  const partial=raw.length>=60||Boolean(payload.partial||payload.truncated||payload.cursor);
+  const publish=async()=>{const models=await Promise.all(prepared.map(evidenceItem));if(gen!==loadGeneration||signal.aborted)return false;reviewItems=prepared;viewer?.update(models,{project:projectId,incomplete:partial});count.textContent=String(models.length)+' loaded captures';return true;};
+  if(!await publish())return;
+  // Evidence is usable immediately. Review organization waits for confirmed state.
+  await (async()=>{
+   for(let index=0;index<prepared.length;index+=4){
+    if(gen!==loadGeneration||signal.aborted)return;
+    await Promise.all(prepared.slice(index,index+4).map(async item=>{
+     try{const qa=await api('/api/visual/'+encodeURIComponent(item.evidence_id)+'/qa',{signal});item.qaReview=qa.review||null;item.reviewHydration='ready';}
+     catch{item.reviewHydration='failed';}
+    }));
+    if(!await publish())return;
+    // Known modern records and confirmed absence remain stable; update derives legacy hydration.
+   }
+  })().catch(()=>{});
   ui.setConnection('connected','good');
 
  }catch(error){if(gen!==loadGeneration)return;if(!quiet){root.dataset.summaryState='error';root.innerHTML='<div class="operator-empty">Review items could not load. Refresh to try again.</div>';}else ui.notify('Review updates could not refresh. Your current view stays available.','warn');ui.setConnection(error.status===403?'access needed':'couldn’t connect','bad');}

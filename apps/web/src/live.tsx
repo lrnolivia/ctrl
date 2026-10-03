@@ -4,12 +4,14 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type R
 import { useSearchParams } from "react-router-dom";
 import { loadDashboard, projectLabel } from "./api";
 import { publishNotification, resolveNotification } from '../../../packages/shared-ui/notifications.js';
-import { advanceArrivalBaseline } from "../../../packages/shared-ui/work-activity.js";
+import { advanceArrivalBaseline, commitProjectStrip } from "../../../packages/shared-ui/work-activity.js";
 import type { ConnectionState, DashboardSnapshot } from "./types";
 
 type LiveRelay = {
   snapshot: DashboardSnapshot | null;
   allSnapshot: DashboardSnapshot | null;
+  projectStrip: {projects:DashboardSnapshot["projects"];activity:Record<string,number>} | null;
+  refreshing: boolean;
   state: ConnectionState;
   error: string | null;
   refresh: () => Promise<void>;
@@ -29,6 +31,8 @@ export function LiveRelayProvider({ children }: { children: ReactNode }) {
     setSearchParams(params);
   };
   const [snapshot, setSnapshot] = useState<DashboardSnapshot | null>(null);
+  const [projectStrip,setProjectStrip]=useState<{projects:DashboardSnapshot["projects"];activity:Record<string,number>}|null>(null);
+  const [refreshing,setRefreshing]=useState(true);
   const [state, setState] = useState<ConnectionState>("connecting");
   const [error, setError] = useState<string | null>(null);
   const lastSuccess = useRef(0);
@@ -43,6 +47,7 @@ export function LiveRelayProvider({ children }: { children: ReactNode }) {
   async function refresh() {
     if (busy.current) {pending.current=true;return;}
     busy.current = true;
+    setRefreshing(true);
     if (lastSuccess.current) setState("reconnecting");
     try {
       await loadDashboard(next => {
@@ -72,6 +77,7 @@ export function LiveRelayProvider({ children }: { children: ReactNode }) {
         lastSuccess.current = Date.now();
         latestSnapshot.current = next;
         setSnapshot(next);
+        setProjectStrip(previous=>commitProjectStrip(previous,next));
         setError(null);
         setState("live");
       }, latestSnapshot.current);
@@ -82,6 +88,7 @@ export function LiveRelayProvider({ children }: { children: ReactNode }) {
       setState(lastSuccess.current && Date.now() - lastSuccess.current < 30_000 ? "reconnecting" : "offline");
     } finally {
       busy.current = false;
+      setRefreshing(false);
       if(pending.current){pending.current=false;queueMicrotask(()=>void refresh());}
     }
   }
@@ -114,7 +121,7 @@ export function LiveRelayProvider({ children }: { children: ReactNode }) {
     loadingProgress: snapshot.loadingProgress?.filter(id => projectInGroup(id,project)),
     failedProgress: snapshot.failedProgress?.filter(id => projectInGroup(id,project))
   } : snapshot, [snapshot, project]);
-  const value = { snapshot: scopedSnapshot, allSnapshot: snapshot, state, error, refresh, project, selectProject };
+  const value = { snapshot: scopedSnapshot, allSnapshot: snapshot, projectStrip, refreshing, state, error, refresh, project, selectProject };
   return <LiveRelayContext.Provider value={value}>{children}</LiveRelayContext.Provider>;
 }
 

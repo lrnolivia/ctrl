@@ -6,7 +6,8 @@ if(url.pathname==='/api/work-review'){let text='';for await(const chunk of req)t
 const project=url.pathname.match(/^\/api\/projects\/(relay|field)$/);if(project)return json({project:projects.find(p=>p.id===project[1]),coordination:{claims:progress[project[1]].map(p=>({id:p.assignment,state:'active'})),queue:[]}});
 if(url.pathname.endsWith('/icon'))return json({status:'unavailable'});
 const work=url.pathname.match(/^\/api\/progress\/(relay|field)$/);if(work)return json({project:work[1],progress:progress[work[1]],queue:[]});
-if(url.pathname==='/api/visual')return json({evidence:[]});
+if(url.pathname==='/api/visual')return json({evidence:Array.from({length:4},(_,i)=>({evidence_id:'vis_fixture_'+i,step_label:'Review fixture '+(i+1),created_at:now,screenshot_url:'/brand/ctrl.png',context:{project:'field',surface:'Fixture preview '+i,environment:'Browser test',commit_sha:'fixture'+i},viewport:{width:1440,height:900}}))});
+if(/^\/api\/visual\/vis_fixture_\d+\/qa$/.test(url.pathname))return json({review:null});
 if(url.pathname.startsWith('/api/'))return json({error:'fixture route unavailable'},404);
 let name=url.pathname==='/'?'/index.html':url.pathname==='/inspector'?'/inspector.html':url.pathname;const target=path.resolve('dist','.'+name);if(!target.startsWith(path.resolve('dist')+path.sep))return json({},404);
 try{const bytes=await fs.readFile(target);const type={'.html':'text/html','.css':'text/css','.js':'text/javascript','.png':'image/png','.svg':'image/svg+xml','.json':'application/json'}[path.extname(target)]||'application/octet-stream';res.writeHead(200,{'Content-Type':type});res.end(bytes);}catch{json({},404);}});

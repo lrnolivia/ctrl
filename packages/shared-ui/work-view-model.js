@@ -8,8 +8,16 @@ export async function sourceRevision(source) {
   return [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(n=>n.toString(16).padStart(2,'0')).join('');
 }
 export function effectiveReview(item, record) {
-  if (!record || record.source_revision !== item.revision) return { status:'pending', archived:false };
-  return { status:reviewStates.includes(record.status)?record.status:'pending', archived:record.archived===true };
+  if (record?.source_revision === item.revision) return {status:reviewStates.includes(record.status)?record.status:'pending',archived:record.archived===true};
+  if (record?.read_confirmed && record.source_revision && record.source_revision !== item.revision) return {status:'pending',archived:false};
+  if (item.kind === 'evidence' && item.reviewHydration) {
+    // Absence of a modern record is only known after a successful storage read.
+    if (!record?.read_confirmed) return {status:record?.read_failed?'unavailable':'loading',archived:false};
+    if (item.reviewHydration !== 'ready') return {status:item.reviewHydration==='failed'?'unavailable':'loading',archived:false};
+    const legacy=item.source?.qaReview;
+    if(legacy)return {status:legacy.disposition==='archived'?'stale':['completed','stale'].includes(legacy.disposition)?legacy.disposition:legacy.overall?'completed':'pending',archived:legacy.disposition==='archived'};
+  }
+  return {status:'pending',archived:false};
 }
 export function priorityValue(value) {
   // Provider-specific P0/P1 values have no universal meaning.
@@ -20,7 +28,8 @@ export function selectWork(items, {project='',filter='pending',search='',sort='t
   const selected=items.filter(item=>{
     if(!projectInGroup(item.project,project)) return false;
     const review=effectiveReview(item,records[reviewKey(item)]);
-    if(filter==='archived' ? !review.archived : filter!=='all' && (review.archived || review.status!==filter)) return false;
+    const unknown=['loading','unavailable'].includes(review.status);
+    if(filter==='archived' ? !review.archived : filter!=='all' && (review.archived || (review.status!==filter && !(filter==='pending'&&unknown)))) return false;
     if(query && ![item.title,item.detail,item.next,item.project].join(' ').toLocaleLowerCase().includes(query)) return false;
     return Object.entries(extensions).every(([key,value])=>!value || !predicates[key] || predicates[key](item,value));
   });
@@ -51,7 +60,7 @@ export async function assignmentItem(project, source) {
 export async function evidenceItem(source) {
   return {project:source.context?.project || 'review',kind:'evidence',id:source.evidence_id,title:source.step_label || source.context?.surface || 'Screen review',
     detail:source.context?.environment || 'capture',next:'Review this capture',sourceState:'captured',time:activityTime(source),priority:source.priority || null,
-    revision:await sourceRevision(source),screenshot:source.screenshot_url,source};
+    revision:await sourceRevision(source),screenshot:source.screenshot_url,reviewHydration:source.reviewHydration,source};
 }
 
 export function workerSource(worker) {
@@ -62,4 +71,9 @@ export function workerSource(worker) {
 export async function checkItem(worker) {
  const item=await assignmentItem(worker.id,workerSource(worker));
  return {...item,kind:'check',next:worker.runtime?.last_error?'Review the reported check problem':'Review the latest automatic result',href:'/#/night-shift?project='+encodeURIComponent(worker.id)+'&item='+encodeURIComponent(worker.id)};
+}
+
+export function reviewConfirmationIsCurrent(current, selected, records, versions, loaded){
+ if(!loaded||!selected?.length)return false;
+ return selected.every(before=>{const key=reviewKey(before),item=current.find(candidate=>reviewKey(candidate)===key);return item&&item.revision===before.revision&&!['loading','unavailable'].includes(effectiveReview(item,records[key]).status)&&(records[key]?.etag??null)===(versions[key]??null);});
 }
