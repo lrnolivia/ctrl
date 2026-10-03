@@ -10,6 +10,23 @@ await trigger.click();await dialog.waitFor();await page.keyboard.press('Tab');as
 // Event invalidation must refresh source immediately, well before the fallback minute.
 app.progress.field[0].next_action='Instant update '+width;for(const socket of sockets)socket.send(JSON.stringify({type:'change',id:'1',topics:['project:field']}));await page.getByText('Instant update '+width,{exact:true}).first().waitFor({timeout:10000});
 await page.locator('.operator-nav a[data-feature=inspector]').click();await page.getByRole('heading',{name:'inspector',exact:true}).waitFor();await page.locator('.work-viewer').waitFor();assert.ok(app.requests.includes('/api/visual?project=field'),'project filter must reach the evidence API before its60-item limit');await page.locator('.workspace-context [data-relay-open]').click();await page.getByRole('dialog',{name:'relay',exact:true}).waitFor();await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'hidden'});assert.ok(page.url().includes('/inspector#review'));
+// Settings are a functional top-layer panel, not decorative controls.
+await page.getByLabel('Settings',{exact:true}).click();
+const settings=page.locator('.presentation-panel');await settings.waitFor({state:'visible'});
+await page.locator('.presentation-customize summary').click();
+const settingsInside=async()=>{await page.waitForFunction(()=>{const p=document.querySelector('.presentation-panel'),r=p.getBoundingClientRect();return p.matches(':popover-open')&&r.left>=0&&r.right<=innerWidth+1&&r.top>=0&&r.bottom<=innerHeight+1;});};
+await settingsInside();
+for(const [name,values] of Object.entries({desktop:['bottom','rail'],nav:['top','bottom'],brand:['roomy','compact'],richness:['rich','simple'],motion:['calm','full']})){
+ for(const value of values){await settings.locator(`[name=${name}]`).selectOption(value);assert.equal(await page.locator('html').getAttribute('data-presentation-'+name),value);await settingsInside();}
+}
+await settings.locator('[name=motion]').selectOption('calm');
+await page.screenshot({path:`qa-evidence/settings-${width}.png`});captures.push(`settings-${width}.png`);
+await page.keyboard.press('Escape');await settings.waitFor({state:'hidden'});
+await page.reload();await page.getByRole('heading',{name:'inspector',exact:true}).waitFor();
+assert.equal(await page.locator('html').getAttribute('data-presentation-motion'),'calm','presentation persists after reload');
+await page.getByLabel('Settings',{exact:true}).click();await settings.waitFor({state:'visible'});
+await settings.locator('[data-presentation-reset]').click();assert.equal(await page.locator('html').getAttribute('data-presentation-motion'),'full');
+await page.keyboard.press('Escape');await settings.waitFor({state:'hidden'});
 await page.screenshot({path:`qa-evidence/inspector-${width}.png`});captures.push(`inspector-${width}.png`);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
 if(width===1440){await page.locator('.presentation-menu summary').first().click();await page.locator('.presentation-customize summary').click();await page.selectOption('[name=desktop]','bottom');await page.locator('.presentation-menu summary').first().click();await page.locator('.workspace-context [data-relay-open]').click();await page.getByRole('dialog').waitFor();await page.locator('dialog[data-motion=settled]').waitFor();await page.screenshot({path:'qa-evidence/relay-desktop-bottom.png'});captures.push('relay-desktop-bottom.png');await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'hidden'});}
 if(width===390){await page.emulateMedia({colorScheme:'light'});await page.locator('.workspace-context [data-relay-open]').click();await page.locator('dialog[data-motion=settled]').waitFor();await page.screenshot({path:'qa-evidence/relay-panel-light-390.png'});captures.push('relay-panel-light-390.png');await page.setViewportSize({width:844,height:390});await page.waitForFunction(()=>{const r=document.querySelector('dialog').getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;});await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'hidden'});}
