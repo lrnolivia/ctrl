@@ -1,3 +1,4 @@
+import {ProjectBadge} from "../components/ProjectBadge";
 import { needsHumanReview } from "../../../../packages/shared-ui/attention.js";
 import { WorkViewer } from "../components/WorkViewer";
 import { useWorkItems } from "../components/useWorkItems";
@@ -57,7 +58,7 @@ export function TodayPage() {
           {needs.length ? needs.map(({ project, item }) => (
             <article className="attention-card" data-tone={tone(item.state)} key={`${project}:${item.assignment}`}>
               <div className="attention-copy">
-                <span className="attention-project">{projectLabel(project)}</span>
+                <ProjectBadge project={project}/>
                 <strong>{item.goal || item.assignment.replace(/[-_]+/g, " ")}</strong>
                 <p>{item.waiting_reason || item.recovery_action || item.next_action || "Relay needs your attention."}</p>
               </div>

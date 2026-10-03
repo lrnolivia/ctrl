@@ -17,6 +17,7 @@ async function request(action,items){
 }
 export function bindWorkViewer(root,{id,defaultView='list',onOpen,initialFilter='pending',predicates={},extensionControls=[]}={}){
  let items=[],records={},loaded=false,incomplete=true,project='',view=defaultView,query={filter:initialFilter,search:'',sort:'time',direction:'desc',extensions:{}},selection=new Set(),scope='selected',pending=null,undo=[],busy=false,message='',generation=0,disposed=false;
+ const openMenus=new Set();
  const storageKey='relay.work-view.'+id;let anchorRestored=false;const fresh=new Set();
  try{const saved=JSON.parse(sessionStorage.getItem(storageKey)||'null');if(saved){view=['list','visual'].includes(saved.view)?saved.view:defaultView;const prior=saved.query||{};query={...query,filter:Object.hasOwn(labels,prior.filter)?prior.filter:initialFilter,search:typeof prior.search==='string'?prior.search:'',sort:['time','importance'].includes(prior.sort)?prior.sort:'time',direction:['asc','desc'].includes(prior.direction)?prior.direction:'desc',extensions:prior.extensions&&typeof prior.extensions==='object'&&!Array.isArray(prior.extensions)?prior.extensions:{}};}}catch{}
  const save=()=>{try{sessionStorage.setItem(storageKey,JSON.stringify({view,query}));}catch{}};
@@ -31,21 +32,21 @@ export function bindWorkViewer(root,{id,defaultView='list',onOpen,initialFilter=
   const anchorKey=anchor?.dataset.workKey,anchorY=anchor?.getBoundingClientRect().top;
   const rows=visible(),visibleKeys=new Set(rows.map(reviewKey)),hidden=[...selection].filter(key=>!visibleKeys.has(key)).length;
   root.removeAttribute('aria-live');root.className='work-viewer'+(root.id==='review-list'?' review-list':'');root.dataset.summaryState=loaded&&(items.length||!incomplete)?'ready':'loading';root.dataset.summaryNeeds=String(items.filter(item=>projectInGroup(item.project,project)&&!effectiveReview(item,records[reviewKey(item)]).archived&&effectiveReview(item,records[reviewKey(item)]).status==='pending').length);root.dataset.summaryVisible=String(rows.length);root.dataset.view=view;root.setAttribute('aria-busy',String(busy));
-  const menus=[...root.querySelectorAll('details[data-control-menu][open]')].map(node=>node.dataset.controlMenu);
+  const menus=[...openMenus];
   root.innerHTML=`<div class="work-view-controls"><div class="work-control-summary">
   <label class="work-search-compact"><span class="sr-only">Search work</span><input data-focus="search" name="search" type="search" value="${escape(query.search)}" placeholder="Find work"></label>
-  <details class="work-control-menu" data-control-menu="filters" ${menus.includes('filters')?'open':''}><summary>${glyph('filter')}<span>Filter & sort</span></summary>
+  <details class="work-control-menu" data-control-menu="filters" ${menus.includes('filters')?'open':''}><summary data-focus="menu-filters">${glyph('filter')}<span>Filter & sort</span>${glyph('next')}</summary><div class="work-control-panel">
    <div class="work-filter-bar" role="group" aria-label="Review status">${Object.entries(labels).map(([value,label])=>`<button type="button" data-filter="${value}" data-focus="filter-${value}" aria-pressed="${query.filter===value}">${label}</button>`).join('')}</div>
    <div class="work-query-bar">
    <label>Sort<select data-focus="sort" name="sort"><option value="time" ${query.sort==='time'?'selected':''}>Time</option><option value="importance" ${query.sort==='importance'?'selected':''}>Importance</option></select></label>
    <label>Order<select data-focus="direction" name="direction"><option value="desc" ${query.direction==='desc'?'selected':''}>${query.sort==='time'?'Newest first':'Highest first'}</option><option value="asc" ${query.direction==='asc'?'selected':''}>${query.sort==='time'?'Oldest first':'Lowest first'}</option></select></label>
    ${extensionControls.map(control=>`<label>${escape(control.label)}<select name="extension:${escape(control.key)}" data-focus="extension:${escape(control.key)}"><option value="">All</option>${control.options.map(option=>`<option value="${escape(option.value)}" ${query.extensions[control.key]===option.value?'selected':''}>${escape(option.label)}</option>`).join('')}</select></label>`).join('')}
    <div class="work-view-switch" role="group" aria-label="Work presentation">${['list','visual'].map(value=>`<button type="button" data-view="${value}" data-focus="view-${value}" aria-pressed="${view===value}">${value==='list'?'List':'Visual'}</button>`).join('')}</div></div>
-   </details></div>
-   <details class="work-control-menu ${!rows.length?'work-empty-actions':''}" data-control-menu="organize" ${selection.size||menus.includes('organize')?'open':''}><summary>${glyph('check')}<span>${selection.size?selection.size+' selected':'Organize'}</span></summary><div class="work-selection-bar"><label><input type="checkbox" data-select-visible data-focus="select-visible" ${rows.length&&rows.every(item=>selection.has(reviewKey(item)))?'checked':''}>Select these ${rows.length} items</label><span>${selection.size} selected${hidden?' · '+hidden+' outside these results':''}</span><button type="button" data-clear-selection ${!selection.size?'disabled':''}>Clear selection</button></div>
+   <button type="button" data-close-menu="filters">Done</button></div></details></div>
+   <details class="work-control-menu ${!rows.length?'work-empty-actions':''}" data-control-menu="organize" ${menus.includes('organize')?'open':''}><summary data-focus="menu-organize">${glyph('check')}<span>${selection.size?selection.size+' selected':'Organize'}</span>${glyph('next')}</summary><div class="work-control-panel"><div class="work-selection-bar"><label><input type="checkbox" data-select-visible data-focus="select-visible" ${rows.length&&rows.every(item=>selection.has(reviewKey(item)))?'checked':''}>Select these ${rows.length} items</label><span>${selection.size} selected${hidden?' · '+hidden+' outside these results':''}</span><button type="button" data-clear-selection ${!selection.size?'disabled':''}>Clear selection</button></div>
    <div class="work-bulk-bar"><label>Action scope<select name="scope" data-focus="scope"><option value="selected" ${scope==='selected'?'selected':''}>Selected items</option><option value="filtered" ${scope==='filtered'?'selected':''}>Current filtered results</option><option value="all-projects" ${scope==='all-projects'?'selected':''}>All projects · matching loaded results</option></select></label>
    ${[['pending','Reopen'],['completed','Mark complete'],['stale','Mark stale'],['clear-complete','Clear complete'],['clear-stale','Clear stale'],['restore','Restore']].map(([action,label])=>`<button type="button" data-bulk="${action}" ${busy||!loaded||!changedTargets(action).length?'disabled':''}>${label}</button>`).join('')}</div>
-   </details>
+   <button type="button" data-close-menu="organize">Done</button></div></details>
    ${incomplete?'<p class="work-query-help">Some updates are still loading. Changes only affect the items shown.</p>':''}
    ${pending?`<div class="work-confirm" role="group" aria-label="Confirm review changes"><strong>${escape(pending.label)}: ${pending.items.length} item${pending.items.length===1?'':'s'} in ${new Set(pending.items.map(item=>item.project)).size} project(s)</strong><p>${escape(pending.scope)}. ${escape(query.search?'Search: '+query.search+'. ':'')}This only organizes your review list.</p><button type="button" data-confirm ${busy?'disabled':''}>Apply to these ${pending.items.length} items</button><button type="button" data-cancel ${busy?'disabled':''}>Cancel</button></div>`:''}
    <div class="work-message" role="status">${escape(message)}${!loaded&&!busy?'<button type="button" data-refresh>Refresh review state</button>':''}${undo.length?'<button type="button" data-undo '+(busy?'disabled':'')+'>Undo last change</button>':''}</div>
@@ -93,8 +94,13 @@ export function bindWorkViewer(root,{id,defaultView='list',onOpen,initialFilter=
   if(!item){message='This item is no longer available in the loaded results.';render();return;}
   query.filter='all';query.search='';save();render();const node=[...root.querySelectorAll('[data-work-key]')].find(node=>node.dataset.workKey===reviewKey(item));node?.focus({preventScroll:true});node?.scrollIntoView({block:'center'});
  }
+ function closeMenu(name){openMenus.delete(name);render();root.querySelector('[data-focus="menu-'+name+'"]')?.focus({preventScroll:true});}
+ function keydown(event){if(event.key==='Escape'&&openMenus.size){event.preventDefault();const name=event.target.closest('[data-control-menu]')?.dataset.controlMenu||[...openMenus].at(-1);closeMenu(name);}}
  function click(event){
+  const summary=event.target.closest('summary');
+  if(summary?.parentElement?.dataset.controlMenu){event.preventDefault();const name=summary.parentElement.dataset.controlMenu;openMenus.has(name)?openMenus.delete(name):openMenus.add(name);render();root.querySelector('[data-focus="menu-'+name+'"]')?.focus({preventScroll:true});return;}
   const button=event.target.closest('button,a');if(!button)return;
+  if(button.dataset.closeMenu){closeMenu(button.dataset.closeMenu);return;}
   if(button.hasAttribute('data-refresh'))void loadRecords();
   if(button.dataset.filter){query.filter=button.dataset.filter;pending=null;save();render();}
   if(button.dataset.view){view=button.dataset.view;save();render();}
@@ -115,10 +121,11 @@ export function bindWorkViewer(root,{id,defaultView='list',onOpen,initialFilter=
   if(control.name?.startsWith('extension:')){query.extensions[control.name.slice(10)]=control.value;save();render();}
  }
  function input(event){if(event.target.name==='search'){query.search=event.target.value;pending=null;save();render();}}
- window.addEventListener('relay:work-arrivals',newWork);window.addEventListener('hashchange',reveal);root.addEventListener('click',click);root.addEventListener('change',change);root.addEventListener('input',input);
+ window.addEventListener('relay:work-arrivals',newWork);window.addEventListener('hashchange',reveal);root.addEventListener('keydown',keydown);root.addEventListener('click',click);root.addEventListener('change',change);root.addEventListener('input',input);
  return {
   update(next,{project:nextProject='',incomplete:partial=false}={}){const identity=next.map(item=>reviewKey(item)+':'+item.revision).join('|'),old=items.map(item=>reviewKey(item)+':'+item.revision).join('|');items=next;project=nextProject;incomplete=partial;if(identity!==old){pending=null;loaded=false;}render();if(identity!==old||!loaded)void loadRecords();if(!anchorRestored&&items.length){anchorRestored=true;let saved;try{saved=sessionStorage.getItem(storageKey+'.anchor');}catch{}const requested=new URLSearchParams(location.hash.split('?')[1]||'').get('item');const node=[...root.querySelectorAll('[data-work-key]')].find(node=>requested?items.find(item=>item.id===requested&&reviewKey(item)===node.dataset.workKey):node.dataset.workKey===saved);if(node){node.focus({preventScroll:true});node.scrollIntoView({block:'center'});}}},
   refresh(){void loadRecords();},
-  destroy(){window.removeEventListener('relay:work-arrivals',newWork);window.removeEventListener('hashchange',reveal);disposed=true;generation++;root.removeEventListener('click',click);root.removeEventListener('change',change);root.removeEventListener('input',input);}
+  destroy(){window.removeEventListener('relay:work-arrivals',newWork);window.removeEventListener('hashchange',reveal);disposed=true;generation++;root.removeEventListener('keydown',keydown);root.removeEventListener('click',click);root.removeEventListener('change',change);root.removeEventListener('input',input);}
  };
 }
+

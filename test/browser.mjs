@@ -5,7 +5,8 @@ await page.goto(app.origin+'/#/today?project=field');await page.getByRole('headi
 assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal overflow');if(width<=390){
  const nav=page.locator('.operator-nav');const first=nav.locator('[data-feature]').first();
  const size=await first.boundingBox();assert.ok(size.height>=44,'comfortable mobile target');
- assert.equal(await first.locator('.nav-copy').evaluate(el=>getComputedStyle(el).clipPath),'inset(50%)','mobile nav is visually icon-only');
+ assert.equal(await first.locator('.nav-copy').evaluate(el=>getComputedStyle(el).clipPath),'none','mobile destination labels remain visible');
+ const dock=await nav.boundingBox(),gear=await page.locator('.operator-utility').boundingBox();assert.ok(Math.abs(dock.height-64)<1&&Math.abs(gear.width-64)<1&&Math.abs(gear.x-dock.x-dock.width-8)<1,'detached equal-height Settings circle');
  await first.dispatchEvent('pointerdown',{pointerType:'touch',clientX:size.x+size.width/2,clientY:size.y+size.height/2});
  await page.locator('.mobile-nav-label[data-open=true]').waitFor();
  await page.waitForFunction(()=>document.querySelector('.mobile-nav-label').getBoundingClientRect().bottom<document.querySelector('.operator-nav [data-feature]').getBoundingClientRect().top);
@@ -57,6 +58,19 @@ assert.equal(await page.locator('html').getAttribute('data-presentation-motion')
 await page.getByLabel('Settings',{exact:true}).click();await settings.waitFor({state:'visible'});
 await settings.locator('[data-presentation-reset]').click();assert.equal(await page.locator('html').getAttribute('data-presentation-motion'),'full');
 await page.keyboard.press('Escape');await settings.waitFor({state:'hidden'});
+const viewer=page.locator('#review-list');await viewer.locator('.work-item').first().waitFor();
+assert.equal(await viewer.locator('.work-item').count(),4,'populated evidence fixture');
+const filters=viewer.locator('[data-control-menu=filters]'),filterTrigger=filters.locator('summary');
+for(let n=0;n<2;n++){await filterTrigger.click();assert.equal(await filters.getAttribute('open'),'');await filterTrigger.click();assert.equal(await filters.getAttribute('open'),null);}
+await filterTrigger.focus();await page.keyboard.press('Enter');assert.equal(await filters.getAttribute('open'),'');await page.keyboard.press('Escape');assert.equal(await filters.getAttribute('open'),null);
+await filterTrigger.click();await filters.locator('[data-view=list]').click();const listKeys=await viewer.locator('[data-work-key]').evaluateAll(ns=>ns.map(n=>n.dataset.workKey));
+await filters.locator('[data-close-menu]').click();assert.equal(await filters.getAttribute('open'),null);
+await viewer.locator('.work-item').first().scrollIntoViewIfNeeded();await viewer.screenshot({path:`qa-evidence/inspector-list-${width}.png`});captures.push(`inspector-list-${width}.png`);
+await filterTrigger.click();await filters.locator('[data-view=visual]').click();assert.deepEqual(await viewer.locator('[data-work-key]').evaluateAll(ns=>ns.map(n=>n.dataset.workKey)),listKeys);
+await filters.locator('[data-close-menu]').click();const imageBox=await viewer.locator('.work-item-visual').first().boundingBox(),cardBox=await viewer.locator('.work-item').first().boundingBox();assert.ok(Math.abs(imageBox.width-cardBox.width)<2,'visual image fills card width');
+await viewer.screenshot({path:`qa-evidence/inspector-visual-${width}.png`});captures.push(`inspector-visual-${width}.png`);
+const select=viewer.locator('[data-select]').first();await select.check();const organize=viewer.locator('[data-control-menu=organize]');await organize.locator('summary').click();await organize.locator('summary').click();assert.equal(await organize.getAttribute('open'),null,'selection does not force disclosure open');
+await page.locator('.feature-heading').scrollIntoViewIfNeeded();
 await page.screenshot({path:`qa-evidence/inspector-${width}.png`});captures.push(`inspector-${width}.png`);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
 if(width===1440){await page.locator('.presentation-menu summary').first().click();await page.locator('.presentation-customize summary').click();await page.selectOption('[name=desktop]','bottom');await page.locator('.presentation-menu summary').first().click();await page.locator('.workspace-context [data-relay-open]').click();await page.getByRole('dialog').waitFor();await page.locator('dialog[data-motion=settled]').waitFor();await page.screenshot({path:'qa-evidence/relay-desktop-bottom.png'});captures.push('relay-desktop-bottom.png');await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'hidden'});}
 if(width===390){await page.emulateMedia({colorScheme:'light'});await page.locator('.workspace-context [data-relay-open]').click();await page.locator('dialog[data-motion=settled]').waitFor();await page.screenshot({path:'qa-evidence/relay-panel-light-390.png'});captures.push('relay-panel-light-390.png');await page.setViewportSize({width:844,height:390});await page.waitForFunction(()=>{const r=document.querySelector('dialog').getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;});await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'hidden'});}

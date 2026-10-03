@@ -146,10 +146,11 @@ function renderProjectTabs() {
     return '<button class="project-tab'+(active?' active':'')+'" type="button" role="tab" aria-selected="'+active+'" aria-label="'+esc(item.id?projectName(item.id):'all projects')+'" data-project-id="'+esc(item.id)+'">'+identity+'<span>'+esc(item.id?projectName(item.id):'all projects')+'</span>'+(fresh?'<span class="project-update-label">updated</span>':'')+'</button>';
   };
   const group=groups.find(item=>item.id===projectGroup(selectedProject||''));
-  const markup=(parts.recent.length?'<div class="project-updates-row" aria-label="Recently updated projects">'+parts.recent.map(item=>button(item,true)).join('')+'</div>':'')+button({id:''})+parts.rest.map(item=>button(item)).join('')+(group?.children.length?'<div class="project-child-tabs">'+group.children.map(item=>'<button type="button" data-project-id="'+esc(item.id)+'" aria-pressed="'+(selectedProject===item.id)+'">'+esc(projectName(item.id))+'</button>').join('')+'</div>':'');
+  const markup=(parts.recent.length?'<div class="project-updates-row" aria-label="Recently updated projects">'+parts.recent.map(item=>button(item,true)).join('')+'</div>':'')+'<div class="project-tabs" role="group" aria-label="All projects in alphabetical order">'+button({id:''})+parts.rest.map(item=>button(item)).join('')+'</div>'+(group?.children.length?'<div class="project-child-tabs">'+group.children.map(item=>'<button type="button" data-project-id="'+esc(item.id)+'" aria-pressed="'+(selectedProject===item.id)+'">'+esc(projectName(item.id))+'</button>').join('')+'</div>':'');
   if(markup===stripSignature)return;
   const before=captureMotionLayout(projectTabs,'[data-project-id]');
   const focused=projectTabs.contains(document.activeElement)?document.activeElement?.dataset.projectId:null;
+  projectTabs.classList.add('project-strip-layout');
   stripSignature=markup;projectTabs.innerHTML=markup;
   settleMotionLayout(projectTabs,before,'[data-project-id]');
   projectTabs.querySelectorAll("[data-project-id]").forEach(button => {
