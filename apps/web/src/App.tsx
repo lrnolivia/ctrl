@@ -1,4 +1,4 @@
-import { relayTrigger, relayTelemetry, bindRelayUtility } from '../../../packages/shared-ui/relay-utility.js';
+import { relayTelemetry, bindRelayUtility } from '../../../packages/shared-ui/relay-utility.js';
 import { bindMotion } from "../../../packages/shared-ui/motion.js";
 import { useEffect } from "react";
 import { presentationMenu, bindPresentation } from "../../../packages/shared-ui/presentation.js";
@@ -43,7 +43,6 @@ function Shell() {
               <span className="nav-chevron" aria-hidden="true">›</span>
             </NavLink>
           ))}
-          <span className="relay-nav-slot" dangerouslySetInnerHTML={{__html: relayTrigger()}} />
           <NavLink to={projectHref("/runner",project)} data-feature="runner" className={({isActive})=>isActive?"active":""}><span className="glyph-chip"><img className="tool-mark" src="/brand/runner.png" alt="" /></span><span className="nav-copy"><strong>runner</strong><small>coordinate</small></span><span className="nav-chevron" aria-hidden="true">›</span></NavLink>
           <a href={projectHref("/inspector#review", project)} data-feature="inspector">
             <span className="glyph-chip"><img className="tool-mark" src="/brand/inspector.png" alt="" /></span>
