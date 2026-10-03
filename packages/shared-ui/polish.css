@@ -1,7 +1,7 @@
 
 :root { --ctrl-shadow-static:0 10px 34px -14px #0008; --ctrl-shadow-floating:0 22px 70px -12px #0009,0 7px 24px -10px #0005; }
 :root[data-theme=light] { --ctrl-shadow-static:0 10px 34px -14px #30271f14; --ctrl-shadow-floating:0 22px 70px -12px #30271f24,0 7px 24px -10px #30271f12; }
-.operator-shell > .operator-page,.react-page { max-width:none!important;width:100%;margin-inline:0; }
+.operator-shell > .operator-page,.operator-shell > .workspace-context,.react-page { max-width:none!important;width:100%;margin-inline:0; }
 .clear-card,.attention-card,.automation-row,.review-row,.work-item,.project-list,.project-detail,.flow-band,.signal-card { box-shadow:var(--ctrl-shadow-static)!important; }
 .relay-engine-panel,.presentation-panel,.automation-menu,.qa-companion { box-shadow:var(--ctrl-shadow-floating)!important; }
 .presentation-panel { box-sizing:border-box;padding:24px!important;overflow:auto;overscroll-behavior:contain;background:var(--color-floating);color:var(--color-text-primary);border:0;border-radius:22px; }
@@ -38,7 +38,7 @@
 .presentation-menu > summary svg { width:20px!important;height:20px!important; }
 .presentation-menu > summary { width:44px!important;height:44px!important; }
 @media(min-width:901px){
- :root:not([data-presentation-desktop=bottom]) .operator-topbar .operator-utility { width:100%;display:flex;justify-content:center; }
+ :root:not([data-presentation-desktop=bottom]) .operator-topbar .operator-utility { width:100%;display:flex;flex-direction:row;justify-content:center;align-items:center; }
  :root:not([data-presentation-desktop=bottom]) .operator-topbar:is(:hover,:focus-within) .operator-utility { justify-content:flex-end;padding-right:12px;box-sizing:border-box; }
 }
 @media(max-width:900px){

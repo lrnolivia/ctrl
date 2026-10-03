@@ -13,6 +13,17 @@ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWid
  await page.screenshot({path:`qa-evidence/mobile-nav-label-${width}.png`});captures.push(`mobile-nav-label-${width}.png`);
  await first.dispatchEvent('pointercancel',{pointerType:'touch'});await page.locator('.mobile-nav-label').waitFor({state:'hidden'});
 }
+if(width>900){
+ await page.mouse.move(width-8,100);
+ await page.waitForFunction(()=>{const bar=document.querySelector('.operator-topbar').getBoundingClientRect(),gear=document.querySelector('.presentation-menu > summary').getBoundingClientRect();return Math.abs((gear.left+gear.width/2)-(bar.left+bar.width/2))<2;});
+ const edges=await page.evaluate(()=>{const header=document.querySelector('.workspace-context').getBoundingClientRect(),content=document.querySelector('.feature-heading').getBoundingClientRect();return {left:Math.abs(header.left-content.left),right:Math.abs(header.right-content.right)};});
+ assert.ok(edges.left<2&&edges.right<2,'header spans the same content edges');
+ await page.locator('.operator-topbar').hover();
+ await page.waitForFunction(()=>{const utility=document.querySelector('.operator-utility').getBoundingClientRect(),gear=document.querySelector('.presentation-menu > summary').getBoundingClientRect();return Math.abs(utility.right-gear.right-12)<2;});
+ await page.screenshot({path:`qa-evidence/sidebar-expanded-${width}.png`});captures.push(`sidebar-expanded-${width}.png`);
+ await page.mouse.move(width-8,100);
+ await page.waitForFunction(()=>{const bar=document.querySelector('.operator-topbar').getBoundingClientRect(),gear=document.querySelector('.presentation-menu > summary').getBoundingClientRect();return Math.abs((gear.left+gear.width/2)-(bar.left+bar.width/2))<2;});
+}
 await page.screenshot({path:`qa-evidence/now-${width}.png`});captures.push(`now-${width}.png`);
 const trigger=page.locator('.workspace-context [data-relay-open]');await trigger.click();const dialog=page.getByRole('dialog',{name:'relay',exact:true});await dialog.waitFor();await dialog.locator('[data-relay-version]').filter({hasText:'2.0.fixture'}).waitFor();await page.waitForFunction(()=>{const r=document.querySelector('dialog').getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight;});
 await page.locator('dialog[data-motion=settled]').waitFor();await page.screenshot({path:`qa-evidence/relay-panel-${width}.png`});captures.push(`relay-panel-${width}.png`);await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});await trigger.evaluate(el=>{if(document.activeElement!==el)throw Error('focus did not return');});assert.ok(page.url().includes('/now?project=field'));
