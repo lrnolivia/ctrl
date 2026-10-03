@@ -54,7 +54,7 @@ nav.forEach(button => {
   button.setAttribute("aria-label", label);
   button.dataset.feature = feature;
   button.style.setProperty("--feature-accent", featureAccent[feature] || featureAccent.relay);
-  button.innerHTML = '<span class="glyph-chip"><img class="tool-mark" src="' + brand[feature] + '" alt=""></span><span class="nav-copy"><strong>' + label + '</strong><small>' + detail + '</small></span><span class="nav-chevron">' + glyph("next") + '</span>';
+  button.innerHTML = '<span class="glyph-chip"><picture><source media="(max-width: 900px)" srcset="/brand-nav/' + (feature==='today'?'now':feature) + '.svg"><img class="tool-mark" src="' + brand[feature] + '" alt=""></picture></span><span class="nav-copy"><strong>' + label + '</strong><small>' + detail + '</small></span><span class="nav-chevron">' + glyph("next") + '</span>';
 });
 
 document.querySelectorAll("[data-feature-icon]").forEach(image => {

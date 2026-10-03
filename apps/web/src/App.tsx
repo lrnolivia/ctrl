@@ -18,6 +18,11 @@ const navItems = [
   { to: "/night-shift", label: "night shift", detail: "monitor", feature: "night-shift", icon: "/brand/night-shift.png" }
 ];
 
+function NavArtwork({feature,src}:{feature:string;src:string}){
+ const name=feature==='today'?'now':feature;
+ return <picture><source media="(max-width: 900px)" srcSet={'/brand-nav/'+name+'.svg'}/><img className="tool-mark" src={src} alt=""/></picture>;
+}
+
 function Shell() {
   useEffect(() => { const presentation = bindPresentation(); const theme = bindTheme(); const motion = bindMotion(); const relay = bindRelayUtility(); return () => { relay(); presentation(); theme?.(); motion(); }; }, []);
   const { state, project } = useLiveRelay();
@@ -38,20 +43,20 @@ function Shell() {
         <nav className="operator-nav react-operator-nav" aria-label="ctrl">
           {navItems.slice(0, 1).map(item => (
             <NavLink key={item.to} to={projectHref(item.to, project)} data-feature={item.feature} className={({ isActive }) => isActive ? "active" : ""}>
-              <span className="glyph-chip"><img className="tool-mark" src={item.icon} alt="" /></span>
+              <span className="glyph-chip"><NavArtwork feature={item.feature} src={item.icon}/></span>
               <span className="nav-copy"><strong>{item.label}</strong><small>{item.detail}</small></span>
               <span className="nav-chevron" aria-hidden="true">›</span>
             </NavLink>
           ))}
-          <NavLink to={projectHref("/runner",project)} data-feature="runner" className={({isActive})=>isActive?"active":""}><span className="glyph-chip"><img className="tool-mark" src="/brand/runner.png" alt="" /></span><span className="nav-copy"><strong>runner</strong><small>coordinate</small></span><span className="nav-chevron" aria-hidden="true">›</span></NavLink>
+          <NavLink to={projectHref("/runner",project)} data-feature="runner" className={({isActive})=>isActive?"active":""}><span className="glyph-chip"><NavArtwork feature="runner" src="/brand/runner.png"/></span><span className="nav-copy"><strong>runner</strong><small>coordinate</small></span><span className="nav-chevron" aria-hidden="true">›</span></NavLink>
           <a href={projectHref("/inspector#review", project)} data-feature="inspector">
-            <span className="glyph-chip"><img className="tool-mark" src="/brand/inspector.png" alt="" /></span>
+            <span className="glyph-chip"><NavArtwork feature="inspector" src="/brand/inspector.png"/></span>
             <span className="nav-copy"><strong>inspector</strong><small>review</small></span>
             <span className="nav-chevron" aria-hidden="true">›</span>
           </a>
           {navItems.slice(2).map(item => (
             <NavLink key={item.to} to={projectHref(item.to, project)} data-feature={item.feature} className={({ isActive }) => isActive ? "active" : ""}>
-              <span className="glyph-chip"><img className="tool-mark" src={item.icon} alt="" /></span>
+              <span className="glyph-chip"><NavArtwork feature={item.feature} src={item.icon}/></span>
               <span className="nav-copy"><strong>{item.label}</strong><small>{item.detail}</small></span>
               <span className="nav-chevron" aria-hidden="true">›</span>
             </NavLink>

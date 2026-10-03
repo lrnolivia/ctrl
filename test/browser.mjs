@@ -6,7 +6,7 @@ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWid
  const nav=page.locator('.operator-nav');const first=nav.locator('[data-feature]').first();
  const size=await first.boundingBox();assert.ok(size.height>=44,'comfortable mobile target');
  assert.equal(await first.locator('.nav-copy').evaluate(el=>getComputedStyle(el).clipPath),'none','mobile destination labels remain visible');
- const dock=await nav.boundingBox(),gear=await page.locator('.operator-utility').boundingBox();assert.ok(Math.abs(dock.height-64)<1&&Math.abs(gear.width-64)<1&&Math.abs(gear.x-dock.x-dock.width-8)<1,'detached equal-height Settings circle');
+ const dock=await nav.boundingBox(),gear=await page.locator('.operator-utility').boundingBox();assert.ok(Math.abs(dock.height-64)<1&&Math.abs(gear.width-64)<1&&Math.abs(gear.x-dock.x-dock.width-8)<1,'detached equal-height Settings circle: '+JSON.stringify({dock,gear}));
  await first.dispatchEvent('pointerdown',{pointerType:'touch',clientX:size.x+size.width/2,clientY:size.y+size.height/2});
  await page.locator('.mobile-nav-label[data-open=true]').waitFor();
  await page.waitForFunction(()=>document.querySelector('.mobile-nav-label').getBoundingClientRect().bottom<document.querySelector('.operator-nav [data-feature]').getBoundingClientRect().top);
