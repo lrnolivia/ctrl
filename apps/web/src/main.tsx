@@ -22,3 +22,5 @@ import "../../../packages/shared-ui/motion.css";
 import '../../../packages/shared-ui/relay-utility.css';
 
 import '../../../packages/shared-ui/momo.css';
+
+import '../../../packages/shared-ui/polish.css';

@@ -26,3 +26,13 @@ html[data-ctrl-hidden=true] .relay-pulse i{animation-play-state:paused!important
 .relay-telemetry strong{font-size:14px;line-height:16px}.relay-telemetry small{font-size:11px;line-height:14px}
 .relay-telemetry>img{width:32px;height:32px;flex:0 0 32px}.relay-telemetry .relay-pulse{margin-left:3px}
 @media(max-width:380px){.workspace-context .workspace-left{display:none}.workspace-context .connection-tools{margin-left:auto}:root[data-presentation-nav=bottom] .operator-nav .nav-copy strong{font-size:10.5px!important;line-height:13px!important;letter-spacing:0}:root[data-presentation-nav=bottom] .operator-nav{gap:1px!important}.operator-nav .relay-utility-trigger{margin:0 1px!important}}
+
+@media(min-width:901px){
+ :root:not([data-presentation-desktop=bottom]) .operator-nav .relay-utility-trigger { margin-top:26px!important; }
+}
+@media(max-width:900px){
+ .operator-nav { background:color-mix(in srgb,var(--color-raised) 88%,var(--color-text-primary))!important; }
+ .operator-nav .relay-utility-trigger { margin-left:9px!important;width:calc(100% - 9px)!important; }
+}
+:root[data-presentation-desktop=bottom] .operator-nav { background:color-mix(in srgb,var(--color-raised) 88%,var(--color-text-primary))!important; }
+:root[data-presentation-desktop=bottom] .operator-nav .relay-utility-trigger { margin-left:16px!important;width:calc(100% - 16px)!important; }

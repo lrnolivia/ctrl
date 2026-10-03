@@ -1,3 +1,4 @@
+import { needsHumanReview } from "../../../../packages/shared-ui/attention.js";
 import { WorkViewer } from "../components/WorkViewer";
 import { useWorkItems } from "../components/useWorkItems";
 import { statusLabel, summaryText } from "../../../../packages/shared-ui/presentation-copy.js";
@@ -29,7 +30,7 @@ export function TodayPage() {
     for (const item of payload.progress || []) all.push({ project, item });
   }
   const current = all.filter(({ item }) => item.state !== "complete");
-  const needs = current.filter(({ item }) => ["waiting-for-human", "blocked", "failed", "officially-stale"].includes(item.state || ""));
+  const needs = all.filter(({ item }) => needsHumanReview(item));
   const moving = current.filter(({ item }) => item.state === "working");
   const workers = snapshot?.workers || [];
   const enabled = workers.filter(worker => worker.enabled);
@@ -37,7 +38,7 @@ export function TodayPage() {
   const count = (value: number) => incomplete ? value ? `${value}+` : "pending" : String(value);
 
   const cards = [
-    { id: "needs", total: incomplete ? undefined : current.length, totalLabel: "current work items", label: "needs you", value: count(needs.length), detail: incomplete ? "Some projects are still loading or could not refresh." : needs.length ? "A decision, review, or recovery step is waiting." : "Nothing is asking for your attention.", tone: needs.length ? "act" : "quiet" },
+    { id: "needs", total: incomplete ? undefined : current.length, totalLabel: "current work items", label: "needs you", value: count(needs.length), detail: incomplete ? "Some projects are still loading or could not refresh." : needs.length ? "A decision or finished work is ready for your review." : "Nothing is asking for your attention.", tone: needs.length ? "act" : "quiet" },
     { id: "moving", total: incomplete ? undefined : current.length, totalLabel: "current work items", label: "moving", value: count(moving.length), detail: incomplete ? "Some projects are still loading or could not refresh." : moving.length ? "Work has reported recent progress." : "No work is reporting progress right now.", tone: moving.length ? "good" : "quiet" },
     { id: "automatic", total: incomplete ? undefined : workers.length, totalLabel: "automatic checks", label: "automatic checks", value: snapshot ? String(enabled.length) : "pending", detail: !snapshot ? "Checking your automatic schedules." : enabled.length ? "Projects Relay checks for you." : "No automatic checks are enabled.", tone: enabled.length ? "wait" : "quiet" },
     { id: "freshness", label: "information", value: statusLabel(state), detail: snapshot ? `last refreshed ${new Date(snapshot.fetchedAt).toLocaleTimeString()}` : "waiting for Relay", tone: state === "live" ? "good" : state === "stale" ? "warn" : "quiet" }

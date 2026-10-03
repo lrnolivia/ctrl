@@ -186,7 +186,7 @@ body.qa-open .terra-accent {visibility:hidden;}
 
 /* Updated projects form a distinct raised row without changing the alphabetical baseline. */
 .project-updates-row { display:flex; flex-wrap:wrap; gap:8px; padding:8px; margin:0 0 10px; border-radius:16px; background:var(--color-raised); box-shadow:0 6px 16px #0003; }
-.project-updates-row .project-tab { background:color-mix(in srgb,var(--status-info) 15%,var(--color-surface)); color:var(--color-text-primary); }
+.project-updates-row .project-tab { background:var(--color-surface); color:var(--color-text-primary); }
 .project-update-label { font-size:11px; color:var(--color-text-secondary); }
 .project-tabs { flex-wrap:wrap; }
 .project-tab { min-height:44px; }
@@ -254,3 +254,22 @@ body.qa-open .terra-accent {visibility:hidden;}
 @keyframes work-item-arrival { from { transform:translateY(6px); filter:blur(1px); opacity:.7; } to { transform:none; filter:none; opacity:1; } }
 @media(prefers-reduced-motion:reduce) { .work-item[data-new-work=true] { animation:none; } }
 :root[data-presentation-motion=calm] .work-item[data-new-work=true] { animation:none; }
+
+/* Shared workspace edges and quiet, compact review controls. */
+.operator-shell > .operator-page { width:100%; max-width:none; margin-inline:0; }
+.work-control-summary { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+.work-search-compact { flex:1; min-width:160px; }
+.work-search-compact input { width:100%; }
+.work-control-menu { position:relative; }
+.work-control-menu > summary { display:flex; align-items:center; gap:7px; list-style:none; padding:10px 13px; border-radius:12px; background:var(--color-raised); cursor:pointer; }
+.work-control-menu > summary svg,.work-view-switch svg { width:18px;height:18px; }
+.work-control-menu[open] { flex-basis:100%; }
+.work-control-menu[open] > summary { width:max-content; margin-bottom:12px; }
+.work-query-bar,.work-bulk-bar { display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px; }
+.work-query-bar label { min-width:0; }
+.work-selection-bar { margin-block:12px; }
+.work-item-copy > p { max-width:65ch; }
+.work-item-meta { gap:12px; }
+.work-source-detail { overflow-wrap:anywhere; }
+.work-view-controls { padding:16px;border-radius:18px;background:var(--color-surface); }
+.work-empty-actions { display:none; }

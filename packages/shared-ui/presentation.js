@@ -6,7 +6,7 @@ const defaults = presets.approved.settings;
 presets['desktop-bottom'] = { label: 'Desktop branded bottom pill', settings: { ...defaults, desktop: 'bottom' } };
 const choices = { desktop: ['rail', 'bottom'], nav: ['top', 'bottom'], overview: ['compact'], brand: ['compact', 'roomy'], richness: ['simple', 'rich'], motion: ['full', 'calm'] };
 export function presentationMenu() {
-  return `<details class="presentation-menu"><summary aria-label="Settings" title="Settings">${glyph('settings')}</summary><div class="presentation-panel"><strong>settings</strong><p>Only this browser · <span data-presentation-state>Approved</span></p><label>Presentation preset<select name="preset">${Object.entries(presets).map(([id,preset]) => `<option value="${id}">${preset.label}</option>`).join('')}<option value="custom" disabled>Custom</option></select></label><details class="presentation-customize"><summary>Customize</summary><fieldset><legend>Mobile</legend><label>Navigation<select name="nav"><option value="top">Top</option><option value="bottom">Bottom · default</option></select></label></fieldset><fieldset><legend>Desktop / tablet</legend><label>Desktop layout<select name="desktop"><option value="rail">Sidebar · default</option><option value="bottom">Branded bottom pill</option></select></label><label>Sidebar brand<select name="brand"><option value="compact">Small tile · default</option><option value="roomy">Roomier tile</option></select></label></fieldset><fieldset><legend>Telemetry / motion</legend><label>Data visuals<select name="richness"><option value="simple">Simple · default</option><option value="rich">Rich · labeled counts</option></select></label><label>Motion<select name="motion"><option value="full">Spring · default</option><option value="calm">Calm</option></select></label></fieldset></details><button type="button" data-presentation-reset>Reset presentation</button><div class="presentation-tools"><button id="theme-toggle" class="utility-button" type="button"><span class="utility-icon" aria-hidden="true">${glyph('sun')}</span><span class="utility-label">Light mode</span></button><a id="app-settings" class="utility-button" href="https://chatgpt.com/settings/plugins-settings/plugin_asdk_app_6abe234861d881919e30db65d656492f" target="_blank" rel="noreferrer"><span class="utility-icon" aria-hidden="true">${glyph('refresh')}</span><span class="utility-label">Refresh tools</span><span class="utility-arrow" aria-hidden="true">↗</span></a></div></div></details>`;
+  return `<details class="presentation-menu"><summary aria-label="Settings" title="Settings">${glyph('settings')}</summary><div class="presentation-panel" popover="manual"><strong>settings</strong><p>Only this browser · <span data-presentation-state>Approved</span></p><label>Presentation preset<select name="preset">${Object.entries(presets).map(([id,preset]) => `<option value="${id}">${preset.label}</option>`).join('')}<option value="custom" disabled>Custom</option></select></label><details class="presentation-customize"><summary>Customize</summary><fieldset><legend>Mobile</legend><label>Navigation<select name="nav"><option value="top">Top</option><option value="bottom">Bottom · default</option></select></label></fieldset><fieldset><legend>Desktop / tablet</legend><label>Desktop layout<select name="desktop"><option value="rail">Sidebar · default</option><option value="bottom">Branded bottom pill</option></select></label><label>Sidebar brand<select name="brand"><option value="compact">Small tile · default</option><option value="roomy">Roomier tile</option></select></label></fieldset><fieldset><legend>Telemetry / motion</legend><label>Data visuals<select name="richness"><option value="simple">Simple · default</option><option value="rich">Rich · labeled counts</option></select></label><label>Motion<select name="motion"><option value="full">Spring · default</option><option value="calm">Calm</option></select></label></fieldset></details><button type="button" data-presentation-reset>Reset presentation</button><div class="presentation-tools"><button id="theme-toggle" class="utility-button" type="button"><span class="utility-icon" aria-hidden="true">${glyph('sun')}</span><span class="utility-label">Light mode</span></button></div></div></details>`;
 }
 export function normalizePresentation(saved = {}) {
   return Object.fromEntries(Object.entries(defaults).map(([key, value]) => [key, choices[key].includes(saved?.[key]) ? saved[key] : value]));
@@ -20,15 +20,34 @@ export function bindPresentation() {
   try { localStorage.setItem('relay-presentation', JSON.stringify(prefs)); } catch {}
   const header = document.querySelector('.operator-topbar');
   const nav = document.querySelector('.operator-nav');
+  const panel=menu.querySelector('.presentation-panel');
+  const positionPanel=()=>{
+    if(!menu.open){if(panel.matches(':popover-open'))panel.hidePopover();return;}
+    if(!panel.matches(':popover-open'))panel.showPopover();
+    const anchor=menu.querySelector('summary').getBoundingClientRect();
+    panel.style.width=Math.min(360,innerWidth-32)+'px';panel.style.maxHeight=(innerHeight-32)+'px';
+    panel.style.position='fixed';panel.style.margin='0';panel.style.right='auto';panel.style.bottom='auto';
+    const rect=panel.getBoundingClientRect();
+    const left=anchor.right+12+rect.width<=innerWidth-16?anchor.right+12:anchor.left-rect.width-12;
+    const top=anchor.top>innerHeight/2?anchor.bottom-rect.height:anchor.top;
+    panel.style.left=Math.max(16,Math.min(left,innerWidth-rect.width-16))+'px';
+    panel.style.top=Math.max(16,Math.min(top,innerHeight-rect.height-16))+'px';
+  };
+  menu.addEventListener('toggle',positionPanel,true);
   const clearance = () => {
+    const context=document.querySelector('.workspace-context');
+    if(context){const bounds=context.getBoundingClientRect();document.documentElement.style.setProperty('--ctrl-content-left',bounds.left+'px');document.documentElement.style.setProperty('--ctrl-content-width',bounds.width+'px');}
+    positionPanel();
     const desktop = matchMedia('(min-width: 901px)').matches;
     const bar = desktop ? prefs.desktop === 'bottom' ? header : null : prefs.nav === 'bottom' ? nav : null;
+    if(nav){const dock=nav.getBoundingClientRect();document.documentElement.style.setProperty('--ctrl-dock-right',(innerWidth-dock.right)+'px');document.documentElement.style.setProperty('--ctrl-dock-bottom',(innerHeight-dock.bottom)+'px');document.documentElement.style.setProperty('--ctrl-dock-height',dock.height+'px');}
     const bottom = bar && getComputedStyle(bar).position === 'fixed' ? Math.ceil(bar.getBoundingClientRect().height + (parseFloat(getComputedStyle(bar).bottom) || 0) + 16) : 0;
     document.documentElement.style.setProperty('--floating-bar-clearance', bottom + 'px');
   };
   const observer = new ResizeObserver(clearance);
   if (header) observer.observe(header);
   if (nav) observer.observe(nav);
+  const workspace=document.querySelector('.workspace-context');if(workspace)observer.observe(workspace);
   window.addEventListener('resize', clearance);
   const apply = () => {
     const preset = Object.entries(presets).find(([, preset]) => Object.keys(defaults).every(key => preset.settings[key] === prefs[key]));
@@ -54,7 +73,7 @@ export function bindPresentation() {
   const outside = event => { if (!menu.contains(event.target)) menu.open = false; };
   document.addEventListener('pointerdown', outside);
   apply(); menu.addEventListener('change', change); menu.querySelector('[data-presentation-reset]').addEventListener('click', reset); document.addEventListener('keydown', escape);
-  return () => { observer.disconnect(); window.removeEventListener('resize', clearance); document.removeEventListener('pointerdown', outside); menu.removeEventListener('change', change); menu.querySelector('[data-presentation-reset]').removeEventListener('click', reset); document.removeEventListener('keydown', escape); };
+  return () => { menu.removeEventListener('toggle',positionPanel,true);if(panel.matches(':popover-open'))panel.hidePopover();observer.disconnect(); window.removeEventListener('resize', clearance); document.removeEventListener('pointerdown', outside); menu.removeEventListener('change', change); menu.querySelector('[data-presentation-reset]').removeEventListener('click', reset); document.removeEventListener('keydown', escape); };
 }
 
 // Discrete units, never a fabricated timeline, percentage or trend.

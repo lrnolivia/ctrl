@@ -12,6 +12,7 @@ export type ObservedProgress = {
   goal?: string | null;
   state?: string;
   stage?: string;
+  attention_request?: { kind?: "review" | "decision"; status?: string };
   primary_staff?: string | null;
   supporting_staff?: string[];
   primary_team?: string | null;

@@ -20,7 +20,7 @@ const outputs=(Array.isArray(build)?build:[build]).flatMap(r=>r.output||[]);
 for(const item of outputs){const target=path.join(out,item.fileName);await fs.mkdir(path.dirname(target),{recursive:true});let value=item.type==='chunk'?item.code:String(item.source);if(item.fileName==='index.html')value=value.replace('</head>',()=>'<script>('+themeBootstrap.toString()+')()</script></head>');await fs.writeFile(target,value);}
 const js=(await esbuild({entryPoints:[path.join(here,'public/operator.js')],bundle:true,write:false,format:'iife',target:'es2022',minify:true})).outputFiles[0].text;
 await fs.writeFile(path.join(out,'relay-app.js'),js);
-const cssFiles=['apps/web/public/operator.css','packages/shared-ui/tokens.css','packages/shared-ui/components.css','apps/web/public/operator-1.8.css','apps/web/public/qa.css','packages/shared-ui/notifications.css','packages/shared-ui/telemetry.css','packages/shared-ui/responsive-shell.css','packages/shared-ui/motion.css','packages/shared-ui/relay-utility.css','packages/shared-ui/momo.css'];
+const cssFiles=['apps/web/public/operator.css','packages/shared-ui/tokens.css','packages/shared-ui/components.css','apps/web/public/operator-1.8.css','apps/web/public/qa.css','packages/shared-ui/notifications.css','packages/shared-ui/telemetry.css','packages/shared-ui/responsive-shell.css','packages/shared-ui/motion.css','packages/shared-ui/relay-utility.css','packages/shared-ui/momo.css','packages/shared-ui/polish.css'];
 let css=(await Promise.all(cssFiles.map(p=>fs.readFile(path.join(root,p),'utf8')))).join('\n');
 css+='\n.operator-brand strong,.operator-nav .nav-copy strong,.nav-label{font-family:"Momo Trust Display",Inter,system-ui,sans-serif;font-weight:400}';
 await fs.writeFile(path.join(out,'inspector.css'),css);
