@@ -28,3 +28,23 @@ html[data-presentation-motion=calm] :is(.review-focus,.mosaic-panel){animation:n
 .review-reply p{font-size:11px;margin:10px 0 0}.review-reply details{font-size:11px;margin-top:8px}.review-reply summary{cursor:pointer;min-height:28px}.review-reply pre{font-size:10px;white-space:pre-wrap;overflow-wrap:anywhere}
 
 .react-page>.feature-heading{margin-bottom:24px!important}.react-page>.project-context{margin-bottom:18px}
+
+/* The approved Relay telemetry family, using ctrl's existing surface tokens. */
+.mosaic-heading{justify-content:flex-start}
+.mosaic-heading>div{min-width:0;flex:1}
+.mosaic-heading p{margin:0}
+.mosaic-glyph{display:inline-flex;align-items:center;justify-content:center;flex:none;width:54px;height:54px;border-radius:16px;background:var(--color-raised);color:var(--feature-today)}
+.mosaic-heading .mosaic-glyph svg{width:28px;height:28px;max-height:none}
+.mosaic-progress{display:flex;flex-direction:column}
+.control-overview .mosaic-progress-body{flex:1;justify-content:center;gap:26px;padding:28px 0}
+.mosaic-progress-body dl{flex:1;max-width:160px;gap:26px}
+.mosaic-progress-body dt{display:flex;align-items:center;gap:8px}
+.mosaic-progress-body dt .mosaic-glyph{width:22px;height:22px;background:transparent;border-radius:0}
+.mosaic-progress-body dt .mosaic-glyph svg{width:18px;height:18px}
+.mosaic-progress-body dd{font-variant-numeric:tabular-nums}
+.mosaic-meter{display:block;height:8px;margin-top:10px;background:var(--color-raised);border-radius:8px;overflow:hidden}
+.mosaic-meter i{display:block;height:100%;width:100%;border-radius:inherit;background:var(--feature-today);transform-origin:left;transition:transform .68s cubic-bezier(.2,.8,.2,1)}
+.mosaic-activity-line{fill:none;stroke:var(--feature-today);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:760px){.mosaic-glyph{width:44px;height:44px;border-radius:13px}.mosaic-heading .mosaic-glyph svg{width:25px;height:25px}.control-overview .mosaic-progress-body{padding:14px 0;gap:18px}}
+@media(prefers-reduced-motion:reduce){.mosaic-meter i{transition:none}}
+html[data-presentation-motion=calm] .mosaic-meter i{transition:none}
