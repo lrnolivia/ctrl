@@ -25,6 +25,8 @@ export async function reviewLoadingChecks(browser,origin){
   await page.getByRole('button',{name:'Open Review capture 0',exact:true}).waitFor({timeout:8000});
   assert.equal(await page.locator('#review-list').getAttribute('data-summary-needs'),'0','unknown state is not pending');
   assert.equal(await page.locator('[data-select]').first().isDisabled(),true,'unknown review cannot be organized');
+  await page.locator('.work-item-visual img').first().waitFor();
+  await page.evaluate(()=>{const row=[...document.querySelectorAll('[data-work-key]')].find(n=>n.textContent.includes('Review capture 0'));window.keptPreview={key:row.dataset.workKey,image:row.querySelector('.work-item-visual img')};});
   await page.screenshot({path:'qa-evidence/review-visible-before-qa.png'});
   for(const socket of sockets)socket.send(JSON.stringify({type:'resync',cursor:'0'}));
   assert.equal(qaCalls,1,'same-scope refresh must not restart ongoing hydration');
@@ -32,6 +34,7 @@ export async function reviewLoadingChecks(browser,origin){
   await page.waitForFunction(()=>document.querySelector('#review-list')?.dataset.summaryNeeds==='4');
   assert.equal(await page.getByRole('button',{name:'Open Review capture 1',exact:true}).count(),0,'legacy complete stays out of pending');
   assert.equal(await page.getByRole('button',{name:'Open Review capture 2',exact:true}).count(),0,'legacy archive stays out of pending');
+  assert.ok(await page.evaluate(()=>[...document.querySelectorAll('[data-work-key]')].find(n=>n.dataset.workKey===window.keptPreview.key)?.querySelector('.work-item-visual img')===window.keptPreview.image),'review hydration preserves the screenshot DOM node');
   await page.screenshot({path:'qa-evidence/review-legacy-state-restored.png'});
   holdCatalog=true;
   await page.goto('about:blank');

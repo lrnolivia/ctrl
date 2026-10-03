@@ -66,9 +66,15 @@ export function bindNotifications(root) {
   const live = document.createElement('span'); live.className = 'notification-announcement'; live.setAttribute('role','status'); live.setAttribute('aria-live','polite');
   document.body.append(stack, live);
   root.classList.add('notification-center');
-  root.innerHTML = '<button type="button" class="notification-bell" aria-label="Notifications" aria-expanded="false">' + glyph('bell') + '<span data-notification-count hidden></span></button><section class="notification-menu" aria-label="Notifications" hidden><div class="notification-menu-head"><strong>Notifications</strong><button type="button" data-close-notifications aria-label="Close notifications">' + glyph('close') + '</button></div><p class="notification-hint">Toast dismissal keeps the problem here. Nothing is marked resolved.</p><div data-notification-list></div></section>';
+  root.innerHTML = '<button type="button" class="notification-bell" aria-label="Notifications" aria-expanded="false">' + glyph('bell') + '<span data-notification-count hidden></span></button><section class="notification-menu" popover="manual" aria-label="Notifications" hidden><div class="notification-menu-head"><strong>Notifications</strong><button type="button" data-close-notifications aria-label="Close notifications">' + glyph('close') + '</button></div><p class="notification-hint">Toast dismissal keeps the problem here. Nothing is marked resolved.</p><div data-notification-list></div></section>';
   const bell = root.querySelector('.notification-bell'), menu = root.querySelector('.notification-menu');
   let lastAnnouncement = '';
+  function position(){
+    if(!open||!menu.matches(':popover-open'))return;
+    const anchor=bell.getBoundingClientRect(),width=menu.getBoundingClientRect().width;
+    menu.style.left=Math.max(16,Math.min(anchor.right-width,innerWidth-width-16))+'px';
+    menu.style.top=Math.max(16,Math.min(anchor.bottom+12,innerHeight-menu.offsetHeight-16))+'px';
+  }
   function render() {
     const focusedLink = root.contains(document.activeElement) && document.activeElement?.closest('a')?.getAttribute('href');
     const list = read(), active = list.filter(item => !item.resolved && item.severity !== 'info');
@@ -82,6 +88,7 @@ export function bindNotifications(root) {
     const announcement = toasts.map(item => item.title + '. ' + item.message).join(' ');
     if (announcement && announcement !== lastAnnouncement) live.textContent = announcement;
     lastAnnouncement = announcement;
+    position();
     clearTimeout(timer);
     if (toasts.length && !pausedAt) timer = setTimeout(render, Math.max(10, Math.min(...toasts.map(item => item.toastUntil)) - Date.now() + 10));
   }
@@ -92,7 +99,10 @@ export function bindNotifications(root) {
     render();
   }
   function toggle(value) {
-    open = value; menu.hidden = !open; bell.setAttribute('aria-expanded',String(open)); render();
+    open = value;
+    if(open){menu.hidden=false;menu.showPopover();}
+    else{if(menu.matches(':popover-open'))menu.hidePopover();menu.hidden=true;}
+    bell.setAttribute('aria-expanded',String(open)); render();position();
     if (open) menu.querySelector('button').focus(); else bell.focus();
   }
   function click(event) {
@@ -102,10 +112,11 @@ export function bindNotifications(root) {
     if (event.target.closest('[data-close-notifications]')) toggle(false);
   }
   function key(event) { if (open && event.key === 'Escape') { event.preventDefault(); toggle(false); } }
-  function outside(event) { if (open && !root.contains(event.target)) { open=false; menu.hidden=true; bell.setAttribute('aria-expanded','false'); render(); } }
+  function outside(event) { if (open && !root.contains(event.target)) { toggle(false); } }
+  window.addEventListener('resize',position);window.addEventListener('scroll',position,true);
   root.addEventListener('click',click); stack.addEventListener('click',click); document.addEventListener('keydown',key); document.addEventListener('pointerdown',outside);
   stack.addEventListener('pointerenter',pause); stack.addEventListener('pointerleave',resume);
   stack.addEventListener('focusin',pause); stack.addEventListener('focusout',()=>queueMicrotask(resume));
   listeners.add(render); render();
-  return () => { clearTimeout(timer); listeners.delete(render); root.removeEventListener('click',click); document.removeEventListener('keydown',key); document.removeEventListener('pointerdown',outside); stack.remove(); live.remove(); };
+  return () => { if(menu.matches(':popover-open'))menu.hidePopover();window.removeEventListener('resize',position);window.removeEventListener('scroll',position,true);clearTimeout(timer); listeners.delete(render); root.removeEventListener('click',click); document.removeEventListener('keydown',key); document.removeEventListener('pointerdown',outside); stack.remove(); live.remove(); };
 }

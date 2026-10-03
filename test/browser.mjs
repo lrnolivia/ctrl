@@ -31,6 +31,13 @@ if(width>900){
  await page.waitForFunction(()=>{const bar=document.querySelector('.operator-topbar').getBoundingClientRect(),gear=document.querySelector('.presentation-menu > summary').getBoundingClientRect();return Math.abs((gear.left+gear.width/2)-(bar.left+bar.width/2))<2;});
 }
 await page.screenshot({path:`qa-evidence/now-${width}.png`});captures.push(`now-${width}.png`);
+await page.locator('.notification-bell').click();
+await page.locator('.notification-menu:popover-open').waitFor();
+assert.ok(await page.locator('.notification-menu').evaluate(menu=>{const r=menu.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight&&menu.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2));}),'notification panel is visible in the top layer');
+await page.screenshot({path:`qa-evidence/notification-layer-${width}.png`});
+await page.keyboard.press('Escape');await page.locator('.notification-menu').waitFor({state:'hidden'});
+assert.ok(await page.locator('.notification-bell').evaluate(el=>document.activeElement===el),'notification dismissal restores focus');
+
 const trigger=page.locator('.workspace-context [data-relay-open]');await trigger.click();const dialog=page.getByRole('dialog',{name:'relay',exact:true});await dialog.waitFor();await dialog.locator('[data-relay-version]').filter({hasText:'2.0.fixture'}).waitFor();await page.waitForFunction(()=>{const r=document.querySelector('dialog').getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight;});
 await page.locator('dialog[data-motion=settled]').waitFor();await page.screenshot({path:`qa-evidence/relay-panel-${width}.png`});captures.push(`relay-panel-${width}.png`);await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});await trigger.evaluate(el=>{if(document.activeElement!==el)throw Error('focus did not return');});assert.ok(page.url().includes('/now?project=field'));
 await trigger.click();await dialog.waitFor();await page.goBack();await dialog.waitFor({state:'hidden'});assert.ok(page.url().includes('/now?project=field'));
