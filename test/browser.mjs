@@ -10,7 +10,7 @@ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWid
  assert.equal(await first.locator('.nav-copy').evaluate(el=>getComputedStyle(el).clipPath),'none','mobile destination labels remain visible');
  const dock=await nav.boundingBox(),gear=await page.locator('.operator-utility').boundingBox();assert.ok(Math.abs(dock.height-64)<1&&Math.abs(gear.width-64)<1&&Math.abs(gear.x-dock.x-dock.width-8)<1,'detached equal-height Settings circle: '+JSON.stringify({dock,gear}));
  await first.dispatchEvent('pointerdown',{pointerType:'touch',clientX:size.x+size.width/2,clientY:size.y+size.height/2});
- await page.locator('.mobile-nav-label[data-open=true]').waitFor();
+ await page.locator('.mobile-nav-label[data-open=true]').waitFor();await page.waitForFunction(()=>Number(getComputedStyle(document.querySelector('.mobile-nav-label')).opacity)>.99);
  await page.waitForFunction(()=>document.querySelector('.mobile-nav-label').getBoundingClientRect().bottom<document.querySelector('.operator-nav [data-feature]').getBoundingClientRect().top);
  const label=await page.locator('.mobile-nav-label').boundingBox();assert.ok(label.y+label.height<size.y,'label appears above finger');
  await page.screenshot({path:`qa-evidence/mobile-nav-label-${width}.png`});captures.push(`mobile-nav-label-${width}.png`);
@@ -33,6 +33,7 @@ await page.locator('dialog[data-motion=settled]').waitFor();await page.screensho
 await trigger.click();await dialog.waitFor();await page.goBack();await dialog.waitFor({state:'hidden'});assert.ok(page.url().includes('/now?project=field'));
 await trigger.click();await dialog.waitFor();await page.keyboard.press('Tab');assert.ok(await page.evaluate(()=>document.querySelector('dialog').contains(document.activeElement)));await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});
 // Event invalidation must refresh source immediately, well before the fallback minute.
+await page.locator('.project-loading-indicator[data-loading=false]').waitFor();
 const idsBefore=await page.locator('.project-context [data-project-id]').evaluateAll(nodes=>nodes.map(node=>node.dataset.projectId));
 let releaseProgress;const progressGate=new Promise(resolve=>{releaseProgress=resolve;});
 await page.route('**/api/progress/field',async route=>{await progressGate;await route.continue();});
@@ -67,10 +68,10 @@ for(let n=0;n<2;n++){await filterTrigger.click();assert.equal(await filters.getA
 await filterTrigger.focus();await page.keyboard.press('Enter');assert.equal(await filters.getAttribute('open'),'');await page.keyboard.press('Escape');assert.equal(await filters.getAttribute('open'),null);
 await filterTrigger.click();await filters.locator('[data-view=list]').click();const listKeys=await viewer.locator('[data-work-key]').evaluateAll(ns=>ns.map(n=>n.dataset.workKey));
 await filters.locator('[data-close-menu]').click();assert.equal(await filters.getAttribute('open'),null);
-await viewer.locator('.work-item').first().scrollIntoViewIfNeeded();await page.mouse.move(width-5,4);await page.evaluate(()=>document.activeElement?.blur());await page.waitForTimeout(350);await viewer.screenshot({path:`qa-evidence/inspector-list-${width}.png`});captures.push(`inspector-list-${width}.png`);
+await viewer.locator('.work-item').first().scrollIntoViewIfNeeded();await page.mouse.move(width-5,4);await page.evaluate(()=>document.activeElement?.blur());await page.waitForTimeout(350);if(width>900){const rail=await page.locator('.operator-topbar').boundingBox();assert.ok(rail.width<350,'Inspector rail bounded: '+JSON.stringify(rail));}await page.screenshot({path:`qa-evidence/inspector-list-${width}.png`});captures.push(`inspector-list-${width}.png`);
 await filterTrigger.click();await filters.locator('[data-view=visual]').click();assert.deepEqual(await viewer.locator('[data-work-key]').evaluateAll(ns=>ns.map(n=>n.dataset.workKey)),listKeys);
 await filters.locator('[data-close-menu]').click();const imageBox=await viewer.locator('.work-item-visual').first().boundingBox(),cardBox=await viewer.locator('.work-item').first().boundingBox();assert.ok(Math.abs(imageBox.width-cardBox.width)<2,'visual image fills card width');
-await page.mouse.move(width-5,4);await page.evaluate(()=>document.activeElement?.blur());await page.waitForTimeout(350);await viewer.screenshot({path:`qa-evidence/inspector-visual-${width}.png`});captures.push(`inspector-visual-${width}.png`);
+await page.mouse.move(width-5,4);await page.evaluate(()=>document.activeElement?.blur());await page.waitForTimeout(350);if(width>900){const rail=await page.locator('.operator-topbar').boundingBox();assert.ok(rail.width<350,'Inspector rail bounded: '+JSON.stringify(rail));}await page.screenshot({path:`qa-evidence/inspector-visual-${width}.png`});captures.push(`inspector-visual-${width}.png`);
 const select=viewer.locator('[data-select]').first();await select.check();const organize=viewer.locator('[data-control-menu=organize]');await organize.locator('summary').click();await organize.locator('summary').click();assert.equal(await organize.getAttribute('open'),null,'selection does not force disclosure open');
 await page.locator('.feature-heading:visible').scrollIntoViewIfNeeded();
 await page.screenshot({path:`qa-evidence/inspector-${width}.png`});captures.push(`inspector-${width}.png`);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
