@@ -171,3 +171,11 @@
 @media(max-width:600px){.work-viewer .work-control-panel{max-width:none;padding:12px}.work-viewer .work-control-panel .work-bulk-bar{grid-template-columns:repeat(2,minmax(0,1fr))}.work-viewer .work-control-panel .work-query-bar{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){.work-viewer .work-item-visual[data-image-state=loading]::after{animation:none}}
 html[data-presentation-motion=calm] .work-item-visual[data-image-state=loading]::after{animation:none}
+
+.control-mosaic[data-loading=true] {position:relative;}
+.mosaic-loading-shapes {min-height:180px;display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:center;}
+.mosaic-loading-shapes span {grid-row:span 2;width:110px;height:110px;border-radius:50%;border:12px solid currentColor;opacity:.07;animation:overview-load 1.6s ease-in-out infinite;}
+.mosaic-loading-shapes i {display:block;width:80%;height:22px;border-radius:8px;background:currentColor;opacity:.07;animation:overview-load 1.6s ease-in-out infinite;}
+.mosaic-loading-shapes i:last-child {width:60%;}
+@keyframes overview-load {50% {opacity:.14;}}
+@media(prefers-reduced-motion:reduce){.mosaic-loading-shapes * {animation:none!important;}}
