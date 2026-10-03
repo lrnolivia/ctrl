@@ -1,3 +1,4 @@
+import {settledSnapshot} from '../public/stable-snapshot.js';
 import {publishRelayDashboard} from '../../../packages/shared-ui/relay-dashboard.js';
 import {subscribeRelayStream} from '../../../packages/shared-ui/relay-stream.js';
 import {projectInGroup} from "../../../packages/shared-ui/project-groups.js";
@@ -52,6 +53,7 @@ export function LiveRelayProvider({ children }: { children: ReactNode }) {
     if (lastSuccess.current) setState("reconnecting");
     try {
       await loadDashboard(next => {
+        if(settledSnapshot(latestSnapshot.current,next)===latestSnapshot.current)return;
         const observed=advanceArrivalBaseline(arrivals.current || {},next);
         arrivals.current=observed.next;
         if(observed.arrivals.length)window.dispatchEvent(new CustomEvent('relay:work-arrivals',{detail:observed.arrivals.map(({project,item})=>({project,kind:'assignment',id:item.assignment}))}));
