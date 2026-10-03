@@ -3,6 +3,7 @@ import {chromium} from 'playwright';import assert from 'node:assert/strict';impo
 const app=await fixture(),browser=await chromium.launch({headless:true});const captures=[],errors=[];let activePage;await fs.mkdir('qa-evidence',{recursive:true});
 try{for(const width of [1440,390,320]){const page=await browser.newPage({viewport:{width,height:900},colorScheme:'dark',reducedMotion:width===320?'reduce':'no-preference'});activePage=page;page.on('pageerror',e=>errors.push({width,message:e.message}));let sockets=[];await page.routeWebSocket('**/api/events*',ws=>{sockets.push(ws);ws.onClose(()=>{sockets=sockets.filter(s=>s!==ws);});ws.onMessage(data=>{if(data==='ping')ws.send('pong');});ws.send(JSON.stringify({type:'resync',cursor:'0'}));});
 await page.goto(app.origin+'/#/today?project=field');await page.getByRole('heading',{name:'now',exact:true}).waitFor();await page.waitForURL('**/#/now?project=field');await page.locator('.work-viewer[data-summary-state=ready]').waitFor();assert.equal(await page.locator('.operator-nav [data-feature]').count(),4);await page.evaluate(()=>document.fonts.ready);assert.equal(await page.evaluate(()=>document.fonts.check('24px "Momo Trust Display"')),true);
+await page.waitForFunction(()=>[...document.querySelectorAll('.operator-nav .tool-mark')].every(img=>img.complete&&img.naturalWidth>0));
 assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal overflow');if(width<=390){
  const nav=page.locator('.operator-nav');const first=nav.locator('[data-feature]').first();
  const size=await first.boundingBox();assert.ok(size.height>=44,'comfortable mobile target');
@@ -66,10 +67,10 @@ for(let n=0;n<2;n++){await filterTrigger.click();assert.equal(await filters.getA
 await filterTrigger.focus();await page.keyboard.press('Enter');assert.equal(await filters.getAttribute('open'),'');await page.keyboard.press('Escape');assert.equal(await filters.getAttribute('open'),null);
 await filterTrigger.click();await filters.locator('[data-view=list]').click();const listKeys=await viewer.locator('[data-work-key]').evaluateAll(ns=>ns.map(n=>n.dataset.workKey));
 await filters.locator('[data-close-menu]').click();assert.equal(await filters.getAttribute('open'),null);
-await viewer.locator('.work-item').first().scrollIntoViewIfNeeded();await viewer.screenshot({path:`qa-evidence/inspector-list-${width}.png`});captures.push(`inspector-list-${width}.png`);
+await viewer.locator('.work-item').first().scrollIntoViewIfNeeded();await page.mouse.move(width-5,4);await page.evaluate(()=>document.activeElement?.blur());await page.waitForTimeout(350);await viewer.screenshot({path:`qa-evidence/inspector-list-${width}.png`});captures.push(`inspector-list-${width}.png`);
 await filterTrigger.click();await filters.locator('[data-view=visual]').click();assert.deepEqual(await viewer.locator('[data-work-key]').evaluateAll(ns=>ns.map(n=>n.dataset.workKey)),listKeys);
 await filters.locator('[data-close-menu]').click();const imageBox=await viewer.locator('.work-item-visual').first().boundingBox(),cardBox=await viewer.locator('.work-item').first().boundingBox();assert.ok(Math.abs(imageBox.width-cardBox.width)<2,'visual image fills card width');
-await viewer.screenshot({path:`qa-evidence/inspector-visual-${width}.png`});captures.push(`inspector-visual-${width}.png`);
+await page.mouse.move(width-5,4);await page.evaluate(()=>document.activeElement?.blur());await page.waitForTimeout(350);await viewer.screenshot({path:`qa-evidence/inspector-visual-${width}.png`});captures.push(`inspector-visual-${width}.png`);
 const select=viewer.locator('[data-select]').first();await select.check();const organize=viewer.locator('[data-control-menu=organize]');await organize.locator('summary').click();await organize.locator('summary').click();assert.equal(await organize.getAttribute('open'),null,'selection does not force disclosure open');
 await page.locator('.feature-heading:visible').scrollIntoViewIfNeeded();
 await page.screenshot({path:`qa-evidence/inspector-${width}.png`});captures.push(`inspector-${width}.png`);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));

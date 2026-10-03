@@ -15,6 +15,8 @@ const src=name=>fs.readFile(path.join(here,'public',name),'utf8');
 const assets=JSON.parse(await src('brand-assets.json'));
 await fs.mkdir(path.join(out,'brand'),{recursive:true});
 for(const [name,url] of Object.entries(assets))await fs.writeFile(path.join(out,'brand',name+'.png'),Buffer.from(url.split(',')[1],'base64'));
+await fs.mkdir(path.join(out,'brand-nav'),{recursive:true});
+for(const name of ['now','runner','inspector','night-shift'])await fs.copyFile(path.join(here,'public/brand-nav',name+'.svg'),path.join(out,'brand-nav',name+'.svg'));
 const build=await viteBuild({root:here,configFile:false,publicDir:false,plugins:[react()],logLevel:'warn',build:{write:false,minify:'esbuild',cssCodeSplit:false,assetsInlineLimit:Number.MAX_SAFE_INTEGER,rollupOptions:{output:{inlineDynamicImports:true,entryFileNames:'assets/ctrl.js',assetFileNames:asset=>asset.name?.endsWith('.css')?'assets/ctrl.css':'assets/[name][extname]'}}}});
 const outputs=(Array.isArray(build)?build:[build]).flatMap(r=>r.output||[]);
 for(const item of outputs){const target=path.join(out,item.fileName);await fs.mkdir(path.dirname(target),{recursive:true});let value=item.type==='chunk'?item.code:String(item.source);if(item.fileName==='index.html')value=value.replace('</head>',()=>'<script>('+themeBootstrap.toString()+')()</script></head>');await fs.writeFile(target,value);}
