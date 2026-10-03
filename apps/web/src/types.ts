@@ -57,6 +57,7 @@ export type ProjectRegistration = {
   id: string;
   name?: string;
   managed?: boolean;
+  created_at?: string;
 };
 
 export type RunnerWorker = {
@@ -76,6 +77,7 @@ export type RunnerWorker = {
 
 export type DashboardSnapshot = {
   fetchedAt: string;
+  coordination?: Record<string,{claims:Array<{id:string;state:string;created_at?:string;completed_at?:string}>}>;
   projects: ProjectRegistration[];
   progress: Record<string, ProgressPayload>;
   workers: RunnerWorker[];

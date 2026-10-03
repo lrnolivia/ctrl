@@ -1,3 +1,4 @@
+import {ReviewFocus} from "../components/ReviewFocus";
 import { WorkViewer } from "../components/WorkViewer";
 import { useWorkItems } from "../components/useWorkItems";
 import { statusLabel, summaryText } from "../../../../packages/shared-ui/presentation-copy.js";
@@ -32,20 +33,21 @@ export function NightShiftPage() {
   const cards = [
     { id: "next", label: "will anything happen?", value: answer, detail: !snapshot ? "Checking your automatic schedules." : !enabled.length ? "Automatic checks are paused or unavailable." : next ? `next reported check ${new Date(next).toLocaleString()}` : "Automatic work is enabled, but Relay has no next-run time to show.", tone: enabled.length ? "good" : "quiet" },
     { id: "projects", total: !snapshot ? undefined : workers.length, totalLabel: "projects with schedules", label: "included projects", value: snapshot ? String(enabled.length) : "pending", detail: !snapshot ? "Checking your automatic schedules." : enabled.length ? "Projects Relay checks for you." : "No project is currently scheduled.", tone: enabled.length ? "wait" : "quiet" },
-    { id: "attention", total: !snapshot ? undefined : workers.length, totalLabel: "automatic checks", label: "needs attention", value: snapshot ? String(attention.length) : "pending", detail: !snapshot ? "Checking your automatic schedules." : attention.length ? "An automatic check needs help." : "No automatic check is reporting a problem.", tone: attention.length ? "act" : "quiet" },
+    { id: "attention", total: !snapshot ? undefined : workers.length, totalLabel: "automatic checks", label: "reported check problems", value: snapshot ? String(attention.length) : "pending", detail: !snapshot ? "Checking your automatic schedules." : attention.length ? "An automatic check needs help." : "No automatic check is reporting a problem.", tone: attention.length ? "bad" : "quiet" },
     { id: "monitoring", label: "monitoring", value: statusLabel(state), detail: snapshot ? `dashboard refreshed ${new Date(snapshot.fetchedAt).toLocaleTimeString()}` : "waiting for Relay", tone: state === "live" ? "good" : state === "stale" ? "warn" : "quiet" }
   ];
 
   return (
     <div className="page operator-page react-page">
-      <FeatureHeader feature="night-shift" title="night shift" subtitle="monitor" />
+      <FeatureHeader feature="night-shift" title="night shift" subtitle="away work" />
       <ProjectSwitcher />
+      <ReviewFocus snapshot={snapshot} project={contextProject} team="night-shift"/>
+      <p className="shift-contract-note">automatic schedules below report checks. away-work and its staff lead appear when Relay identifies an actual shift assignment.</p>
       <SignalDeck cards={cards} feature="night-shift" />
       <section className="operator-section">
-        <div className="section-heading"><h2>while you were away</h2><span>{results.length} results on record</span></div>
+        <div className="section-heading"><h2>automatic check results</h2><span>{results.length} results on record</span></div>
         <WorkViewer id="night-shift" items={workItems} project={contextProject} incomplete={!allSnapshot} />
       </section>
     </div>
   );
 }
-

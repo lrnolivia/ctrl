@@ -1,3 +1,4 @@
+import {publishRelayDashboard} from '../../../packages/shared-ui/relay-dashboard.js';
 import {captureMotionLayout,settleMotionLayout} from '../../../packages/shared-ui/field-springs.js';
 import {bindRelayUtility} from '../../../packages/shared-ui/relay-utility.js';
 import {subscribeRelayStream} from '../../../packages/shared-ui/relay-stream.js';
@@ -124,7 +125,7 @@ async function ensureProjects() {
 async function refreshProjectActivity(){
  if(stripBusy){stripPending=true;return;}
  stripBusy=true;renderProjectTabs();
- try{await loadDashboard(snapshot=>{stripSnapshot=snapshot;const next=commitProjectStrip(stripModel,snapshot);if(next!==stripModel){stripModel=next;projectIds=next.projects.map(project=>project.id);recentActivity=groupedActivity(next.activity);renderProjectTabs();}},stripSnapshot);}
+ try{await loadDashboard(snapshot=>{stripSnapshot=snapshot;publishRelayDashboard(snapshot);const next=commitProjectStrip(stripModel,snapshot);if(next!==stripModel){stripModel=next;projectIds=next.projects.map(project=>project.id);recentActivity=groupedActivity(next.activity);renderProjectTabs();}},stripSnapshot);}
  catch{ /* Keep the last committed membership; connection notices own errors. */ }
  finally{stripBusy=false;renderProjectTabs();if(stripPending){stripPending=false;queueMicrotask(()=>void refreshProjectActivity());}}
 }

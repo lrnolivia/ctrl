@@ -1,3 +1,6 @@
+import {reviewFocus} from '../../../../packages/shared-ui/control-telemetry.js';
+import {TelemetryMosaic} from "../components/TelemetryMosaic";
+import {ReviewFocus} from "../components/ReviewFocus";
 import {ProjectBadge} from "../components/ProjectBadge";
 import { needsHumanReview } from "../../../../packages/shared-ui/attention.js";
 import { WorkViewer } from "../components/WorkViewer";
@@ -30,30 +33,21 @@ export function TodayPage() {
   for (const [project, payload] of Object.entries(snapshot?.progress || {})) {
     for (const item of payload.progress || []) all.push({ project, item });
   }
-  const current = all.filter(({ item }) => item.state !== "complete");
-  const needs = all.filter(({ item }) => needsHumanReview(item));
-  const moving = current.filter(({ item }) => item.state === "working");
-  const workers = snapshot?.workers || [];
-  const enabled = workers.filter(worker => worker.enabled);
-  const incomplete = !snapshot || Boolean(snapshot.loadingProgress?.length || snapshot.failedProgress?.length);
-  const count = (value: number) => incomplete ? value ? `${value}+` : "pending" : String(value);
-
-  const cards = [
-    { id: "needs", total: incomplete ? undefined : current.length, totalLabel: "current work items", label: "needs you", value: count(needs.length), detail: incomplete ? "Some projects are still loading or could not refresh." : needs.length ? "A decision or finished work is ready for your review." : "Nothing is asking for your attention.", tone: needs.length ? "act" : "quiet" },
-    { id: "moving", total: incomplete ? undefined : current.length, totalLabel: "current work items", label: "moving", value: count(moving.length), detail: incomplete ? "Some projects are still loading or could not refresh." : moving.length ? "Work has reported recent progress." : "No work is reporting progress right now.", tone: moving.length ? "good" : "quiet" },
-    { id: "automatic", total: incomplete ? undefined : workers.length, totalLabel: "automatic checks", label: "automatic checks", value: snapshot ? String(enabled.length) : "pending", detail: !snapshot ? "Checking your automatic schedules." : enabled.length ? "Projects Relay checks for you." : "No automatic checks are enabled.", tone: enabled.length ? "wait" : "quiet" },
-    { id: "freshness", label: "information", value: statusLabel(state), detail: snapshot ? `last refreshed ${new Date(snapshot.fetchedAt).toLocaleTimeString()}` : "waiting for Relay", tone: state === "live" ? "good" : state === "stale" ? "warn" : "quiet" }
-  ];
+  const featured=reviewFocus(all);
+  const needs=all.filter(({project,item})=>needsHumanReview(item)&&!(project===featured?.project&&item.assignment===featured.item.assignment));
+  const remaining=workItems.filter(item=>!(item.project===featured?.project&&item.id===featured.item.assignment));
+  const workers=snapshot?.workers||[];
+  const incomplete=!snapshot||Boolean(snapshot.loadingProgress?.length||snapshot.failedProgress?.length);
 
   return (
     <div className="page operator-page react-page">
       <FeatureHeader feature="today" title="now" subtitle="focus" />
       <ProjectSwitcher />
       <ProgressNotice />
-      <SignalDeck cards={cards} feature="today" />
+      <div className="control-overview"><ReviewFocus snapshot={snapshot} project={contextProject}/><TelemetryMosaic snapshot={snapshot}/></div>
 
-      <section className="operator-section">
-        <h2>needs you</h2>
+      {needs.length>0&&<section className="operator-section">
+        <h2>also needs you</h2>
         <div className="react-stack">
           {needs.length ? needs.map(({ project, item }) => (
             <article className="attention-card" data-tone={tone(item.state)} key={`${project}:${item.assignment}`}>
@@ -66,11 +60,11 @@ export function TodayPage() {
             </article>
           )) : incomplete ? null : <div className="clear-card"><strong>You’re clear.</strong><span>Nothing needs your attention right now.</span></div>}
         </div>
-      </section>
+      </section>}
 
       <section className="operator-section">
         <div className="section-heading"><h2>current work</h2><span>across your projects</span></div>
-        <WorkViewer id="today" items={workItems} project={contextProject} incomplete={!allSnapshot || Boolean(allSnapshot.loadingProgress?.length || allSnapshot.failedProgress?.length)} />
+        <WorkViewer id="today" items={remaining} project={contextProject} incomplete={!allSnapshot || Boolean(allSnapshot.loadingProgress?.length || allSnapshot.failedProgress?.length)} />
       </section>
 
       <section className="operator-section">
@@ -82,7 +76,7 @@ export function TodayPage() {
               <div className="automation-main">
                 <div className="automation-title"><strong>{worker.name || projectLabel(worker.id)}</strong><StatusLight tone={workerTone} label={worker.runtime?.last_error ? "needs attention" : statusLabel(worker.runtime?.status || (worker.enabled ? "enabled" : "paused"))} /></div>
                 <p>{summaryText(worker.runtime?.last_summary || worker.runtime?.last_error, worker.runtime?.last_error ? "A check needs attention. Open Details for the reported problem." : worker.enabled ? "Relay will check this project automatically." : "Automatic checks are paused.")}</p>
-                {(worker.runtime?.last_summary || worker.runtime?.last_error) && <details><summary>Details</summary><p>{worker.runtime?.last_summary}</p><p>{worker.runtime?.last_error}</p></details>}
+                {(worker.runtime?.last_summary || worker.runtime?.last_error) && <details><summary>details</summary><p>{worker.runtime?.last_summary}</p><p>{worker.runtime?.last_error}</p></details>}
               </div>
               <span className="operator-state">{worker.runtime?.next_run_at ? `next ${new Date(worker.runtime.next_run_at).toLocaleString()}` : worker.enabled ? "schedule enabled" : "paused"}</span>
             </article>;
@@ -92,4 +86,3 @@ export function TodayPage() {
     </div>
   );
 }
-
