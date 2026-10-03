@@ -14,7 +14,9 @@ export async function controlPreviewChecks(browser){
    await page.waitForFunction(()=>[...document.querySelectorAll('.review-focus-media img')].every(i=>i.complete&&i.naturalWidth));
    await page.locator('.review-reply button[type=submit]:enabled').waitFor();
    assert.equal(await page.locator('.mosaic-progress .ring-copy strong').textContent(),'60%','completion ratio from synthetic coordination records');
-   assert.equal(await page.locator('.mosaic-activity svg').count(),1,'populated hourly activity graph');
+   assert.equal(await page.locator('.mosaic-activity svg[role=img]').count(),1,'populated hourly activity graph');
+   assert.equal(await page.locator('.mosaic-activity-line').count(),1,'one continuous observed activity curve');
+   assert.equal(await page.locator('.control-mosaic .mosaic-heading .mosaic-glyph').count(),3,'shared telemetry heading glyphs');
    assert.equal(await page.locator('.review-focus-media[data-preview-device=phone]').count(),1,'preview frame matches evidence viewport');
    assert.equal(await page.locator('.work-viewer [data-work-key]').filter({hasText:'Review the mobile control center'}).count(),0,'featured review excluded from remaining list');
    assert.equal(await page.locator('.work-search-compact .sr-only').evaluate(el=>Math.round(el.getBoundingClientRect().width)),1,'search label stays accessible without taking layout space');
@@ -52,3 +54,4 @@ export async function controlPreviewChecks(browser){
   assert.deepEqual(errors,[]);return captures;
  }finally{await app.close();}
 }
+
