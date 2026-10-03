@@ -30,7 +30,7 @@ export async function controlPreviewChecks(browser){
    }
    await page.mouse.move(width-5,5);await page.evaluate(()=>document.activeElement?.blur());await page.waitForTimeout(500);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal overflow');
-   if(width===1440){const r=await page.locator('.operator-topbar').boundingBox();assert.ok(r.width<=760&&Math.abs(r.x+r.width/2-width/2)<2,'short desktop dock is centered');assert.ok((await page.locator('.operator-nav [data-feature]').first().boundingBox()).height>=64,'glyph selection has breathing room');}
+   if(width===1440){const r=await page.locator('.operator-topbar').boundingBox();assert.ok(r.width<=760&&Math.abs(r.x+r.width/2-width/2)<2,'short desktop dock is centered');assert.ok((await page.locator('.operator-nav [data-feature]').first().boundingBox()).height>=64,'glyph selection has breathing room');const nav=await page.locator('.operator-nav').boundingBox();assert.ok(Math.abs(nav.x+nav.width/2-width/2)<1,'the main four links are independently centered in the desktop dock');const brand=await page.locator('.operator-topbar .operator-brand').boundingBox(),utility=await page.locator('.operator-topbar .operator-utility').boundingBox();assert.ok(brand.x+brand.width<nav.x&&utility.x>nav.x+nav.width,'endcaps do not overlap the centered navigation');}
    await page.screenshot({path:`qa-evidence/combined-TEST-DATA-${width}.png`});captures.push(`combined-TEST-DATA-${width}.png`);
    if(width===1440){await page.emulateMedia({colorScheme:'light'});await page.screenshot({path:'qa-evidence/combined-light-TEST-DATA-1440.png'});captures.push('combined-light-TEST-DATA-1440.png');await page.emulateMedia({colorScheme:'dark'});}
    if(width===390){
@@ -54,4 +54,3 @@ export async function controlPreviewChecks(browser){
   assert.deepEqual(errors,[]);return captures;
  }finally{await app.close();}
 }
-
