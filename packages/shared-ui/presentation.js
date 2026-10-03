@@ -40,6 +40,7 @@ export function bindPresentation() {
     positionPanel();
     const desktop = matchMedia('(min-width: 901px)').matches;
     const bar = desktop ? prefs.desktop === 'bottom' ? header : null : prefs.nav === 'bottom' ? nav : null;
+    if(nav){const dock=nav.getBoundingClientRect();document.documentElement.style.setProperty('--ctrl-dock-right',(innerWidth-dock.right)+'px');document.documentElement.style.setProperty('--ctrl-dock-bottom',(innerHeight-dock.bottom)+'px');document.documentElement.style.setProperty('--ctrl-dock-height',dock.height+'px');}
     const bottom = bar && getComputedStyle(bar).position === 'fixed' ? Math.ceil(bar.getBoundingClientRect().height + (parseFloat(getComputedStyle(bar).bottom) || 0) + 16) : 0;
     document.documentElement.style.setProperty('--floating-bar-clearance', bottom + 'px');
   };

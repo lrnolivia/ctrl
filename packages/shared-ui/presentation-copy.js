@@ -16,5 +16,5 @@ export function eventLabel(value) { return events[value] || 'progress update'; }
 export function summaryText(value, fallback) {
   if (!value) return fallback;
   // Infrastructure diagnostics belong in optional Details, not the glance summary.
-  return /Node\.js|\bpackets?\b|\bENOBUFS\b|\b(?:stack trace|canonical|head_sha|request_id)\b|\bat \S+\([^)]*:\d+/.test(value) ? fallback : value;
+  return /[a-f0-9]{12,}|(?:apps|packages|src)\/|\b(?:PR #|MCP|SHA|canonical|rebase|commit|payload|worker heartbeat|metadata|ui\/resourceUri|ui\.resourceUri|provenance|claim|source task)\b|Node\.js|\bpackets?\b|\bENOBUFS\b|\b(?:stack trace|canonical|head_sha|request_id)\b|\bat \S+\([^)]*:\d+/.test(value) ? fallback : value;
 }
