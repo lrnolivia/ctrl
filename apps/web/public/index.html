@@ -87,6 +87,7 @@
 
       <div class="project-context"><span class="project-context-label">project</span><nav id="project-tabs" class="project-tabs" role="tablist" aria-label="Project context"></nav></div>
 
+      <section id="inspector-review-focus" class="review-focus" aria-label="review focus"><h2>checking the latest capture</h2><p>evidence appears here when it is available.</p></section>
       <div class="inspector-status"><strong id="review-count"></strong></div>
 
       <section class="signal-deck inspector-signal-deck" aria-label="inspector summary">
@@ -107,8 +108,9 @@
         </div>
       </section>
 
-      <details class="operator-section inspector-card-studio" open>
-        <summary id="chat-card-heading">chat card previews</summary>
+      <details class="operator-section inspector-card-studio">
+        <summary id="chat-card-heading">sample chat card designs</summary>
+        <p class="sample-gallery-note">design examples with illustrative release numbers, names and statuses. these are not live project reports.</p>
         <div id="chat-card-tabs" class="chat-card-tabs" role="tablist" aria-label="Chat card preview"></div>
         <div id="chat-card-preview" class="chat-card-stage" aria-live="polite"></div>
             </details>
@@ -135,4 +137,3 @@
   <script type="module" src="/relay-app.js"></script>
 </body>
 </html>
-

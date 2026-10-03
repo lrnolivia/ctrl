@@ -1,3 +1,5 @@
+import {TelemetryMosaic} from "../components/TelemetryMosaic";
+import {ReviewFocus} from "../components/ReviewFocus";
 import {ProjectBadge} from "../components/ProjectBadge";
 import { needsHumanReview } from "../../../../packages/shared-ui/attention.js";
 import { WorkViewer } from "../components/WorkViewer";
@@ -50,7 +52,8 @@ export function TodayPage() {
       <FeatureHeader feature="today" title="now" subtitle="focus" />
       <ProjectSwitcher />
       <ProgressNotice />
-      <SignalDeck cards={cards} feature="today" />
+      <ReviewFocus snapshot={snapshot} project={contextProject}/>
+      <TelemetryMosaic snapshot={snapshot}/>
 
       <section className="operator-section">
         <h2>needs you</h2>
@@ -92,4 +95,3 @@ export function TodayPage() {
     </div>
   );
 }
-

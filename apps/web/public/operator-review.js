@@ -151,6 +151,17 @@ function relative(value) {
   return new Intl.RelativeTimeFormat(undefined, { numeric: "auto" }).format(Math.round(delta / divisor), unit);
 }
 
+function renderReviewFocus(items) {
+ const root=document.querySelector('#inspector-review-focus');if(!root)return;
+ const item=items[0];
+ if(!item){root.className='review-focus review-focus-clear';root.innerHTML='<h2>no capture available yet</h2><p>your full evidence list is below.</p>';return;}
+ const project=item.context?.project,ready=item.reviewHydration==='ready';
+ root.className='review-focus'+(item.screenshot_url?' has-evidence':'');
+ root.innerHTML='<div class="review-focus-copy"><div class="review-focus-meta">'+(project?'<span class="project-id-badge">'+iconSlot(project)+'<span>'+esc(projectName(project))+'</span></span>':'')+'</div><span class="review-focus-kicker">latest captured evidence</span><h2>'+esc(evidenceTitle(item))+'</h2><p>'+esc(item.context?.surface||'Inspect this captured screen and leave your review.')+'</p><div class="review-focus-actions"><button type="button" class="operator-button" data-focus-review>review and reply</button></div><p class="review-focus-note">'+(ready?'review notes can be saved in Inspector. worker receipt requires a confirmed Relay feedback binding.':item.reviewHydration==='failed'?'review status unavailable. the capture remains accessible.':'checking review status. this does not mean pending or completed.')+'</p></div>'+(item.screenshot_url?'<div class="review-focus-media"><img src="'+esc(item.screenshot_url)+'" alt="Latest captured evidence" loading="eager"></div>':'');
+ root.querySelector('[data-focus-review]')?.addEventListener('click',()=>openQa(item.evidence_id));
+ void hydrateProjectIcons(root);
+}
+
 function evidenceKey(item) {
   const context = item.context || {};
   return [
@@ -191,11 +202,11 @@ async function performReviewLoad(ui,projectId='',{quiet=false}={}) {
   const results=await Promise.all((scope.length?scope:['']).map(id=>api('/api/visual'+(id?'?project='+encodeURIComponent(id):''),{signal})));
   const payload={evidence:results.flatMap(result=>result.evidence||[]),partial:results.some(result=>result.partial||result.truncated||result.cursor)};
   const raw=Array.isArray(payload.evidence)?payload.evidence:[],seen=new Set(),sources=[];
-  raw.sort((a,b)=>(Date.parse(b.captured_at)||0)-(Date.parse(a.captured_at)||0));
+  raw.sort((a,b)=>(Date.parse(b.captured_at||b.created_at)||0)-(Date.parse(a.captured_at||a.created_at)||0));
   for(const item of raw){const key=evidenceKey(item);if(seen.has(key))continue;seen.add(key);sources.push(item);}
   const prepared=sources.map(item=>({...item,reviewHydration:'pending'}));
   const partial=raw.length>=60||Boolean(payload.partial||payload.truncated||payload.cursor);
-  const publish=async()=>{const models=await Promise.all(prepared.map(evidenceItem));if(gen!==loadGeneration||signal.aborted)return false;reviewItems=prepared;viewer?.update(models,{project:projectId,incomplete:partial});count.textContent=String(models.length)+' loaded captures';return true;};
+  const publish=async()=>{const models=await Promise.all(prepared.map(evidenceItem));if(gen!==loadGeneration||signal.aborted)return false;reviewItems=prepared;renderReviewFocus(prepared);viewer?.update(models,{project:projectId,incomplete:partial});count.textContent=String(models.length)+' loaded captures';return true;};
   if(!await publish())return;
   // Evidence is usable immediately. Review organization waits for confirmed state.
   await (async()=>{

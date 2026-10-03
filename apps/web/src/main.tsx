@@ -24,3 +24,4 @@ import '../../../packages/shared-ui/relay-utility.css';
 import '../../../packages/shared-ui/momo.css';
 
 import '../../../packages/shared-ui/polish.css';
+import '../../../packages/shared-ui/control-center.css';

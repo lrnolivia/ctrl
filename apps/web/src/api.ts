@@ -13,6 +13,7 @@ export async function loadDashboard(onSnapshot?: (snapshot: DashboardSnapshot) =
   ]);
   let snapshot: DashboardSnapshot = {
     fetchedAt: new Date().toISOString(), projects, workers,
+    coordination: Object.fromEntries(projects.filter(project=>previous?.coordination?.[project.id]).map(project=>[project.id,previous!.coordination![project.id]])),
     progress: Object.fromEntries(projects.filter(project => previous?.progress[project.id]).map(project => [project.id, previous!.progress[project.id]])),
     loadingProgress: projects.map(project => project.id), failedProgress: []
   };
@@ -20,8 +21,9 @@ export async function loadDashboard(onSnapshot?: (snapshot: DashboardSnapshot) =
   await Promise.all(projects.map(async project => {
     try {
       if(project.managed===false){snapshot={...snapshot,progress:{...snapshot.progress,[project.id]:{project:project.id,progress:[],queue:[]}},loadingProgress:snapshot.loadingProgress!.filter(id=>id!==project.id)};onSnapshot?.(snapshot);return;}
-      const metadata = await json<{ coordination: { claims: Array<{ id: string; state: string }>; queue?: Array<NonNullable<ProgressPayload["queue"]>[number] & { state: string }> } | null }>(`/api/projects/${encodeURIComponent(project.id)}`);
+      const metadata = await json<{ coordination: { claims: Array<{ id: string; state: string; created_at?: string; completed_at?: string }>; queue?: Array<NonNullable<ProgressPayload["queue"]>[number] & { state: string }> } | null }>(`/api/projects/${encodeURIComponent(project.id)}`);
       if (!metadata.coordination) throw new Error("Current project coordination is unavailable");
+      snapshot = {...snapshot,coordination:{...snapshot.coordination,[project.id]:metadata.coordination}};
       const active = metadata.coordination.claims.filter(claim => ["active", "held"].includes(claim.state));
       const ids = new Set(active.map(claim => claim.id));
       snapshot = { ...snapshot, progress: { ...snapshot.progress, [project.id]: {
@@ -68,4 +70,3 @@ export function projectLabel(project: ProjectRegistration | string): string {
   };
   return known[id] || raw.replace(/[-_]+/g, " ");
 }
-

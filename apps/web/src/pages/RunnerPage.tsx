@@ -1,3 +1,4 @@
+import {ReviewFocus} from "../components/ReviewFocus";
 import { needsHumanReview } from "../../../../packages/shared-ui/attention.js";
 import { WorkViewer } from "../components/WorkViewer";
 import { useWorkItems } from "../components/useWorkItems";
@@ -34,6 +35,7 @@ export function RunnerPage() {
       <FeatureHeader feature="runner" title="runner" subtitle="coordinate" />
       <ProjectSwitcher />
       <ProgressNotice />
+      <ReviewFocus snapshot={snapshot} project={contextProject}/>
       <SignalDeck cards={cards} feature="runner" />
       <section className="operator-section">
         <div className="section-heading"><h2>current work</h2><span>{all.length} {incomplete ? "loaded" : "current"}</span></div>
@@ -42,4 +44,3 @@ export function RunnerPage() {
     </div>
   );
 }
-
