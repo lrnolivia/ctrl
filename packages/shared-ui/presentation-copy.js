@@ -2,7 +2,7 @@
 const statuses = {
   'reserved-but-idle': 'ready to start', queued: 'waiting to start', working: 'in progress', running: 'running',
   'waiting-for-human': 'needs your decision', 'waiting-on-external-system': 'waiting for a response',
-  blocked: 'needs help', failed: 'needs a fix', complete: 'completed', completed: 'completed', held: 'on hold', active: 'in progress',
+  blocked: 'needs help', failed: 'needs a fix', succeeded: 'finished successfully', cancelled: 'cancelled', starting: 'starting', complete: 'completed', completed: 'completed', held: 'on hold', active: 'in progress',
   deployed: 'deployed', verified: 'verified', 'officially-stale': 'update overdue',
   'possibly-stale': 'may need an update', stale: 'last update may be old',
   live: 'up to date', connecting: 'connecting', reconnecting: 'refreshing', offline: 'unavailable',

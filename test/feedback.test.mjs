@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {sendFeedback,feedbackLabel,deliverReview,feedbackApi,feedbackFailure} from '../packages/shared-ui/feedback-client.js';
+import {sendFeedback,feedbackLabel,deliverReview,feedbackApi,feedbackFailure,refreshFeedback} from '../packages/shared-ui/feedback-client.js';
 import {permitted} from '../worker/index.js';
 const binding={available:true,args:{project:'ctrl',assignment:'review',expected_owner:'owner',expected_branch:'branch',artifact:{repository:'lrnolivia/ctrl',commit_sha:'a'.repeat(40),kind:'runtime'}}};
 const store=()=>{const map=new Map();return{getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v)}};
@@ -35,4 +35,10 @@ test('binding transport preserves conflict class and distinguishes unreadable re
   globalThis.fetch=async()=>new Response('<html>sign in</html>',{status:200});
   await assert.rejects(feedbackApi('/binding'),error=>error.responseClass==='invalid-response'&&error.status===200);
  }finally{globalThis.fetch=original;}
+});
+
+test('saved reply status refresh is read-only and never acknowledges a recipient',async()=>{
+ const storage=store();storage.setItem('reply',JSON.stringify({args:{...binding.args,original_text:'Exact saved text',operation_id:'one-op'},receipt:report}));const calls=[];
+ const api=async(url,options)=>{calls.push({url,options});return {ok:true,feedback:{...report,status:{seen:{represented_owner:'actual recipient'},native_delivery_verified:false}}};};
+ const result=await refreshFeedback({key:'reply',storage,api});assert.equal(calls.length,1);assert.match(calls[0].url,/feedback\/status/);assert.equal(calls[0].options,undefined);assert.match(result.label,/native delivery unverified/);assert.equal(JSON.parse(storage.getItem('reply')).args.original_text,'Exact saved text');
 });

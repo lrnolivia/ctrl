@@ -1,3 +1,4 @@
+import {NightShiftLedger} from '../components/NightShiftLedger';
 import {ReviewFocus} from "../components/ReviewFocus";
 import {PageTelemetry} from '../components/PageTelemetry';
 import { WorkViewer } from "../components/WorkViewer";
@@ -43,7 +44,7 @@ export function NightShiftPage() {
       <FeatureHeader feature="night-shift" title="night shift" subtitle="away work" />
       <ProjectSwitcher />
       <ReviewFocus snapshot={snapshot} project={contextProject} team="night-shift"/>
-      <p className="shift-contract-note">automatic schedules below report checks. away-work and its staff lead appear when Relay identifies an actual shift assignment.</p>
+      <NightShiftLedger snapshot={snapshot}/>
       <SignalDeck cards={cards} feature="night-shift" />
       <PageTelemetry snapshot={snapshot} kind="night-shift"/>
       <section className="operator-section">
