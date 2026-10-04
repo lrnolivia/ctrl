@@ -48,6 +48,8 @@ export function openWorkDetails({project,assignment=null,filter=null}){
 function summaryTextSafe(value){return assignmentPresentation({next_action:value}).next;}
 export function bindWorkDetails(){
  references++;
- if(!unlisten){const listener=event=>{if(event.defaultPrevented||event.button>0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;const target=event.target.closest?.('[data-work-project],a[href]');if(!target)return;let detail;if(target.dataset.workProject)detail={project:target.dataset.workProject,assignment:target.dataset.workAssignment||null};else detail=detailTarget(target.getAttribute('href'));if(!detail)return;event.preventDefault();openWorkDetails(detail);};document.addEventListener('click',listener);unlisten=()=>document.removeEventListener('click',listener);}
+ // Capture matching links before React Router handles their default navigation.
+ // Its Link handler respects preventDefault; modified clicks still open normally.
+ if(!unlisten){const listener=event=>{if(event.defaultPrevented||event.button>0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;const target=event.target.closest?.('[data-work-project],a[href]');if(!target)return;let detail;if(target.dataset.workProject)detail={project:target.dataset.workProject,assignment:target.dataset.workAssignment||null};else detail=detailTarget(target.getAttribute('href'));if(!detail)return;event.preventDefault();openWorkDetails(detail);};document.addEventListener('click',listener,true);unlisten=()=>document.removeEventListener('click',listener,true);}
  return()=>{if(--references===0){unlisten?.();unlisten=null;active?.close();}};
 }
