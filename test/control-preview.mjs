@@ -17,10 +17,10 @@ export async function controlPreviewChecks(browser){
    await page.locator('.work-viewer[data-summary-state=ready]').waitFor();await page.locator('.review-focus-media img').waitFor();await page.evaluate(()=>document.fonts.ready);await label(page);
    await page.waitForFunction(()=>[...document.querySelectorAll('.review-focus-media img')].every(i=>i.complete&&i.naturalWidth));
    await page.locator('.review-reply button[type=submit]:enabled').waitFor();
-   assert.equal(await page.locator('.mosaic-progress .ring-copy strong').textContent(),'60%','completion ratio from synthetic coordination records');
-   assert.equal(await page.locator('.mosaic-activity svg[role=img]').count(),1,'populated hourly activity graph');
-   assert.equal(await page.locator('.mosaic-activity-line').count(),1,'one continuous observed activity curve');
-   assert.equal(await page.locator('.control-mosaic .mosaic-heading .mosaic-glyph').count(),3,'shared telemetry heading glyphs');
+   assert.equal(await page.locator('.mosaic-progress .ring-copy strong:visible').textContent(),'60%','completion ratio from synthetic coordination records');
+   assert.equal(await page.locator('.mosaic-activity svg[role=img]:visible,.mosaic-activity .mosaic-mini-chart:visible').count(),1,'populated hourly activity graph');
+   assert.equal(await page.locator('.control-mosaic .mosaic-activity-line:visible').count(),1,'one continuous observed activity curve');
+   assert.equal(await page.locator('.control-mosaic .mosaic-heading .mosaic-glyph:visible').count(),3,'shared telemetry heading glyphs');
    assert.equal(await page.locator('.review-focus-media[data-preview-device=phone]').count(),1,'preview frame matches evidence viewport');
    assert.equal(await page.locator('.work-viewer [data-work-key]').filter({hasText:'Review the mobile control center'}).count(),0,'featured review excluded from remaining list');
    assert.equal(await page.locator('.work-search-compact .sr-only').evaluate(el=>Math.round(el.getBoundingClientRect().width)),1,'search label stays accessible without taking layout space');
@@ -30,7 +30,7 @@ export async function controlPreviewChecks(browser){
     await page.screenshot({path:'qa-evidence/combined-sidebar-TEST-DATA-1440.png'});captures.push('combined-sidebar-TEST-DATA-1440.png');
     await page.locator('.operator-topbar').hover();await page.waitForTimeout(400);assert.ok((await page.locator('.operator-topbar').boundingBox()).width<=350,'expanded sidebar remains bounded');
     await page.screenshot({path:'qa-evidence/combined-sidebar-expanded-TEST-DATA-1440.png'});captures.push('combined-sidebar-expanded-TEST-DATA-1440.png');
-    await page.getByLabel('Settings',{exact:true}).click();await page.locator('.presentation-customize summary').click();await page.selectOption('[name=desktop]','bottom');await page.keyboard.press('Escape');
+    await page.getByLabel('Settings',{exact:true}).click();await page.selectOption('[name=desktop]','bottom');await page.keyboard.press('Escape');
    }
    await page.mouse.move(width-5,5);await page.evaluate(()=>document.activeElement?.blur());await page.waitForTimeout(500);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal overflow');
@@ -50,7 +50,7 @@ export async function controlPreviewChecks(browser){
    }
    await page.locator('.workspace-context [data-relay-open]').click();await page.locator('dialog[data-motion=settled]').waitFor();
    assert.equal(await page.locator('.relay-compact-ring strong').textContent(),'60%','compact panel consumes same snapshot');assert.equal(await page.locator('.relay-compact-chart').count(),1);
-   await page.screenshot({path:`qa-evidence/combined-relay-TEST-DATA-${width}.png`});captures.push(`combined-relay-TEST-DATA-${width}.png`);await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'hidden'});
+   await page.screenshot({path:`qa-evidence/combined-relay-TEST-DATA-${width}.png`});captures.push(`combined-relay-TEST-DATA-${width}.png`);await page.keyboard.press('Escape');await page.getByRole('dialog',{name:'relay',exact:true}).waitFor({state:'hidden'});
    await page.locator('.operator-nav [data-feature=inspector]').click();await page.locator('#inspector-review-focus .review-focus-media img').waitFor();await page.mouse.move(width-5,5);await page.evaluate(()=>document.activeElement?.blur());await page.waitForTimeout(400);
    await page.screenshot({path:`qa-evidence/combined-inspector-TEST-DATA-${width}.png`});captures.push(`combined-inspector-TEST-DATA-${width}.png`);
    const filters=page.locator('[data-control-menu=filters]');await filters.locator('summary').click();await filters.locator('.work-control-panel').waitFor();

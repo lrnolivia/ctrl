@@ -18,3 +18,9 @@ test('review focus excludes technical failure and routine completion, ordering e
  const rows=[{project:'ctrl',item:{assignment:'failure',state:'failed',priority:'critical'}},{project:'ctrl',item:{assignment:'done',state:'complete'}},{project:'ctrl',item:{assignment:'older',state:'working',priority:'high',attention_request:{kind:'review',status:'pending'},last_meaningful_progress_at:'2026-10-03T10:00:00Z'}},{project:'ctrl',item:{assignment:'recent',state:'waiting-for-human',last_meaningful_progress_at:'2026-10-03T11:00:00Z'}}];
  assert.equal(reviewFocus(rows).item.assignment,'older');assert.equal(reviewFocus(rows.slice(0,2)),null);
 });
+
+test('inspectable activity list exactly matches bins and preserves the actual observation window',()=>{
+ const at='2026-10-03T11:30:00Z',event={id:'real',type:'source-commit',at};
+ const series=activitySeries({ctrl:{progress:[{assignment:'a',events:[event,{id:'pulse',type:'heartbeat',at}],latest_event:event}]}},now);
+ assert.equal(series.events.length,series.count);assert.equal(series.events[0].assignment,'a');assert.equal(series.events[0].event.id,'real');assert.equal(series.start,now-6*3600000);assert.equal(series.end,now);
+});

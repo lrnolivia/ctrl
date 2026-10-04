@@ -9,7 +9,7 @@ export async function workDetailsChecks(browser){
   await page.route('**/api/feedback/status?*',route=>route.fulfill({json:{ok:true,feedback:{report_id:'fbr_'+'b'.repeat(64),status:{queued:!acknowledged,seen:acknowledged?{represented_owner:'fixture-owner'}:null,native_delivery_verified:false}}}}));
   await page.goto(app.origin+'/#/now');await page.locator('.review-focus-actions a').first().waitFor();
   await page.locator('.review-focus-actions a').first().click();
-  const dialog=page.locator('.work-detail-dialog');await dialog.waitFor();await dialog.locator('[data-answer="looks good"]:enabled').waitFor();
+  const dialog=page.locator('.work-detail-dialog:not(.telemetry-dialog)');await dialog.waitFor();await dialog.locator('[data-answer="looks good"]:enabled').waitFor();
   assert.ok(page.url().endsWith('/#/now'),'details preserve the current page');
   await dialog.locator('[data-answer="looks good"]').click();await dialog.getByText('saved in Relay · acknowledgement pending',{exact:true}).waitFor();
   assert.equal(writes.length,1);assert.equal(writes[0].original_text,'looks good');
