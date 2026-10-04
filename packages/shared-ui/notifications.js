@@ -1,3 +1,4 @@
+import {summaryText} from './presentation-copy.js';
 import { glyph } from './glyphs.js';
 
 const storageKey = 'relay.notifications.v1';
@@ -24,11 +25,11 @@ export function publishNotification(input) {
   const list = read();
   const feature = features.has(input.feature) ? input.feature : 'relay';
   const existing = list.find(item => item.id === input.id);
-  const message = String(input.message || '').slice(0, 1000);
+  const message = summaryText(String(input.message || ''),'Open this work for the latest update.');
   if (!message) return;
   if (existing && existing.message === message && !existing.resolved) return;
   const item = { id: String(input.id || feature + ':' + message), feature, project: String(input.project || ''),
-    title: String(input.title || labels[feature]).slice(0, 120), message,
+    title: summaryText(String(input.title || labels[feature]),'work update').slice(0,120), message,
     severity: ['info','warning','error'].includes(input.severity) ? input.severity : 'info',
     href: String(input.href || ''), action: String(input.action || 'Open context'),
     createdAt: Date.now(), resolved: false, toastUntil: Date.now() + (input.severity === 'error' ? 10000 : 7000), dismissed: false };
@@ -66,7 +67,7 @@ export function bindNotifications(root) {
   const live = document.createElement('span'); live.className = 'notification-announcement'; live.setAttribute('role','status'); live.setAttribute('aria-live','polite');
   document.body.append(stack, live);
   root.classList.add('notification-center');
-  root.innerHTML = '<button type="button" class="notification-bell" aria-label="Notifications" aria-expanded="false">' + glyph('bell') + '<span data-notification-count hidden></span></button><section class="notification-menu" popover="manual" aria-label="Notifications" hidden><div class="notification-menu-head"><strong>Notifications</strong><button type="button" data-close-notifications aria-label="Close notifications">' + glyph('close') + '</button></div><p class="notification-hint">Toast dismissal keeps the problem here. Nothing is marked resolved.</p><div data-notification-list></div></section>';
+  root.innerHTML = '<button type="button" class="notification-bell" aria-label="Notifications" aria-expanded="false">' + glyph('bell') + '<span data-notification-count hidden></span></button><section class="notification-menu" popover="manual" aria-label="Notifications" hidden><div class="notification-menu-head"><strong>Notifications</strong><button type="button" data-close-notifications aria-label="Close notifications">' + glyph('close') + '</button></div><p class="notification-hint">important changes and actions for your work</p><div data-notification-list></div></section>';
   const bell = root.querySelector('.notification-bell'), menu = root.querySelector('.notification-menu');
   let lastAnnouncement = '';
   function position(){

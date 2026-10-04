@@ -5,7 +5,7 @@ import {ProjectBadge} from "../components/ProjectBadge";
 import { needsHumanReview } from "../../../../packages/shared-ui/attention.js";
 import { WorkViewer } from "../components/WorkViewer";
 import { useWorkItems } from "../components/useWorkItems";
-import { statusLabel, summaryText } from "../../../../packages/shared-ui/presentation-copy.js";
+import { statusLabel, summaryText, assignmentPresentation } from "../../../../packages/shared-ui/presentation-copy.js";
 import { projectHref } from "../../../../packages/shared-ui/project-context.js";
 import { Link } from "react-router-dom";
 import { ProjectSwitcher } from "../components/ProjectSwitcher";
@@ -53,8 +53,8 @@ export function TodayPage() {
             <article className="attention-card" data-tone={tone(item.state)} key={`${project}:${item.assignment}`}>
               <div className="attention-copy">
                 <ProjectBadge project={project}/>
-                <strong>{item.goal || item.assignment.replace(/[-_]+/g, " ")}</strong>
-                <p>{item.waiting_reason || item.recovery_action || item.next_action || "Relay needs your attention."}</p>
+                <strong>{assignmentPresentation(item).title}</strong>
+                <p>{assignmentPresentation(item).detail}</p>
               </div>
               <Link className="operator-button secondary" to={projectHref(`/runner/${encodeURIComponent(project)}/${encodeURIComponent(item.assignment)}`, contextProject)}>review</Link>
             </article>

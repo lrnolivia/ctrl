@@ -1,3 +1,4 @@
+import {meaningfulWorkChanges} from '../../../packages/shared-ui/meaningful-notifications.js';
 import {settledSnapshot} from '../public/stable-snapshot.js';
 import {publishRelayDashboard} from '../../../packages/shared-ui/relay-dashboard.js';
 import {subscribeRelayStream} from '../../../packages/shared-ui/relay-stream.js';
@@ -63,6 +64,7 @@ export function LiveRelayProvider({ children }: { children: ReactNode }) {
           title:'New work',message:item.goal || item.assignment,severity:'info',
           href:'/#/runner/'+encodeURIComponent(itemProject)+'/'+encodeURIComponent(item.assignment)+'?project='+encodeURIComponent(itemProject),action:'Open work'
         });
+        for(const change of meaningfulWorkChanges(latestSnapshot.current,next))publishNotification({...change,feature:'runner',href:'/#/runner/'+encodeURIComponent(change.project)+'/'+encodeURIComponent(change.assignment),action:'open details'});
         resolveNotification('dashboard:connection');
         for (const item of next.projects) {
           const id = 'progress:' + item.id;
