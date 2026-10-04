@@ -69,3 +69,39 @@ html[data-presentation-motion=calm] .mosaic-meter i{transition:none}
 .work-detail-body{padding:24px;overflow:auto;max-height:calc(100dvh - 145px);font:14px/1.5 Inter,system-ui,sans-serif}.work-detail-body section{margin-top:24px}.work-detail-body p{overflow-wrap:anywhere}.work-detail-note{font-size:12px;color:var(--color-text-secondary)}
 .work-detail-checklist{list-style:none;padding:0;display:grid;gap:8px}.work-detail-checklist button{display:flex;align-items:center;gap:12px;width:100%;text-align:left}.work-detail-checklist button>span:nth-child(2){flex:1;min-width:0}.work-detail-checklist strong,.work-detail-checklist small{display:block}.work-detail-checklist small{color:var(--color-text-secondary)}
 .work-detail-back{display:flex;align-items:center;gap:8px;margin-bottom:20px}.work-detail-reply textarea{box-sizing:border-box;width:100%;padding:12px;border-radius:12px;border:1px solid var(--color-border);background:var(--color-canvas);color:inherit;font:inherit;resize:vertical}.work-detail-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.work-detail-record{margin-top:24px}.work-detail-record pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;max-height:240px;overflow:auto}.project-id-badge[role=button]{cursor:pointer}.project-id-badge[role=button]:focus-visible{outline:2px solid var(--feature-today);outline-offset:3px}
+/* Compact charts share the approved surfaces and preserve stable geometry. */
+.compact-telemetry { display:grid; grid-template-columns:1.25fr 1fr .8fr; gap:12px; margin:16px 0; }
+.compact-telemetry>article { min-width:0; padding:16px; border:1px solid var(--color-border); border-radius:18px; background:var(--color-surface); }
+.compact-telemetry header { display:flex; align-items:center; gap:8px; min-height:24px; }
+.compact-telemetry header svg { width:20px; height:20px; flex-shrink:0; }
+.compact-telemetry h2 { margin:0; font-size:13px; font-weight:600; }
+.compact-telemetry header strong { margin-left:auto; font-size:20px; }
+.compact-telemetry p { margin:10px 0 0; color:var(--color-text-secondary); font-size:11px; line-height:1.5; }
+.compact-distribution { margin:12px 0 0; display:grid; gap:7px; }
+.compact-distribution>div { display:grid; grid-template-columns:minmax(0,1fr) minmax(80px,1fr); gap:10px; align-items:center; font-size:11px; }
+.compact-distribution dd { margin:0; display:flex; align-items:center; gap:7px; }
+.compact-distribution dd span { min-width:18px; font-variant-numeric:tabular-nums; }
+.compact-distribution i { flex:1; height:5px; border-radius:6px; background:color-mix(in srgb,var(--feature-accent,var(--color-text-primary)) 18%,transparent); position:relative; }
+.compact-distribution i:after { content:''; display:block; height:100%; border-radius:inherit; background:var(--feature-accent,var(--color-text-primary)); transform:scaleX(var(--bar-ratio)); transform-origin:left; }
+.compact-hourly { height:95px; display:flex; align-items:flex-end; gap:10px; padding-top:12px; }
+.compact-hourly>span { flex:1; display:flex; height:100%; flex-direction:column; justify-content:flex-end; align-items:center; gap:5px; }
+.compact-hourly i { width:100%; max-width:28px; height:calc(var(--bar-ratio)*65px); min-height:1px; border-radius:5px 5px 0 0; background:var(--feature-accent,var(--color-text-primary)); }
+.compact-hourly small { color:var(--color-text-secondary); font-size:10px; }
+.compact-completion .progress-ring { position:relative; margin:8px auto 0; width:100px; height:100px; }
+.compact-completion .progress-ring svg { position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg); }
+.compact-completion .progress-ring circle { fill:none; stroke-width:7px; }
+.compact-completion .ring-track { stroke:var(--color-raised); }
+.compact-completion .ring-value { stroke:var(--feature-accent,var(--color-text-primary)); stroke-linecap:round; }
+.compact-completion .ring-copy strong { font-size:22px; }
+.compact-completion .ring-copy span { font-size:10px; color:var(--color-text-secondary); }
+.compact-completion .ring-copy { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; }
+.compact-telemetry-skeleton { min-height:160px; border-radius:18px; background:var(--color-raised); display:grid; place-content:center; color:var(--color-text-secondary); }
+.work-detail-checklist summary { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.work-detail-checklist summary svg { width:18px; height:18px; flex-shrink:0; }
+.work-detail-checklist summary small { width:100%; padding-left:26px; color:var(--color-text-secondary); font-size:11px; }
+@media(max-width:900px) { .compact-telemetry { grid-template-columns:1fr 1fr; } .compact-telemetry .compact-completion { grid-column:1/-1; display:grid; grid-template-columns:1fr 110px; gap:8px; align-items:center; } .compact-completion p { grid-column:1; grid-row:2; margin:0; } .compact-completion .progress-ring { grid-column:2; grid-row:1/3; margin:0; } }
+@media(max-width:450px) { .compact-telemetry { grid-template-columns:1fr; } .compact-telemetry .compact-completion { grid-column:auto; } }
+
+.project-context-label{display:flex;align-items:center;gap:8px}
+.project-details-action{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:8px 12px;border:0;border-radius:12px;background:var(--color-raised);color:var(--color-text-secondary);font:inherit;font-size:13px;letter-spacing:normal;cursor:pointer}
+.project-details-action svg{width:16px;height:16px}.project-details-action:focus-visible{outline:2px solid var(--color-text-primary);outline-offset:3px}

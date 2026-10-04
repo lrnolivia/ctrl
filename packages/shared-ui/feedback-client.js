@@ -10,10 +10,18 @@ export function feedbackLabel(receipt){
  if(status?.queued)return 'saved in Relay · acknowledgement pending';
  return 'saved · routing unconfirmed';
 }
+export function feedbackFailure(error){
+ if(error?.status===409)return 'work changed · recheck before replying';
+ if([401,403].includes(error?.status))return 'sign in again to reconnect replies';
+ if(error?.name==='AbortError'||error?.name==='TimeoutError')return 'reply connection timed out · recheck when ready';
+ return 'reply connection unavailable · your text stays here';
+}
 export async function feedbackApi(url,options={}){
- const response=await fetch(url,{...options,headers:{Accept:'application/json','Content-Type':'application/json'},signal:options.signal||AbortSignal.timeout(15000)});
- const body=await response.json().catch(()=>({}));
- if(!response.ok){const error=Error(body.error?.message||body.error||'Reply service unavailable. Your reply is still here.');error.result=body;throw error;}
+ const headers=new Headers(options.headers);headers.set('Accept','application/json');
+ if(options.body!=null)headers.set('Content-Type','application/json');
+ const response=await fetch(url,{...options,headers,signal:options.signal||AbortSignal.timeout(15000)});
+ let body;try{body=await response.json();}catch{throw Object.assign(Error('Reply service returned an unreadable response. Your reply is still here.'),{status:response.status,responseClass:'invalid-response'});}
+ if(!response.ok){const error=Error(body.error?.message||body.reason||(typeof body.error==='string'?body.error:null)||'Reply service unavailable. Your reply is still here.');error.result=body;error.status=response.status;error.responseClass=body.error?.class||'http';throw error;}
  return body;
 }
 export async function sendFeedback({key,binding,text,api=feedbackApi,storage=sessionStorage,uuid=()=>crypto.randomUUID()}){

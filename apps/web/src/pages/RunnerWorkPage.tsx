@@ -1,4 +1,4 @@
-import { statusLabel, phaseLabel, eventLabel, summaryText } from "../../../../packages/shared-ui/presentation-copy.js";
+import { assignmentPresentation, statusLabel, phaseLabel, eventLabel, summaryText } from "../../../../packages/shared-ui/presentation-copy.js";
 import { projectHref } from "../../../../packages/shared-ui/project-context.js";
 import { useEffect, useMemo, useState, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -40,7 +40,7 @@ export function RunnerWorkPage() {
   }, [project, assignment]);
 
   useEffect(()=>{if(status==='live')heading.current?.focus({preventScroll:true});},[assignment,status]);
-  const title = item?.goal || assignment.replace(/[-_]+/g, " ");
+  const title = assignmentPresentation(item || {}).title;
   const events = useMemo(() => item?.events || [], [item]);
   const percent = item?.state === "complete" ? 100 : undefined;
   const cards = [

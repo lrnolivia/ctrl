@@ -1,4 +1,5 @@
 import {ReviewFocus} from "../components/ReviewFocus";
+import {PageTelemetry} from '../components/PageTelemetry';
 import { WorkViewer } from "../components/WorkViewer";
 import { useWorkItems } from "../components/useWorkItems";
 import { statusLabel, summaryText } from "../../../../packages/shared-ui/presentation-copy.js";
@@ -44,6 +45,7 @@ export function NightShiftPage() {
       <ReviewFocus snapshot={snapshot} project={contextProject} team="night-shift"/>
       <p className="shift-contract-note">automatic schedules below report checks. away-work and its staff lead appear when Relay identifies an actual shift assignment.</p>
       <SignalDeck cards={cards} feature="night-shift" />
+      <PageTelemetry snapshot={snapshot} kind="night-shift"/>
       <section className="operator-section">
         <div className="section-heading"><h2>automatic check results</h2><span>{results.length} results on record</span></div>
         <WorkViewer id="night-shift" items={workItems} project={contextProject} incomplete={!allSnapshot} />

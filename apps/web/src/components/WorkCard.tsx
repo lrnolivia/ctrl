@@ -1,4 +1,4 @@
-import { statusLabel, phaseLabel, eventLabel, summaryText } from "../../../../packages/shared-ui/presentation-copy.js";
+import { assignmentPresentation, statusLabel, phaseLabel, eventLabel, summaryText } from "../../../../packages/shared-ui/presentation-copy.js";
 import { projectHref } from "../../../../packages/shared-ui/project-context.js";
 import { useLiveRelay } from "../live";
 import { Link } from "react-router-dom";
@@ -21,7 +21,7 @@ function stateLabel(state?: string) {
 
 export function WorkCard({ project, item }: { project: string; item: ObservedProgress }) {
   const { project: contextProject } = useLiveRelay();
-  const title = item.goal || item.assignment.replace(/[-_]+/g, " ");
+  const title = assignmentPresentation(item).title;
   const detail = summaryText(item.waiting_reason || item.recovery_action, eventLabel(item.latest_event?.type));
   const percent = item.state === "complete" ? 100 : undefined;
   const phase = item.state === "complete" ? "delivery" : phaseLabel(item.stage);

@@ -1,4 +1,5 @@
 import {reviewFocus} from '../../../../packages/shared-ui/control-telemetry.js';
+import {PageTelemetry} from '../components/PageTelemetry';
 import {ReviewFocus} from "../components/ReviewFocus";
 import { needsHumanReview } from "../../../../packages/shared-ui/attention.js";
 import { WorkViewer } from "../components/WorkViewer";
@@ -40,6 +41,7 @@ export function RunnerPage() {
       <ProgressNotice />
       <ReviewFocus snapshot={snapshot} project={contextProject}/>
       <SignalDeck cards={cards} feature="runner" />
+      <PageTelemetry snapshot={snapshot} kind="runner"/>
       <section className="operator-section">
         <div className="section-heading"><h2>current work</h2><span>{all.length} {incomplete ? "loaded" : "current"}</span></div>
         <WorkViewer id="runner" items={remaining} project={contextProject} incomplete={!allSnapshot || Boolean(allSnapshot.loadingProgress?.length || allSnapshot.failedProgress?.length)} />
