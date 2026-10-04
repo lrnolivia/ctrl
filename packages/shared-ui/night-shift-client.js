@@ -2,6 +2,9 @@ import {feedbackApi} from './feedback-client.js';
 export function recordableJob(job){
  return Boolean(job&&['succeeded','failed','cancelled'].includes(job.state)&&job.process&&job.started_at&&job.finished_at&&job.result?.head_sha&&job.result?.evidence);
 }
+export function recordableSource(source){
+ return Boolean(source&&source.assignment&&source.owner&&source.branch&&Number.isInteger(source.pr)&&source.pr>0&&/^[a-f0-9]{40}$/.test(source.head_sha||'')&&/^[a-f0-9]{40}$/.test(source.merge_commit_sha||'')&&Number.isFinite(Date.parse(source.completed_at))&&source.requires_source_verification===true);
+}
 export async function requestNightShift({key,args,api=feedbackApi,storage=sessionStorage,uuid=()=>crypto.randomUUID()}){
  let previous;try{previous=JSON.parse(storage.getItem(key)||'null');}catch{}
  const intent=JSON.stringify(args);
