@@ -21,7 +21,7 @@ export async function feedbackApi(url,options={}){
  if(options.body!=null)headers.set('Content-Type','application/json');
  const response=await fetch(url,{...options,headers,signal:options.signal||AbortSignal.timeout(15000)});
  let body;try{body=await response.json();}catch{throw Object.assign(Error('Reply service returned an unreadable response. Your reply is still here.'),{status:response.status,responseClass:'invalid-response'});}
- if(!response.ok){const error=Error(body.error?.message||body.reason||(typeof body.error==='string'?body.error:null)||'Reply service unavailable. Your reply is still here.');error.result=body;error.status=response.status;error.responseClass=body.error?.class||'http';throw error;}
+ if(!response.ok){const error=Error(body.error?.message||body.reason||(typeof body.error==='string'?body.error:null)||'Reply service unavailable. Your reply is still here.');error.result=body;error.status=response.status;error.responseClass=body.error?.class||body.response_class||'http';throw error;}
  return body;
 }
 export async function sendFeedback({key,binding,text,api=feedbackApi,storage=sessionStorage,uuid=()=>crypto.randomUUID()}){
@@ -48,6 +48,17 @@ export async function sendFeedback({key,binding,text,api=feedbackApi,storage=ses
   pending.receipt=result.feedback;storage.setItem(key,JSON.stringify(pending));
  }catch{return {receipt:pending.receipt,label:feedbackLabel(pending.receipt)+' · latest status unavailable',reconcile:pending.reconcile};}
  return {receipt:pending.receipt,label:feedbackLabel(pending.receipt),reconcile:pending.reconcile};
+}
+export async function refreshFeedback({key,api=feedbackApi,storage=sessionStorage}){
+ const pending=JSON.parse(storage.getItem(key)||'null');
+ if(!pending?.receipt?.report_id)throw Error('No saved reply receipt is available yet. Retry the preserved reply to reconcile it.');
+ const query=new URLSearchParams({project:pending.args.project,assignment:pending.args.assignment,report_id:pending.receipt.report_id,...(pending.args.review_mode?{review_mode:pending.args.review_mode}:{})});
+ const result=await api('/api/feedback/status?'+query);
+ if(!result.ok||result.feedback?.report_id!==pending.receipt.report_id)throw Error('Reply status was not confirmed. The original receipt stays saved.');
+ const current=JSON.parse(storage.getItem(key)||'null');
+ if(current?.args?.operation_id!==pending.args.operation_id)throw Error('Another reply is now current. Recheck its saved receipt.');
+ pending.receipt=result.feedback;storage.setItem(key,JSON.stringify(pending));
+ return {receipt:pending.receipt,label:feedbackLabel(pending.receipt)};
 }
 export function reviewText(evidence,review){return `Review of ${evidence.evidence_id}\n\n${review.notes||''}\n\nAnswers: ${JSON.stringify(review.answers||{})}\nOverall: ${review.overall||'not answered'}\nDisposition: ${review.disposition||'not set'}`;}
 export async function deliverReview({evidence,review,binding,api,storage}){
