@@ -51,12 +51,14 @@ function safeHref(href) {
 }
 function messageMarkup(item, toast = false) {
   const href = safeHref(item.href);
+  const fragment=href.split('#')[1]||'',path=fragment.split('?')[0],context=new URLSearchParams(fragment.split('?')[1]||'').get('project');
+  const projectAction=['/runner','/night-shift'].includes(path)&&/^[a-z0-9-]{1,80}$/.test(context||'')?' data-work-project="'+escape(context)+'"':'';
   const severity = item.resolved ? 'Recovered' : item.severity === 'error' ? 'Problem' : item.severity === 'warning' ? 'Needs attention' : 'Update';
   const feature = features.has(item.feature) ? item.feature : 'relay';
   return '<article class="notification-message" data-feature="' + feature + '" data-severity="' + escape(item.severity) + '">' +
     '<div class="notification-source"><span class="notification-source-icon" aria-hidden="true">' + glyph(feature === 'relay' ? 'projects' : feature === 'night-shift' ? 'moon' : feature === 'runner' ? 'play' : feature === 'inspector' ? 'review' : feature) + '</span><span>' + escape(labels[feature]) + (item.project ? ' · ' + escape(item.project) : '') + '</span><small>' + severity + '</small></div>' +
     '<strong>' + escape(item.title) + '</strong><p>' + escape(item.message) + '</p>' +
-    '<div class="notification-actions">' + (href ? '<a href="' + escape(href) + '">' + escape(item.action) + '</a>' : '') +
+    '<div class="notification-actions">' + (href ? '<a href="' + escape(href) + '"'+projectAction+'>' + escape(item.action) + '</a>' : '') +
     (toast ? '<button type="button" data-dismiss-notification="' + escape(item.id) + '" aria-label="Dismiss notification">' + glyph('close') + '</button>' : '<small>' + (item.resolved ? 'Recovered' : item.dismissed ? 'Toast dismissed · ' : '') + new Date(item.createdAt).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) + '</small>') + '</div></article>';
 }
 

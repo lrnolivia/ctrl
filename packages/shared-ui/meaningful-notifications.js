@@ -13,7 +13,9 @@ export function meaningfulWorkChanges(previous,next){
   }
   const old=new Map((previous.progress?.[project]?.progress||[]).map(p=>[p.assignment,p]));
   for(const item of next.progress?.[project]?.progress||[]){
-   const prior=old.get(item.assignment);if(!prior||prior.state===item.state)continue;
+   const prior=old.get(item.assignment);if(!prior)continue;
+   const requestChanged=JSON.stringify(prior.attention_request||null)!==JSON.stringify(item.attention_request||null);
+   if(prior.state===item.state&&!requestChanged)continue;
    const copy=assignmentPresentation(item);
    if(item.attention_request?.status==='pending'&&['review','decision'].includes(item.attention_request.kind))changes.push({id:`work-review:${project}:${item.assignment}`,project,assignment:item.assignment,title:item.attention_request.kind==='review'?'ready for your review':'your decision is needed',message:copy.detail,severity:'warning'});
    else if(['failed','blocked'].includes(item.state))changes.push({id:`work-blocked:${project}:${item.assignment}`,project,assignment:item.assignment,title:'work needs a fix',message:copy.detail,severity:'warning'});

@@ -18,7 +18,7 @@ import { openQa } from "./qa.js";
 import { loadNightShift } from "../../../features/night-shift/view.js";
 
 import { loadToday } from "./operator-today.js";
-import { bindReviewFilters, loadReview, cancelReviewLoad } from "./operator-review.js";
+import { bindReviewFilters, loadReview, cancelReviewLoad, renderReviewTelemetry } from "./operator-review.js";
 import { esc, loadProjectDetail, loadProjectIndex, projectName, renderProjectDetail } from "./operator-projects.js";
 
 bindTheme();
@@ -138,6 +138,7 @@ function renderProjectTabs() {
   if (!projectTabs) return;
   const label=projectTabs.closest('.project-context')?.querySelector('.project-context-label');
   if(label&&!label.querySelector('.project-loading-indicator'))label.insertAdjacentHTML('beforeend',' <span class="project-loading-indicator" role="status"></span>');
+  label?.querySelector('[data-project-details]')?.remove();if(label&&selectedProject)label.insertAdjacentHTML('beforeend',' <button type="button" class="project-details-action" data-project-details data-work-project="'+esc(selectedProject)+'">'+glyph('projects')+'project details</button>');
   const indicator=label?.querySelector('.project-loading-indicator');if(indicator){indicator.dataset.loading=String(stripBusy||!stripModel);indicator.setAttribute('aria-label',stripBusy||!stripModel?'Updating projects':'Projects up to date');}
   if(!stripModel){if(stripSignature!=='loading'){showLoading(projectTabs,'tabs','Loading projects');stripSignature='loading';}return;}
 
@@ -231,6 +232,7 @@ document.querySelectorAll("[data-signal-id] .signal-mark").forEach(slot => {
 const ui = { setConnection, notify, openProject, setFlow, setOverviewDetail, contextProject };
 
 function updateInspectorSignals() {
+  renderReviewTelemetry();
   const list = document.querySelector("#review-list");
   const loading = list?.querySelector(".content-skeleton");
   const state = list?.dataset.summaryState || "loading";

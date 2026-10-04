@@ -31,7 +31,7 @@ export function ProjectSwitcher() {
     <span className="project-tab-all" dangerouslySetInnerHTML={{__html:id?iconSlot(id):glyph('projects')}}/><span>{id?projectLabel(id):'all projects'}</span>{fresh&&<span className="project-update-label">updated</span>}
   </button>;
   return <div className="project-context" ref={root}>
-    <span className="project-context-label">project <span className="project-loading-indicator" data-loading={refreshing} role="status" aria-label={refreshing?"Updating projects":"Projects up to date"}/></span>
+    <span className="project-context-label">project <span className="project-loading-indicator" data-loading={refreshing} role="status" aria-label={refreshing?"Updating projects":"Projects up to date"}/>{project&&<button type="button" className="project-details-action" data-work-project={project}><span aria-hidden="true" dangerouslySetInnerHTML={{__html:glyph('projects')}}/>project details</button>}</span>
     {!displayed ? <div className="project-strip-skeleton" aria-label="Loading projects" role="status">{Array.from({length:6},(_,i)=><span key={i} className="skeleton-tab"/>)}</div> : <>
     {recent.length>0&&<div className="project-updates-row" role="group" aria-label="Recently updated projects">{recent.map(item=>button(item.id,true))}</div>}
     <div className="project-tabs" role="group" aria-label="All projects in alphabetical order">{button('')}{rest.map(item=>button(item.id))}</div>

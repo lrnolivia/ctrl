@@ -1,3 +1,4 @@
+import {assignmentPresentation,summaryText} from '../../../packages/shared-ui/presentation-copy.js';
 import {meaningfulWorkChanges} from '../../../packages/shared-ui/meaningful-notifications.js';
 import {settledSnapshot} from '../public/stable-snapshot.js';
 import {publishRelayDashboard} from '../../../packages/shared-ui/relay-dashboard.js';
@@ -61,9 +62,10 @@ export function LiveRelayProvider({ children }: { children: ReactNode }) {
         try { sessionStorage.setItem('relay.arrivals.v1',JSON.stringify(observed.next)); } catch {}
         for(const {project:itemProject,item} of observed.arrivals) publishNotification({
           id:'new-work:'+itemProject+':'+item.assignment, feature:'runner',project:projectLabel(itemProject),
-          title:'New work',message:item.goal || item.assignment,severity:'info',
+          title:'New work',message:assignmentPresentation(item).title,severity:'info',
           href:'/#/runner/'+encodeURIComponent(itemProject)+'/'+encodeURIComponent(item.assignment)+'?project='+encodeURIComponent(itemProject),action:'Open work'
         });
+        for(const [id,payload] of Object.entries(next.progress))for(const item of payload.progress||[]){if(item.attention_request?.status!=='pending')resolveNotification('work-review:'+id+':'+item.assignment);if(!['failed','blocked'].includes(item.state||''))resolveNotification('work-blocked:'+id+':'+item.assignment);}
         for(const change of meaningfulWorkChanges(latestSnapshot.current,next))publishNotification({...change,feature:'runner',href:'/#/runner/'+encodeURIComponent(change.project)+'/'+encodeURIComponent(change.assignment),action:'open details'});
         resolveNotification('dashboard:connection');
         for (const item of next.projects) {
@@ -76,7 +78,7 @@ export function LiveRelayProvider({ children }: { children: ReactNode }) {
         for (const worker of next.workers) {
           const id = 'automatic:' + worker.id;
           if (worker.runtime?.status === 'failed') publishNotification({id,feature:'night-shift',project:projectLabel(worker.id),title:'Automatic check needs attention',
-            message:worker.runtime.last_summary || 'The last automatic check reported a problem.',severity:'warning',href:'/#/night-shift?project=' + encodeURIComponent(worker.id)+'&item='+encodeURIComponent(worker.id),action:'Open check'});
+            message:summaryText(worker.runtime.last_summary,'The last automatic check reported a problem. Open its details for the result.'),severity:'warning',href:'/#/night-shift?project=' + encodeURIComponent(worker.id)+'&item='+encodeURIComponent(worker.id),action:'Open check'});
           else if (['completed','succeeded','success'].includes(worker.runtime?.status || '')) resolveNotification(id);
         }
         lastSuccess.current = Date.now();
@@ -122,6 +124,7 @@ export function LiveRelayProvider({ children }: { children: ReactNode }) {
 
   const scopedSnapshot = useMemo(() => snapshot && project ? {
     ...snapshot,
+    coordination:Object.fromEntries(Object.entries(snapshot.coordination||{}).filter(([id])=>projectInGroup(id,project))),
     progress: Object.fromEntries(Object.entries(snapshot.progress).filter(([id]) => projectInGroup(id,project))),
     workers: snapshot.workers.filter(worker => projectInGroup(worker.id,project)),
     loadingProgress: snapshot.loadingProgress?.filter(id => projectInGroup(id,project)),

@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {sendFeedback,feedbackLabel,deliverReview} from '../packages/shared-ui/feedback-client.js';
+import {sendFeedback,feedbackLabel,deliverReview,feedbackApi,feedbackFailure} from '../packages/shared-ui/feedback-client.js';
 import {permitted} from '../worker/index.js';
 const binding={available:true,args:{project:'ctrl',assignment:'review',expected_owner:'owner',expected_branch:'branch',artifact:{repository:'lrnolivia/ctrl',commit_sha:'a'.repeat(40),kind:'runtime'}}};
 const store=()=>{const map=new Map();return{getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v)}};
@@ -24,4 +24,15 @@ test('a retained raced write is preserved without submitting it again; caller ac
 test('ctrl proxy exposes only the committed feedback methods',()=>{
  assert.equal(permitted('/api/feedback/submit','POST'),true);assert.equal(permitted('/api/feedback/status','GET'),true);
  for(const [path,method] of [['/api/feedback/ack','POST'],['/api/feedback/status','POST'],['/api/feedback/submit','GET'],['/api/feedback/submit','DELETE']])assert.equal(permitted(path,method),false);
+});
+
+test('binding transport preserves conflict class and distinguishes unreadable responses',async()=>{
+ const original=globalThis.fetch;const calls=[];
+ try{
+  globalThis.fetch=async(url,options)=>{calls.push(options);return Response.json({available:false,reason:'Work changed'},{status:409});};
+  await assert.rejects(feedbackApi('/binding'),error=>error.status===409&&error.result.reason==='Work changed'&&feedbackFailure(error).includes('recheck'));
+  assert.equal(calls[0].headers.has('Content-Type'),false);
+  globalThis.fetch=async()=>new Response('<html>sign in</html>',{status:200});
+  await assert.rejects(feedbackApi('/binding'),error=>error.responseClass==='invalid-response'&&error.status===200);
+ }finally{globalThis.fetch=original;}
 });

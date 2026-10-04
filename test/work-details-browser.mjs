@@ -28,6 +28,16 @@ export async function workDetailsChecks(browser){
    assert.equal(prevented,false,'modified work links retain default navigation: '+modifier);
    assert.equal(await dialog.count(),0,'modified work links do not open details');
   }
+  let changed=true;
+  await page.route('**/api/feedback/binding?*',route=>route.fulfill(changed?{status:409,json:{available:false,reason:'Work changed since this view loaded.'}}:{json:{available:true,args:{project:'ctrl',assignment:'ctrl-mobile-review',expected_owner:'fixture-owner',expected_branch:'fixture/review',artifact:{repository:'lrnolivia/ctrl',commit_sha:'a'.repeat(40),kind:'source'}}}}));
+  await workLink.click();await dialog.getByText('work changed · recheck before replying',{exact:true}).waitFor();
+  await dialog.locator('textarea').fill('Preserve this exact draft.');assert.equal(writes.length,1);
+  assert.equal(await dialog.locator('[data-send]:disabled').count(),1);
+  changed=false;await dialog.locator('[data-recheck]').click();await dialog.getByText('ready to send',{exact:true}).waitFor();
+  assert.equal(await dialog.locator('textarea').inputValue(),'Preserve this exact draft.');assert.equal(writes.length,1,'recheck never writes a reply');
+  await dialog.locator('[data-send]').click();await dialog.getByText('saved in Relay · acknowledgement pending',{exact:true}).waitFor();
+  assert.equal(writes[1].original_text,'Preserve this exact draft.');assert.notEqual(writes[1].operation_id,writes[0].operation_id);
+  await page.keyboard.press('Escape');
   await page.locator('.review-focus .project-id-badge').click();await page.locator('.work-detail-checklist').waitFor();
   await page.keyboard.press('Escape');await page.close();
  }}finally{await app.close();}
