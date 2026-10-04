@@ -15,7 +15,7 @@ export async function nightShiftChecks(browser){
   const ledger=page.locator('.night-shift-ledger');await ledger.getByText('No away-work receipts have been recorded for this project.',{exact:true}).waitFor();assert.equal(writes.length,0);
   await ledger.getByRole('button',{name:'manage away work'}).click();const dialog=page.locator('.night-shift-dialog');
   await dialog.getByRole('button',{name:'find eligible execution receipts'}).click();await dialog.getByText(/No execution has the start, exit/).waitFor();assert.equal(await dialog.getByRole('button',{name:'record declared away work'}).count(),0);assert.equal(writes.length,0);
-  items=[item];await dialog.getByRole('button',{name:'refresh current work'}).click();await ledger.getByText('TEST DATA · review changes recorded',{exact:true}).waitFor();await page.keyboard.press('Escape');
+  items=[item];await dialog.getByRole('button',{name:'refresh current work'}).click();await ledger.getByText('TEST DATA · review changes recorded',{exact:true}).waitFor();await dialog.getByText('Catalogue and assignment refresh requested. Your text stays here.',{exact:true}).waitFor();await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});
   await ledger.getByText('TEST DATA · review changes recorded',{exact:true}).click();
   await dialog.getByText(/objective completion remain unverified/).waitFor();
   await dialog.getByLabel('manage with an existing assignment').selectOption('ctrl-mobile-review');await dialog.getByLabel('existing recipient assignment').selectOption('recipient');await dialog.getByLabel('next step').fill('Keep this exact Shift request.');
