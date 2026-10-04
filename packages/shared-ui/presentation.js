@@ -1,15 +1,12 @@
 import { glyph } from './glyphs.js';
-// Presets are complete presentation settings; future themes can extend this registry.
-const presets = { approved: { label: 'Approved · default', settings: { desktop: 'rail', nav: 'bottom', overview: 'compact', brand: 'compact', richness: 'simple', motion: 'full' } }, bottom: { label: 'Mobile bottom navigation', settings: { desktop: 'rail', nav: 'bottom', overview: 'compact', brand: 'compact', richness: 'simple', motion: 'full' } } };
-presets.rich = { label: 'Rich telemetry', settings: { ...presets.approved.settings, richness: 'rich' } };
-const defaults = presets.approved.settings;
-presets['desktop-bottom'] = { label: 'Desktop branded bottom pill', settings: { ...defaults, desktop: 'bottom' } };
-const choices = { desktop: ['rail', 'bottom'], nav: ['top', 'bottom'], overview: ['compact'], brand: ['compact', 'roomy'], richness: ['simple', 'rich'], motion: ['full', 'calm'] };
-export function presentationMenu() {
-  return `<details class="presentation-menu"><summary aria-label="Settings" title="Settings">${glyph('settings')}</summary><div class="presentation-panel" popover="manual"><strong>settings</strong><p>Only this browser · <span data-presentation-state>Approved</span></p><label>Presentation preset<select name="preset">${Object.entries(presets).map(([id,preset]) => `<option value="${id}">${preset.label}</option>`).join('')}<option value="custom" disabled>Custom</option></select></label><details class="presentation-customize"><summary>Customize</summary><fieldset><legend>Mobile</legend><label>Navigation<select name="nav"><option value="top">Top</option><option value="bottom">Bottom · default</option></select></label></fieldset><fieldset><legend>Desktop / tablet</legend><label>Desktop layout<select name="desktop"><option value="rail">Sidebar · default</option><option value="bottom">Branded bottom pill</option></select></label><label>Sidebar brand<select name="brand"><option value="compact">Small tile · default</option><option value="roomy">Roomier tile</option></select></label></fieldset><fieldset><legend>Telemetry / motion</legend><label>Data visuals<select name="richness"><option value="simple">Simple · default</option><option value="rich">Rich · labeled counts</option></select></label><label>Motion<select name="motion"><option value="full">Spring · default</option><option value="calm">Calm</option></select></label></fieldset></details><button type="button" data-presentation-reset>Reset presentation</button><div class="presentation-tools"><button id="theme-toggle" class="utility-button" type="button"><span class="utility-icon" aria-hidden="true">${glyph('sun')}</span><span class="utility-label">Light mode</span></button></div></div></details>`;
+// Keep independent device preferences; resizing never writes a new choice.
+const defaults={desktop:'rail',nav:'bottom',overview:'compact',brand:'compact',richness:'simple',motion:'full'};
+const choices={desktop:['rail','bottom'],nav:['sidebar','bottom'],overview:['compact'],brand:['compact','roomy'],richness:['simple','rich'],motion:['full','calm']};
+export function presentationMenu(){
+ return `<details class="presentation-menu"><summary aria-label="Settings" title="Settings">${glyph('settings')}</summary><div class="presentation-panel" popover="manual"><strong>settings</strong><p>Saved in this browser</p><fieldset><legend>Navigation</legend><label>On mobile<select name="nav"><option value="bottom">Bottom bar · default</option><option value="sidebar">Sidebar drawer</option></select></label><label>On desktop<select name="desktop"><option value="rail">Sidebar · default</option><option value="bottom">Bottom bar</option></select></label></fieldset><fieldset><legend>Appearance</legend><button id="theme-toggle" class="utility-button" type="button"><span class="utility-icon" aria-hidden="true">${glyph('sun')}</span><span class="utility-label">Light mode</span></button></fieldset><fieldset><legend>Accessibility</legend><label>Motion<select name="motion"><option value="full">Standard</option><option value="calm">Reduced</option></select></label><p>Your system's reduced-motion preference is always respected.</p></fieldset><button type="button" data-presentation-reset>Reset browser preferences</button></div></details>`;
 }
 export function normalizePresentation(saved = {}) {
-  return Object.fromEntries(Object.entries(defaults).map(([key, value]) => [key, choices[key].includes(saved?.[key]) ? saved[key] : value]));
+  return Object.fromEntries(Object.entries(defaults).map(([key, value]) => [key, key==='nav'&&saved?.nav==='top'?'sidebar':choices[key].includes(saved?.[key]) ? saved[key] : value]));
 }
 export function bindPresentation() {
   const menu = document.querySelector('.presentation-menu');
@@ -17,10 +14,16 @@ export function bindPresentation() {
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem('relay-presentation') || '{}'); } catch {}
   let prefs = normalizePresentation(saved);
-  try { localStorage.setItem('relay-presentation', JSON.stringify(prefs)); } catch {}
   const header = document.querySelector('.operator-topbar');
   const nav = document.querySelector('.operator-nav');
   const panel=menu.querySelector('.presentation-panel');
+  const brand=document.querySelector('.operator-brand'),home=nav?.parentNode,marker=document.createComment('navigation home');if(nav)home.insertBefore(marker,nav);
+  const drawer=document.createElement('dialog');drawer.className='navigation-drawer';drawer.setAttribute('aria-labelledby','navigation-drawer-title');drawer.innerHTML=`<header><h2 id="navigation-drawer-title">ctrl navigation</h2><button type="button" aria-label="close navigation">${glyph('close')}</button></header>`;document.body.append(drawer);
+  const closeDrawer=()=>{if(drawer.open)drawer.close();brand?.setAttribute('aria-expanded','false');brand?.focus();};
+  drawer.querySelector('button').addEventListener('click',closeDrawer);drawer.addEventListener('cancel',event=>{event.preventDefault();closeDrawer();});
+  drawer.addEventListener('click',event=>{if(event.target===drawer){const bounds=drawer.getBoundingClientRect();if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)closeDrawer();}else if(event.target.closest('a,[data-relay-open]'))closeDrawer();});
+  const openDrawer=event=>{if(innerWidth<=900&&prefs.nav==='sidebar'&&event.button===0&&!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey){event.preventDefault();drawer.showModal();brand.setAttribute('aria-expanded','true');}};brand?.addEventListener('click',openDrawer);
+  const placeNav=()=>{const sidebar=innerWidth<=900&&prefs.nav==='sidebar';if(sidebar){if(nav?.parentNode!==drawer)drawer.append(nav);brand?.setAttribute('aria-label','open ctrl navigation');brand?.setAttribute('aria-haspopup','dialog');brand?.setAttribute('aria-expanded',String(drawer.open));}else{if(drawer.open)closeDrawer();if(nav&&nav.parentNode!==home)marker.after(nav);brand?.removeAttribute('aria-haspopup');brand?.removeAttribute('aria-expanded');brand?.removeAttribute('aria-label');}};
   const positionPanel=()=>{
     if(!menu.open){if(panel.matches(':popover-open'))panel.hidePopover();return;}
     if(!panel.matches(':popover-open'))panel.showPopover();
@@ -35,6 +38,7 @@ export function bindPresentation() {
   };
   menu.addEventListener('toggle',positionPanel,true);
   const clearance = () => {
+    placeNav();
     const context=document.querySelector('.workspace-context');
     if(context){const bounds=context.getBoundingClientRect();document.documentElement.style.setProperty('--ctrl-content-left',bounds.left+'px');document.documentElement.style.setProperty('--ctrl-content-width',bounds.width+'px');}
     positionPanel();
@@ -49,10 +53,8 @@ export function bindPresentation() {
   if (nav) observer.observe(nav);
   const workspace=document.querySelector('.workspace-context');if(workspace)observer.observe(workspace);
   window.addEventListener('resize', clearance);
+  window.visualViewport?.addEventListener('resize',clearance);window.visualViewport?.addEventListener('scroll',clearance);
   const apply = () => {
-    const preset = Object.entries(presets).find(([, preset]) => Object.keys(defaults).every(key => preset.settings[key] === prefs[key]));
-    menu.querySelector('[name="preset"]').value = preset?.[0] || 'custom';
-    menu.querySelector('[data-presentation-state]').textContent = preset?.[1].label || 'Custom';
     for (const [key, value] of Object.entries(prefs)) {
       document.documentElement.dataset['presentation' + key[0].toUpperCase() + key.slice(1)] = value;
       const control = menu.querySelector(`[name="${key}"]`);
@@ -62,8 +64,7 @@ export function bindPresentation() {
   };
   const change = event => {
     const { name, value } = event.target;
-    if (name === 'preset' && presets[value]) prefs = { ...presets[value].settings };
-    else if (choices[name]?.includes(value)) prefs[name] = value;
+    if (choices[name]?.includes(value)) prefs[name] = value;
     else return;
     apply();
     try { localStorage.setItem('relay-presentation', JSON.stringify(prefs)); } catch {}
@@ -73,7 +74,7 @@ export function bindPresentation() {
   const outside = event => { if (!menu.contains(event.target)) menu.open = false; };
   document.addEventListener('pointerdown', outside);
   apply(); menu.addEventListener('change', change); menu.querySelector('[data-presentation-reset]').addEventListener('click', reset); document.addEventListener('keydown', escape);
-  return () => { menu.removeEventListener('toggle',positionPanel,true);if(panel.matches(':popover-open'))panel.hidePopover();observer.disconnect(); window.removeEventListener('resize', clearance); document.removeEventListener('pointerdown', outside); menu.removeEventListener('change', change); menu.querySelector('[data-presentation-reset]').removeEventListener('click', reset); document.removeEventListener('keydown', escape); };
+  return () => { window.visualViewport?.removeEventListener('resize',clearance);window.visualViewport?.removeEventListener('scroll',clearance);if(nav&&nav.parentNode!==home)marker.after(nav);marker.remove();drawer.remove();brand?.removeEventListener('click',openDrawer);menu.removeEventListener('toggle',positionPanel,true);if(panel.matches(':popover-open'))panel.hidePopover();observer.disconnect(); window.removeEventListener('resize', clearance); document.removeEventListener('pointerdown', outside); menu.removeEventListener('change', change); menu.querySelector('[data-presentation-reset]').removeEventListener('click', reset); document.removeEventListener('keydown', escape); };
 }
 
 // Discrete units, never a fabricated timeline, percentage or trend.

@@ -2,7 +2,7 @@ import {needsHumanReview} from './attention.js';
 const terminal=new Set(['complete','completed','cancelled','superseded','archived']);
 export const meaningfulEvents=(events=[])=>Array.isArray(events)?events.filter(event=>!['runner-heartbeat','worker-heartbeat','heartbeat'].includes(event.type)):[];
 export function activitySeries(progress={},now=Date.now(),hours=6){
- const seen=new Set(),bins=Array.from({length:hours},(_,i)=>({at:now-(hours-i)*3600000,count:0}));let undated=0;
+ const seen=new Set(),bins=Array.from({length:hours},(_,i)=>({at:now-(hours-i)*3600000,count:0}));let undated=0;const events=[];
  for(const [project,payload] of Object.entries(progress))for(const item of payload.progress||[]){
   for(const event of meaningfulEvents([...(item.events||[]),...(item.latest_event?[item.latest_event]:[])])){
    const key=project+':'+item.assignment+':'+(event.id||[event.at,event.type].join(':'));
@@ -10,10 +10,10 @@ export function activitySeries(progress={},now=Date.now(),hours=6){
    const at=Date.parse(event.at||'');
    if(!Number.isFinite(at)){undated++;continue;}
    const index=Math.floor((at-(now-hours*3600000))/3600000);
-   if(index>=0&&index<hours)bins[index].count++;
+   if(index>=0&&index<hours){bins[index].count++;events.push({project,assignment:item.assignment,event});}
   }
  }
- return {bins,count:bins.reduce((sum,b)=>sum+b.count,0),undated};
+ return {bins,count:bins.reduce((sum,b)=>sum+b.count,0),undated,events:events.sort((a,b)=>Date.parse(b.event.at)-Date.parse(a.event.at)),start:now-hours*3600000,end:now};
 }
 export function controlTelemetry(snapshot,now=Date.now()){
  const progress=snapshot?.progress||{},all=Object.entries(progress).flatMap(([project,payload])=>(payload.progress||[]).map(item=>({project,item})));
