@@ -108,3 +108,35 @@ html[data-presentation-motion=calm] .mosaic-meter i{transition:none}
 
 .night-shift-project{background:var(--color-raised);border-radius:20px;padding:20px;margin-top:12px}.night-shift-project>header{display:flex;align-items:center;justify-content:space-between;gap:12px}.night-shift-project button{font:inherit;border:0;border-radius:12px;padding:10px 14px;min-height:44px;background:var(--color-canvas);color:inherit;cursor:pointer}.night-shift-project>p{font-size:13px;line-height:1.5;color:var(--color-text-secondary)}
 .night-shift-dialog label{display:grid;gap:8px;font-size:13px;margin:18px 0}.night-shift-dialog :is(select,input,textarea){font:inherit;color:inherit;background:var(--color-raised);border:0;border-radius:12px;padding:12px;width:100%;min-width:0;min-height:44px;box-sizing:border-box}.night-shift-dialog textarea{min-height:88px;max-height:160px;resize:vertical}.night-shift-project button:focus-visible,.night-shift-dialog :is(select,input,textarea):focus-visible{outline:2px solid var(--feature-night-shift);outline-offset:3px}
+
+/* Telemetry precedes review on every viewport; only mobile uses glance tiles. */
+.control-mosaic{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;margin:16px 0 24px}
+.control-mosaic>.mosaic-panel{width:100%;box-sizing:border-box;cursor:pointer}
+.control-mosaic>.mosaic-panel:focus-visible{outline:2px solid var(--feature-accent,var(--feature-today));outline-offset:4px}
+.mosaic-glance{display:none}.mosaic-full{min-width:0}.mosaic-count-action{font:inherit!important;font-size:13px!important;border:0;border-radius:10px;background:var(--color-raised);color:inherit;cursor:pointer;min-height:44px;padding:8px 10px;text-align:left;max-width:100%}
+.mosaic-count-action:focus-visible{outline:2px solid var(--feature-today);outline-offset:3px}
+.project-id-badge--small{font-size:11px!important;line-height:16px!important;padding:5px 7px!important;gap:5px!important;border-radius:9px!important;min-height:28px;box-sizing:border-box}
+.project-id-badge--small .project-icon{width:18px!important;height:18px!important}.project-id-badge--small .project-icon img,.project-id-badge--small .project-icon svg{width:18px!important;height:18px!important}
+.review-focus-clear{padding:8px 0!important;background:transparent!important;box-shadow:none!important;border:0!important;margin:8px 0 16px!important;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.review-focus-clear h2{font:500 13px/1.5 Inter,system-ui,sans-serif!important;margin:0!important}.review-focus-clear p{font-size:12px!important;margin:0!important}
+.telemetry-dialog .mosaic-panel{padding:0;background:transparent;box-shadow:none;cursor:default}.telemetry-dialog .mosaic-heading{display:none}.telemetry-dialog .mosaic-projects{margin-block:16px}
+.telemetry-event-list{padding-left:20px;display:grid;gap:10px}.telemetry-event-list time{display:block;font-size:12px;color:var(--color-text-secondary)}
+.automatic-attention .automation-row{margin-bottom:10px}.automatic-attention p{font-size:13px;color:var(--color-text-secondary)}
+@media(max-width:900px){
+ .control-mosaic{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .control-mosaic>.mosaic-panel{padding:14px;border-radius:20px;align-self:stretch}
+ .control-mosaic>.mosaic-panel .mosaic-full{display:none}.mosaic-glance{display:flex;flex-direction:column;min-width:0;height:100%}
+ .mosaic-glance .mosaic-heading{gap:7px;margin-bottom:10px}.mosaic-glance h2{font-size:18px;margin:0}.mosaic-glance .mosaic-glyph{width:28px;height:28px;border-radius:9px}.mosaic-glance .mosaic-glyph svg{width:18px;height:18px}
+ .mosaic-glance .progress-ring{width:84px;height:84px;margin:0 auto 8px}.mosaic-glance .ring-copy strong{font-size:24px}.mosaic-glance .ring-copy span{font-size:9px}
+ .mosaic-quick-counts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.mosaic-quick-counts button{font-size:10px!important;padding:6px 4px;white-space:normal}
+ .mosaic-glance p{font-size:11px;margin:4px 0 8px}.mosaic-glance .mosaic-count{font-size:32px;margin:2px 0}.mosaic-glance .mosaic-count small{font-size:13px;font-weight:400}
+ .mosaic-glance .mosaic-projects{gap:5px;margin:6px 0 8px}.mosaic-expand-hint{font-size:10px;color:var(--color-text-secondary);margin-top:auto;padding-top:8px}
+ .mosaic-activity{grid-column:1/-1}.mosaic-glance .mosaic-mini-chart{height:56px;max-height:56px;margin-top:4px;overflow:visible}
+ .telemetry-dialog .mosaic-progress-body{flex-direction:row;align-items:center;gap:16px}.telemetry-dialog .mosaic-progress .progress-ring{width:130px;height:130px}.telemetry-dialog .mosaic-progress-body dl{gap:12px}
+}
+@media(max-width:360px){.control-mosaic>.mosaic-panel{padding:11px}.mosaic-glance h2{font-size:16px}.telemetry-dialog .mosaic-progress-body{flex-direction:column;align-items:center}.telemetry-dialog .mosaic-progress-body dl{display:flex;gap:14px}}
+
+.domain-telemetry{grid-template-columns:repeat(3,minmax(0,1fr))}.domain-tile h2{font-size:20px}.domain-tile .mosaic-glyph{width:38px;height:38px}.domain-full-detail{font-size:12px;color:var(--color-text-secondary)}.domain-full-detail button{border:0;border-radius:10px;background:var(--color-raised);color:inherit;min-height:44px;padding:10px;font:inherit;cursor:pointer}
+@media(max-width:900px){.domain-telemetry{grid-template-columns:repeat(2,minmax(0,1fr))}.domain-telemetry>.domain-tile:last-child{grid-column:1/-1}.domain-full-detail{display:none}.domain-tile h2{font-size:17px}.domain-tile .mosaic-glyph{width:28px;height:28px}.domain-tile .mosaic-count{font-size:30px}.domain-tile p{font-size:11px;margin:6px 0}.domain-tile .mosaic-heading{gap:8px}}
+
+.inspector-mini-telemetry{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:16px 0 20px}.inspector-mini-telemetry>button{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 12px;border:0;border-radius:12px;background:var(--color-surface);color:inherit;font:13px/1.4 Inter,system-ui,sans-serif;cursor:pointer}.inspector-mini-telemetry svg{width:18px;height:18px}.inspector-mini-telemetry strong{font-size:20px;margin-right:5px}.inspector-mini-telemetry p{flex-basis:100%;margin:0;font-size:11px;color:var(--color-text-secondary)}

@@ -53,3 +53,15 @@ html[data-ctrl-hidden=true] .relay-pulse i{animation-play-state:paused!important
 .relay-compact-no-history{min-height:35px;display:flex;align-items:center}
 @media(prefers-reduced-motion:reduce){.relay-compact-arc{transition:none!important}}
 :root[data-presentation-motion=calm] .relay-compact-arc{transition:none!important}
+
+/* Keep identity left and close at the top-right; actions get their own mobile row. */
+@media(max-width:600px){
+ .relay-engine-panel{padding:20px!important;padding-bottom:max(24px,env(safe-area-inset-bottom))!important}
+ .relay-engine-heading{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:10px;align-items:center}
+ .relay-engine-heading>img{width:44px;height:44px}.relay-engine-heading>div:not(.relay-engine-actions){grid-column:2;grid-row:1;text-align:left;min-width:0}
+ .relay-engine-heading h2{font-size:26px}.relay-engine-heading p{line-height:1.4;margin-top:4px;text-wrap:balance}
+ .relay-engine-heading>[data-relay-close]{grid-column:3;grid-row:1;margin:0;align-self:start}
+ .relay-engine-heading>.relay-engine-actions{grid-column:1/-1;grid-row:2;justify-content:flex-start;flex-wrap:wrap;gap:8px;margin-top:4px}
+ .relay-engine-actions :is(button,a){min-height:44px;box-sizing:border-box}.relay-engine-heading .relay-engine-actions button{margin:0}
+}
+.relay-compact-mosaic{grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr))}

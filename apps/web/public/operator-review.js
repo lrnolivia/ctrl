@@ -1,3 +1,4 @@
+import {glyph} from '../../../packages/shared-ui/glyphs.js';
 import {compactCharts} from '../../../packages/shared-ui/compact-charts.js';
 import {summaryText} from '../../../packages/shared-ui/presentation-copy.js';
 import {mountFeedbackForm} from '../../../packages/shared-ui/feedback-form.js';
@@ -200,7 +201,8 @@ export function renderReviewTelemetry(partial=telemetryPartial){
  const done=Number(root.dataset.summaryCompleted||0),unknown=Number(root.dataset.summaryUnknown||0),needs=Number(root.dataset.summaryNeeds||0),other=Number(root.dataset.summaryOther||0),total=Number(root.dataset.summaryTotal||0);
  const pending=partial||unknown>0||root.dataset.summaryState!=='ready';
  chart.className='';chart.removeAttribute('role');
- chart.innerHTML=compactCharts({title:'loaded captures',rows:[{label:'review complete',value:done},{label:'awaiting review',value:needs},{label:'stale or archived',value:other},{label:'review status unknown',value:unknown}],progress:{captures:{progress:reviewItems.map(item=>({assignment:item.evidence_id,events:[{type:'capture',at:item.captured_at||item.created_at}]}))}},pending,completion:{done,total,label:'capture reviews complete',note:'Saved review status in the loaded captures, not completed project work.'},activityLabel:'captures recorded',note:'Loaded evidence only; older captures may be outside this page.'});
+ chart.innerHTML=`<section class="inspector-mini-telemetry" aria-label="capture signals" data-pending="${pending}"><button type="button" data-capture-filter="pending"><span aria-hidden="true">${glyph('inspect')}</span><span><strong>${needs}</strong> need review${pending?' · checking':''}</span><span aria-hidden="true">›</span></button><button type="button" data-capture-filter="stale"><span aria-hidden="true">${glyph('branch')}</span><span><strong>${Number(root.dataset.summaryStale||0)}</strong> stale captures <span aria-hidden="true">›</span></span></button><p>${total} loaded captures · ${done} reviews complete · ${unknown} status unknown. Counts describe this page, not all project work.</p></section>`;
+ for(const button of chart.querySelectorAll('[data-capture-filter]'))button.addEventListener('click',()=>{viewer?.inspect(button.dataset.captureFilter,button);});
 }
 export function cancelReviewLoad(){loadGeneration++;reviewController?.abort();reviewController=null;reviewPass=null;reviewScope=null;}
 export function bindReviewFilters() {

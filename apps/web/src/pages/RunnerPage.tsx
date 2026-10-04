@@ -39,9 +39,8 @@ export function RunnerPage() {
       <FeatureHeader feature="runner" title="runner" subtitle="coordinate" />
       <ProjectSwitcher />
       <ProgressNotice />
-      <ReviewFocus snapshot={snapshot} project={contextProject}/>
-      <SignalDeck cards={cards} feature="runner" />
       <PageTelemetry snapshot={snapshot} kind="runner"/>
+      <ReviewFocus snapshot={snapshot} project={contextProject}/>
       <section className="operator-section">
         <div className="section-heading"><h2>current work</h2><span>{all.length} {incomplete ? "loaded" : "current"}</span></div>
         <WorkViewer id="runner" items={remaining} project={contextProject} incomplete={!allSnapshot || Boolean(allSnapshot.loadingProgress?.length || allSnapshot.failedProgress?.length)} />

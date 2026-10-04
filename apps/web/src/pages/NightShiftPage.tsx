@@ -1,6 +1,5 @@
 import {NightShiftLedger} from '../components/NightShiftLedger';
 import {ReviewFocus} from "../components/ReviewFocus";
-import {PageTelemetry} from '../components/PageTelemetry';
 import { WorkViewer } from "../components/WorkViewer";
 import { useWorkItems } from "../components/useWorkItems";
 import { statusLabel, summaryText } from "../../../../packages/shared-ui/presentation-copy.js";
@@ -43,10 +42,7 @@ export function NightShiftPage() {
     <div className="page operator-page react-page">
       <FeatureHeader feature="night-shift" title="night shift" subtitle="away work" />
       <ProjectSwitcher />
-      <ReviewFocus snapshot={snapshot} project={contextProject} team="night-shift"/>
-      <NightShiftLedger snapshot={snapshot}/>
-      <SignalDeck cards={cards} feature="night-shift" />
-      <PageTelemetry snapshot={snapshot} kind="night-shift"/>
+      <NightShiftLedger snapshot={snapshot} afterTelemetry={<ReviewFocus snapshot={snapshot} project={contextProject} team="night-shift"/>}/>
       <section className="operator-section">
         <div className="section-heading"><h2>automatic check results</h2><span>{results.length} results on record</span></div>
         <WorkViewer id="night-shift" items={workItems} project={contextProject} incomplete={!allSnapshot} />

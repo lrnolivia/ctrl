@@ -37,6 +37,7 @@ export function TodayPage() {
   const needs=all.filter(({project,item})=>needsHumanReview(item)&&!(project===featured?.project&&item.assignment===featured.item.assignment));
   const remaining=workItems.filter(item=>!(item.project===featured?.project&&item.id===featured.item.assignment));
   const workers=snapshot?.workers||[];
+  const attentionChecks=workers.filter(worker=>worker.runtime?.last_error||["blocked","failed","waiting_credentials"].includes(worker.runtime?.status||""));
   const incomplete=!snapshot||Boolean(snapshot.loadingProgress?.length||snapshot.failedProgress?.length);
 
   return (
@@ -44,7 +45,9 @@ export function TodayPage() {
       <FeatureHeader feature="today" title="now" subtitle="focus" />
       <ProjectSwitcher />
       <ProgressNotice />
-      <div className="control-overview"><ReviewFocus snapshot={snapshot} project={contextProject}/><TelemetryMosaic snapshot={snapshot}/></div>
+      <TelemetryMosaic snapshot={snapshot}/>
+      <ReviewFocus snapshot={snapshot} project={contextProject}/>
+      {attentionChecks.length>0&&<section className="operator-section automatic-attention" aria-label="checks needing attention"><div className="section-heading"><h2>checks needing attention</h2><span>{attentionChecks.length} reported problems</span></div>{attentionChecks.map(worker=><article className="automation-row" data-tone="bad" key={worker.id}><div><ProjectBadge project={worker.id} size="small"/><p>{summaryText(worker.runtime?.last_error,'An automatic check needs help.')}</p><details><summary>reported problem</summary><p>{worker.runtime?.last_error}</p><p>{worker.runtime?.last_summary}</p></details></div><button type="button" className="operator-button secondary" data-work-project={worker.id}>inspect check</button></article>)}</section>}
 
       {needs.length>0&&<section className="operator-section">
         <h2>also needs you</h2>
@@ -70,7 +73,7 @@ export function TodayPage() {
       <section className="operator-section">
         <div className="section-heading"><h2>automatic checks</h2><span>relay watches these for you</span></div>
         <div className="react-stack">
-          {workers.length ? workers.map(worker => {
+          {workers.filter(worker=>!attentionChecks.includes(worker)).length ? workers.filter(worker=>!attentionChecks.includes(worker)).map(worker => {
             const workerTone = worker.runtime?.last_error ? "bad" : worker.runtime?.status === "running" ? "good" : worker.enabled ? "wait" : "quiet";
             return <article className="automation-row" data-tone={workerTone} key={worker.id}>
               <div className="automation-main">
