@@ -1,3 +1,4 @@
+import {bindWorkDetails} from './work-details.js';
 import {captureMotionLayout,settleMotionLayout} from "./field-springs.js";
 import {projectInGroup} from "./project-groups.js";
 import {glyph} from './glyphs.js';
@@ -8,7 +9,7 @@ const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&
 const labels={pending:'need review',completed:'completed',stale:'stale',archived:'archived',all:'all'};
 const names={relay:'relay',field:'field',loewfi:'loew.fi',rtxforge:'rtxForge','bazzite-custom':'loewOS',gamebridge:'GameBridge'};
 const name=id=>names[id]||id.replace(/[-_]+/g,' ');
-export function projectBadge(project){return '<span class="work-project-badge">'+iconSlot(project)+'<strong>'+escape(name(project))+'</strong></span>';}
+export function projectBadge(project){return '<button type="button" class="work-project-badge" data-work-project="'+escape(project)+'">'+iconSlot(project)+'<strong>'+escape(name(project))+'</strong></button>';}
 function safeHref(value){try{const url=new URL(value,location.origin);return url.origin===location.origin?url.pathname+url.search+url.hash:'';}catch{return '';}}
 async function request(action,items){
  const response=await fetch('/api/work-review',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action,items}),signal:AbortSignal.timeout(45000)});
@@ -16,6 +17,7 @@ async function request(action,items){
  return response.json();
 }
 export function bindWorkViewer(root,{id,defaultView='list',onOpen,initialFilter='pending',predicates={},extensionControls=[]}={}){
+ const releaseDetails=bindWorkDetails();
  let items=[],records={},loaded=false,incomplete=true,project='',view=defaultView,query={filter:initialFilter,search:'',sort:'time',direction:'desc',extensions:{}},selection=new Set(),scope='selected',pending=null,undo=[],busy=false,message='',generation=0,disposed=false;
  const openMenus=new Set();
  const storageKey='relay.work-view.'+id;let anchorRestored=false;const fresh=new Set();
@@ -39,18 +41,18 @@ export function bindWorkViewer(root,{id,defaultView='list',onOpen,initialFilter=
   template.innerHTML=`<div class="work-view-controls"><div class="work-control-summary">
   <label class="work-search-compact"><span class="sr-only">search work</span><input data-focus="search" name="search" type="search" value="${escape(query.search)}" placeholder="find work"></label>
   <div class="work-view-switch" role="group" aria-label="work presentation">${['list','visual'].map(value=>`<button type="button" data-view="${value}" data-focus="view-${value}" aria-pressed="${view===value}">${value}</button>`).join('')}</div>
-  <details class="work-control-menu" data-control-menu="filters" ${menus.includes('filters')?'open':''}><summary data-focus="menu-filters">${glyph('filter')}<span>filter & sort</span>${glyph('next')}</summary><div class="work-control-panel">
+  </div><div class="work-control-pair"><details class="work-control-menu" data-control-menu="filters" ${menus.includes('filters')?'open':''}><summary data-focus="menu-filters">${glyph('filter')}<span>filter & sort</span>${glyph('next')}</summary><div class="work-control-panel">
    <div class="work-filter-bar" role="group" aria-label="review status">${Object.entries(labels).map(([value,label])=>`<button type="button" data-filter="${value}" data-focus="filter-${value}" aria-pressed="${query.filter===value}">${label}</button>`).join('')}</div>
    <div class="work-query-bar">
    <label>sort<select data-focus="sort" name="sort"><option value="time" ${query.sort==='time'?'selected':''}>time</option><option value="importance" ${query.sort==='importance'?'selected':''}>importance</option></select></label>
    <label>order<select data-focus="direction" name="direction"><option value="desc" ${query.direction==='desc'?'selected':''}>${query.sort==='time'?'newest first':'highest first'}</option><option value="asc" ${query.direction==='asc'?'selected':''}>${query.sort==='time'?'oldest first':'lowest first'}</option></select></label>
    ${extensionControls.map(control=>`<label>${escape(control.label)}<select name="extension:${escape(control.key)}" data-focus="extension:${escape(control.key)}"><option value="">all</option>${control.options.map(option=>`<option value="${escape(option.value)}" ${query.extensions[control.key]===option.value?'selected':''}>${escape(option.label)}</option>`).join('')}</select></label>`).join('')}
 </div>
-   <button type="button" data-close-menu="filters">done</button></div></details></div>
+   <button type="button" data-close-menu="filters">done</button></div></details>
    <details class="work-control-menu ${!rows.length?'work-empty-actions':''}" data-control-menu="organize" ${menus.includes('organize')?'open':''}><summary data-focus="menu-organize">${glyph('check')}<span>${selection.size?selection.size+' selected':'organize'}</span>${glyph('next')}</summary><div class="work-control-panel"><div class="work-selection-bar"><label><input type="checkbox" data-select-visible data-focus="select-visible" ${rows.length&&rows.every(item=>selection.has(reviewKey(item)))?'checked':''}>select these ${rows.length} items</label><span>${selection.size} selected${hidden?' · '+hidden+' outside these results':''}</span><button type="button" data-clear-selection ${!selection.size?'disabled':''}>clear selection</button></div>
    <div class="work-bulk-bar"><label>action scope<select name="scope" data-focus="scope"><option value="selected" ${scope==='selected'?'selected':''}>selected items</option><option value="filtered" ${scope==='filtered'?'selected':''}>current filtered results</option><option value="all-projects" ${scope==='all-projects'?'selected':''}>all projects · matching loaded results</option></select></label>
    ${[['pending','reopen'],['completed','mark complete'],['stale','mark stale'],['clear-complete','clear complete'],['clear-stale','clear stale'],['restore','restore']].map(([action,label])=>`<button type="button" data-bulk="${action}" ${busy||!loaded||!changedTargets(action).length?'disabled':''}>${label}</button>`).join('')}</div>
-   <button type="button" data-close-menu="organize">done</button></div></details>
+   <button type="button" data-close-menu="organize">done</button></div></details></div>
    ${incomplete?'<p class="work-query-help">Some updates are still loading. Changes only affect the items shown.</p>':''}
    ${pending?`<div class="work-confirm" role="group" aria-label="confirm review changes"><strong>${escape(pending.label)}: ${pending.items.length} item${pending.items.length===1?'':'s'} in ${new Set(pending.items.map(item=>item.project)).size} project(s)</strong><p>${escape(pending.scope)}. ${escape(query.search?'search: '+query.search+'. ':'')}this only organizes your review list.</p><button type="button" data-confirm ${confirmationReady()?'':'disabled'}>apply to these ${pending.items.length} items</button><button type="button" data-cancel ${busy?'disabled':''}>cancel</button></div>`:''}
    <div class="work-message" role="status">${escape(message)}${!loaded&&!busy?'<button type="button" data-refresh>refresh review state</button>':''}${undo.length?'<button type="button" data-undo '+(busy?'disabled':'')+'>undo last change</button>':''}</div>
@@ -147,7 +149,7 @@ export function bindWorkViewer(root,{id,defaultView='list',onOpen,initialFilter=
  return {
   update(next,{project:nextProject='',incomplete:partial=false}={}){const identity=next.map(item=>reviewKey(item)+':'+item.revision).join('|'),old=items.map(item=>reviewKey(item)+':'+item.revision).join('|');items=next;project=nextProject;incomplete=partial;if(identity!==old){pending=null;loaded=false;}render();if(identity!==old||(!loaded&&!recordRead))void loadRecords();if(!anchorRestored&&items.length){anchorRestored=true;let saved;try{saved=sessionStorage.getItem(storageKey+'.anchor');}catch{}const requested=new URLSearchParams(location.hash.split('?')[1]||'').get('item');const node=[...root.querySelectorAll('[data-work-key]')].find(node=>requested?items.find(item=>item.id===requested&&reviewKey(item)===node.dataset.workKey):node.dataset.workKey===saved);if(node){node.focus({preventScroll:true});node.scrollIntoView({block:'center'});}}},
   refresh(){void loadRecords();},
-  destroy(){window.removeEventListener('relay:work-arrivals',newWork);window.removeEventListener('hashchange',reveal);disposed=true;generation++;root.removeEventListener('keydown',keydown);root.removeEventListener('click',click);root.removeEventListener('change',change);root.removeEventListener('input',input);}
+  destroy(){releaseDetails();window.removeEventListener('relay:work-arrivals',newWork);window.removeEventListener('hashchange',reveal);disposed=true;generation++;root.removeEventListener('keydown',keydown);root.removeEventListener('click',click);root.removeEventListener('change',change);root.removeEventListener('input',input);}
  };
 }
 

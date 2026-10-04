@@ -15,6 +15,19 @@ export function phaseLabel(value) { return phases[value] || statuses[value] || '
 export function eventLabel(value) { return events[value] || 'progress update'; }
 export function summaryText(value, fallback) {
   if (!value) return fallback;
+  if (typeof value !== 'string') return fallback;
   // Infrastructure diagnostics belong in optional Details, not the glance summary.
-  return /[a-f0-9]{12,}|(?:apps|packages|src)\/|\b(?:PR #|MCP|SHA|canonical|rebase|commit|payload|worker heartbeat|metadata|ui\/resourceUri|ui\.resourceUri|provenance|claim|source task)\b|Node\.js|\bpackets?\b|\bENOBUFS\b|\b(?:stack trace|canonical|head_sha|request_id)\b|\bat \S+\([^)]*:\d+/.test(value) ? fallback : value;
+  if (/[a-f0-9]{12,}|(?:apps|packages|src)\/|\b(?:PR\s*#?\d+|MCP|SHA|canonical|rebase|commit|payload|worker heartbeat|metadata|ui\/resourceUri|ui\.resourceUri|provenance|claim|source task|USER STOP GATE|preflight|checkout|worktree)\b|Node\.js|\bpackets?\b|\bENOBUFS\b|\/Users\/|\d{4}-\d{2}-\d{2}T\d{2}:|\b(?:stack trace|head_sha|request_id)\b|\bat \S+\([^)]*:\d+/i.test(value)) return fallback;
+  const clean=value.replace(/\s+/g,' ').trim();
+  return clean.length>180?clean.slice(0,177).replace(/\s+\S*$/,'')+'…':clean;
+}
+
+// Source records stay intact. Only this display model is shortened for people.
+export function assignmentPresentation(item = {}) {
+  const request=item.attention_request || {};
+  const phase=phaseLabel(item.stage);
+  const fallbackTitle=({implementation:'work in progress',coding:'work in progress',checks:'checking the latest changes',testing:'checking the latest changes',held:'work on hold',review:'work ready to review',complete:'work completed',reconciliation:'work status needs an update'})[item.stage] || 'project work';
+  const title=summaryText(request.title || item.display_name || item.title || item.goal,fallbackTitle);
+  const fallback=({working:'Work is underway. Open details for the latest update.',complete:'This assignment is recorded as complete.',completed:'This assignment is recorded as complete.',held:'Work is paused. Open details for the reason.', 'waiting-for-human':'A recorded request is waiting for review. Open details to see what is needed.', 'waiting-on-external-system':'Waiting for a running check or external response.', blocked:'The work needs a fix before it can continue.',failed:'A check failed and needs attention.'})[item.state] || 'Open details for the latest recorded update.';
+  return {title,detail:summaryText(request.question || item.waiting_reason || item.recovery_action || item.next_action,fallback),next:summaryText(item.next_action,'Open details for the next step.'),phase};
 }

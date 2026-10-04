@@ -1,3 +1,4 @@
+import {bindWorkDetails} from '../../../packages/shared-ui/work-details.js';
 import { relayTelemetry, bindRelayUtility } from '../../../packages/shared-ui/relay-utility.js';
 import { bindMotion } from "../../../packages/shared-ui/motion.js";
 import { useEffect } from "react";
@@ -24,7 +25,7 @@ function NavArtwork({feature,src}:{feature:string;src:string}){
 }
 
 function Shell() {
-  useEffect(() => { const presentation = bindPresentation(); const theme = bindTheme(); const motion = bindMotion(); const relay = bindRelayUtility(); return () => { relay(); presentation(); theme?.(); motion(); }; }, []);
+  useEffect(() => { const details = bindWorkDetails(); const presentation = bindPresentation(); const theme = bindTheme(); const motion = bindMotion(); const relay = bindRelayUtility(); return () => { details(); relay(); presentation(); theme?.(); motion(); }; }, []);
   const { state, project } = useLiveRelay();
   const location = useLocation();
   const pageLabel = location.pathname.startsWith("/runner") ? "runner" : location.pathname.startsWith("/night-shift") ? "night shift" : "now";

@@ -1,5 +1,6 @@
 import {projectInGroup} from "./project-groups.js";
 import { activityTime, workRevision } from './work-activity.js';
+import {assignmentPresentation} from './presentation-copy.js';
 export const reviewStates = ['pending', 'completed', 'stale'];
 export const reviewFilters = ['pending', 'completed', 'stale', 'archived', 'all'];
 export const reviewKey = item => [item.project, item.kind, item.id].map(encodeURIComponent).join('/');
@@ -52,8 +53,9 @@ export function reviewTransition(previous, action) {
   throw new Error('Unknown review action.');
 }
 export async function assignmentItem(project, source) {
-  return {project,kind:'assignment',id:source.assignment,title:source.goal || source.assignment.replace(/[-_]+/g,' '),
-    detail:source.waiting_reason || source.recovery_action || '',next:source.next_action || 'Open details to assess',sourceState:source.state || 'not reported',
+  const copy=assignmentPresentation(source);
+  return {project,kind:'assignment',id:source.assignment,title:copy.title,
+    detail:copy.detail,next:copy.next,sourceState:source.state || 'not reported',
     time:activityTime(source),priority:source.priority || null,revision:await sourceRevision(source),
     href:'/#/runner/'+encodeURIComponent(project)+'/'+encodeURIComponent(source.assignment)+'?project='+encodeURIComponent(project),source};
 }
