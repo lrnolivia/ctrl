@@ -16,7 +16,8 @@ export async function controlPreviewChecks(browser){
    if(width===1440){await page.locator('.control-mosaic[data-loading=true]').waitFor();assert.equal(await page.locator('.control-mosaic .mosaic-count').count(),0,'unknown first-load counts are not presented as zero');await page.screenshot({path:'qa-evidence/overview-loading-1440.png'});releaseInitial();}
    await page.locator('.work-viewer[data-summary-state=ready]').waitFor();await page.locator('.review-focus-media img').waitFor();await page.evaluate(()=>document.fonts.ready);await label(page);
    await page.waitForFunction(()=>[...document.querySelectorAll('.review-focus-media img')].every(i=>i.complete&&i.naturalWidth));
-   await page.locator('.review-reply button[type=submit]:enabled').waitFor();
+   await page.locator('.review-reply button[type=submit]').waitFor();
+   assert.equal(await page.locator('.review-reply button[type=submit]').isDisabled(),true,'an empty review requires a decision or note before submission');
    assert.equal(await page.locator('.mosaic-progress .ring-copy strong:visible').textContent(),'60%','completion ratio from synthetic coordination records');
    assert.equal(await page.locator('.mosaic-activity svg[role=img]:visible,.mosaic-activity .mosaic-mini-chart:visible').count(),1,'populated hourly activity graph');
    assert.equal(await page.locator('.control-mosaic .mosaic-activity-line:visible').count(),1,'one continuous observed activity curve');
