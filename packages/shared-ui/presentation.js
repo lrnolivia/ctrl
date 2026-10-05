@@ -2,8 +2,9 @@ import { glyph } from './glyphs.js';
 // Keep independent device preferences; resizing never writes a new choice.
 const defaults={desktop:'rail',nav:'bottom',overview:'compact',brand:'compact',richness:'simple',motion:'full'};
 const choices={desktop:['rail','bottom'],nav:['sidebar','bottom'],overview:['compact'],brand:['compact','roomy'],richness:['simple','rich'],motion:['full','calm']};
+const optionRow=(name,title,options)=>`<fieldset class="presentation-choice"><legend>${title}</legend><div class="presentation-options">${options.map(([value,label])=>`<label><input type="radio" name="${name}" value="${value}"><span>${label}</span></label>`).join('')}</div></fieldset>`;
 export function presentationMenu(){
- return `<details class="presentation-menu"><summary aria-label="Settings" title="Settings">${glyph('settings')}</summary><div class="presentation-panel" popover="manual"><strong>settings</strong><p>Saved in this browser</p><fieldset><legend>Navigation</legend><label>On mobile<select name="nav"><option value="bottom">Bottom bar · default</option><option value="sidebar">Sidebar drawer</option></select></label><label>On desktop<select name="desktop"><option value="rail">Sidebar · default</option><option value="bottom">Bottom bar</option></select></label></fieldset><fieldset><legend>Appearance</legend><button id="theme-toggle" class="utility-button" type="button"><span class="utility-icon" aria-hidden="true">${glyph('sun')}</span><span class="utility-label">Light mode</span></button></fieldset><fieldset><legend>Accessibility</legend><label>Motion<select name="motion"><option value="full">Standard</option><option value="calm">Reduced</option></select></label><p>Your system's reduced-motion preference is always respected.</p></fieldset><button type="button" data-presentation-reset>Reset browser preferences</button></div></details>`;
+ return `<details class="presentation-menu"><summary aria-label="Settings" title="Settings">${glyph('settings')}</summary><div class="presentation-panel" popover="manual"><strong>settings</strong><p>Saved in this browser</p>${optionRow('nav','Mobile navigation',[['bottom','Bottom bar'],['sidebar','Sidebar drawer']])}${optionRow('desktop','Desktop navigation',[['rail','Sidebar'],['bottom','Bottom bar']])}<fieldset><legend>Appearance</legend><button id="theme-toggle" class="utility-button" type="button"><span class="utility-icon" aria-hidden="true">${glyph('sun')}</span><span class="utility-label">Light mode</span></button></fieldset>${optionRow('motion','Motion',[['full','Standard'],['calm','Reduced']])}<p>Your system's reduced-motion preference is always respected.</p><button type="button" data-presentation-reset>Reset browser preferences</button></div></details>`;
 }
 export function normalizePresentation(saved = {}) {
   return Object.fromEntries(Object.entries(defaults).map(([key, value]) => [key, key==='nav'&&saved?.nav==='top'?'sidebar':choices[key].includes(saved?.[key]) ? saved[key] : value]));
@@ -57,8 +58,7 @@ export function bindPresentation() {
   const apply = () => {
     for (const [key, value] of Object.entries(prefs)) {
       document.documentElement.dataset['presentation' + key[0].toUpperCase() + key.slice(1)] = value;
-      const control = menu.querySelector(`[name="${key}"]`);
-      if (control) control.value = value;
+      for (const control of menu.querySelectorAll(`[name="${key}"]`)) control.checked = control.value === value;
     }
     clearance();
   };

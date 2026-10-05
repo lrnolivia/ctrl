@@ -1,3 +1,4 @@
+import { signInResponse } from './sign-in.js';
 const json=(value,status=200)=>Response.json(value,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 const safeId='[a-zA-Z0-9_-]+';
 const reads=new RegExp('^/api/(?:projects(?:/'+safeId+'(?:/icon)?)?|workers|progress/'+safeId+'|visual(?:/vis_[a-zA-Z0-9-]+(?:/(?:qa|live|image))?)?|retained-preview/rp_[a-f0-9]+(?:/view)?|work-review|events|relay-info|feedback/(?:status|binding)|night-shift/items|execution/jobs)$');
@@ -7,6 +8,7 @@ export function forwarded(request,path){const url=new URL(request.url);if(path)u
 export default {async fetch(request,env){
  const url=new URL(request.url);
  if(env.CTRL_ENABLED!=='true'||!env.RELAY||!env.ASSETS)return json({error:'ctrl protected deployment is not enabled'},503);
+ const entry=signInResponse(request);if(entry)return entry;
  if(!request.headers.get('cf-access-jwt-assertion'))return json({error:'Authentication required'},401);
  const aliases={'/today':'/#/now','/now':'/#/now','/runner':'/#/runner','/night-shift':'/#/night-shift'};const destination=aliases[url.pathname.replace(/\/$/,'')];if(destination&&['GET','HEAD'].includes(request.method))return Response.redirect(url.origin+destination+url.search,308);
  if(url.pathname.startsWith('/api/')){
