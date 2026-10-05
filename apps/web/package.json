@@ -5,6 +5,7 @@
   "type": "module",
   "description": "ctrl control center web interface, extracted from the canonical Relay visual system.",
   "dependencies": {
+    "@noble/hashes": "2.0.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.2"

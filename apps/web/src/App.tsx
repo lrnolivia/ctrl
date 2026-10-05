@@ -1,3 +1,5 @@
+import {bindFileManager,fileManagerIcon} from '../../../packages/shared-ui/file-manager.js';
+import '../../../packages/shared-ui/file-manager.css';
 import {bindWorkDetails} from '../../../packages/shared-ui/work-details.js';
 import { relayTelemetry, bindRelayUtility } from '../../../packages/shared-ui/relay-utility.js';
 import { bindMotion } from "../../../packages/shared-ui/motion.js";
@@ -25,6 +27,7 @@ function NavArtwork({feature,src}:{feature:string;src:string}){
 }
 
 function Shell() {
+  useEffect(()=>bindFileManager(),[]);
   useEffect(() => { const details = bindWorkDetails(); const presentation = bindPresentation(); const theme = bindTheme(); const motion = bindMotion(); const relay = bindRelayUtility(); return () => { details(); relay(); presentation(); theme?.(); motion(); }; }, []);
   const { state, project } = useLiveRelay();
   const location = useLocation();
@@ -69,7 +72,7 @@ function Shell() {
       <main className="operator-shell react-operator-shell">
         <div className="workspace-context">
           <div className="workspace-left"><span>your workspace <span aria-hidden="true">/</span> {pageLabel}</span></div>
-          <div className="connection-tools"><NotificationCenter /><span dangerouslySetInnerHTML={{__html:relayTelemetry()}} /></div>
+          <div className="connection-tools"><button type="button" data-file-manager aria-label="Open files" title="Files" dangerouslySetInnerHTML={{__html:fileManagerIcon}}/><NotificationCenter /><span dangerouslySetInnerHTML={{__html:relayTelemetry()}} /></div>
         </div>
         <Routes>
           <Route path="/now" element={<TodayPage />} />
@@ -87,3 +90,4 @@ function Shell() {
 export default function App() {
   return <HashRouter><LiveRelayProvider><Shell /></LiveRelayProvider></HashRouter>;
 }
+
