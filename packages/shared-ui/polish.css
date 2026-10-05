@@ -204,3 +204,12 @@ html[data-presentation-motion=calm] .work-item-visual[data-image-state=loading]:
 :root{--ctrl-navigation-glow:0 -5px 16px 2px color-mix(in srgb,var(--color-raised) 85%,transparent),0 -10px 28px 3px color-mix(in srgb,var(--color-raised) 60%,transparent)}
 @media(max-width:900px){:root[data-presentation-nav=bottom] .operator-nav{bottom:calc(24px + env(safe-area-inset-bottom,0px))!important}}
 @media(min-width:901px){:root[data-presentation-desktop=bottom] .operator-topbar{bottom:calc(24px + env(safe-area-inset-bottom,0px))!important}}
+
+/* Small fixed choices stay visible and keyboard-operable. */
+.presentation-panel .presentation-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.presentation-panel .presentation-options label{position:relative;margin:0;display:block;min-width:0;cursor:pointer}
+.presentation-options input{position:absolute;inset:0;opacity:0;width:100%;height:100%;margin:0;z-index:1;cursor:pointer}
+.presentation-options span{display:flex;align-items:center;justify-content:center;min-height:44px;padding:8px 10px;box-sizing:border-box;border-radius:12px;background:var(--color-raised);border:1px solid transparent;text-align:center;line-height:1.3}
+.presentation-options input:checked+span{background:color-mix(in srgb,var(--color-accent,#ff647c) 18%,var(--color-raised));border-color:var(--color-accent,#ff647c);font-weight:650}
+.presentation-options input:focus-visible+span{outline:2px solid var(--color-text-primary);outline-offset:3px}
+.presentation-options label:hover span{border-color:var(--color-text-secondary)}

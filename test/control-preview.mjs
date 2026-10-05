@@ -31,7 +31,7 @@ export async function controlPreviewChecks(browser){
     await page.screenshot({path:'qa-evidence/combined-sidebar-TEST-DATA-1440.png'});captures.push('combined-sidebar-TEST-DATA-1440.png');
     await page.locator('.operator-topbar').hover();await page.waitForTimeout(400);assert.ok((await page.locator('.operator-topbar').boundingBox()).width<=350,'expanded sidebar remains bounded');
     await page.screenshot({path:'qa-evidence/combined-sidebar-expanded-TEST-DATA-1440.png'});captures.push('combined-sidebar-expanded-TEST-DATA-1440.png');
-    await page.getByLabel('Settings',{exact:true}).click();await page.selectOption('[name=desktop]','bottom');await page.keyboard.press('Escape');
+    await page.getByLabel('Settings',{exact:true}).click();await page.locator('[name=desktop][value=bottom]').check();await page.keyboard.press('Escape');
    }
    await page.mouse.move(width-5,5);await page.evaluate(()=>document.activeElement?.blur());await page.waitForTimeout(500);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal overflow');
