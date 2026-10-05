@@ -1,4 +1,5 @@
 import {bindWorkDetails} from './work-details.js';
+import {preparePreviewImage} from './preview-image.js';
 import {captureMotionLayout,settleMotionLayout} from "./field-springs.js";
 import {projectInGroup} from "./project-groups.js";
 import {glyph} from './glyphs.js';
@@ -40,7 +41,7 @@ export function bindWorkViewer(root,{id,defaultView='list',onOpen,initialFilter=
   const menus=[...openMenus],template=document.createElement('template');
   template.innerHTML=`<div class="work-view-controls"><div class="work-control-summary">
   <label class="work-search-compact"><span class="sr-only">search work</span><input data-focus="search" name="search" type="search" value="${escape(query.search)}" placeholder="find work"></label>
-  <div class="work-view-switch" role="group" aria-label="work presentation">${['list','visual'].map(value=>`<button type="button" data-view="${value}" data-focus="view-${value}" aria-pressed="${view===value}">${value}</button>`).join('')}</div>
+  <div class="work-view-switch" role="group" aria-label="work presentation">${['list','visual'].map(value=>`<button type="button" data-view="${value}" data-focus="view-${value}" aria-pressed="${view===value}" aria-label="${value==='list'?'List view':'Visual view'}" title="${value==='list'?'List view':'Visual view'}">${glyph(value==='list'?'list':'projects')}</button>`).join('')}</div>
   </div><div class="work-control-pair"><details class="work-control-menu" data-control-menu="filters" ${menus.includes('filters')?'open':''}><summary data-focus="menu-filters">${glyph('filter')}<span>filter & sort</span>${glyph('next')}</summary><div class="work-control-panel">
    <div class="work-filter-bar" role="group" aria-label="review status">${Object.entries(labels).map(([value,label])=>`<button type="button" data-filter="${value}" data-focus="filter-${value}" aria-pressed="${query.filter===value}">${label}</button>`).join('')}</div>
    <div class="work-query-bar">
@@ -63,7 +64,7 @@ export function bindWorkViewer(root,{id,defaultView='list',onOpen,initialFilter=
    const title=item.kind==='check'?`<button type="button" class="work-open" data-work-project="${escape(item.project)}">${escape(readableTitle)}</button>`:item.kind==='evidence'?`<button type="button" class="work-open review-open" aria-label="Open ${escape(readableTitle)}" data-review-id="${escape(item.id)}" data-open="${escape(key)}">${escape(readableTitle)}</button>`:url?`<a class="work-open" href="${escape(url)}" data-anchor="${escape(key)}">${escape(readableTitle)}</a>`:`<strong>${escape(readableTitle)}</strong>`;
    const image=item.screenshot&&safeHref(item.screenshot);
    return `<article class="work-item${item.kind==='evidence'?' review-row':''}" data-work-key="${escape(key)}" data-new-work="${fresh.has(key)}" tabindex="-1"><label class="work-select"><input type="checkbox" data-select="${escape(key)}" ${canOrganize(item)&&loaded?'':'disabled'} data-focus="select-${escape(key)}" ${selection.has(key)?'checked':''} aria-label="Select ${escape(readableTitle)} in ${escape(name(item.project))}"></label>
-    <div class="work-item-visual" aria-hidden="true">${image?`<img src="${escape(image)}" alt="" loading="lazy">`:'<span class="work-kind-mark" title="'+(item.kind==='check'?'automatic check':item.kind==='evidence'?'capture':'assignment')+'">'+glyph(item.kind==='check'?'moon':'branch')+'</span>'}</div>
+    ${image?`<button type="button" class="work-item-visual preview-surface" data-open="${escape(key)}" aria-label="View Fullscreen: ${escape(readableTitle)}" title="View Fullscreen"><img src="${escape(image)}" alt="" loading="lazy"><span class="preview-expand" aria-hidden="true">${glyph('expand')}</span></button>`:'<div class="work-item-visual" aria-hidden="true"><span class="work-kind-mark" title="'+(item.kind==='check'?'automatic check':item.kind==='evidence'?'capture':'assignment')+'">'+glyph(item.kind==='check'?'moon':'branch')+'</span></div>'}
     <div class="work-item-copy">${projectBadge(item.project)}<h3>${title}</h3><p>${escape(summaryText(item.detail,statusLabel(item.sourceState)))}</p>
     <div class="work-item-meta"><span>review: ${review.archived?'archived · ':''}${review.status==='loading'?'checking review status':review.status==='unavailable'?'review status unavailable':labels[review.status]}</span><span>${escape(statusLabel(item.sourceState))}</span><time ${item.time==null?'':`datetime="${new Date(item.time).toISOString()}"`}>${item.time==null?'time unknown':new Date(item.time).toLocaleString()}</time>${item.priority?`<span>${escape(item.priority)}</span>`:''}</div>
     <details><summary>technical details</summary><div class="work-source-detail"><p>${escape(item.title)}</p><p>${escape(item.detail)}</p><p>${escape(item.next)}</p><code>${escape(item.id)}</code>${item.source?.identities?.branch?`<p>Branch: ${escape(item.source.identities.branch)}</p>`:''}${item.source?.identities?.head_sha?`<p>Head: ${escape(item.source.identities.head_sha)}</p>`:''}${item.source?.identities?.pr?`<p>PR: ${escape(item.source.identities.pr)}</p>`:''}<p>${escape(item.source?.next_action||item.source?.runtime?.last_summary||'')}</p></div></details></div></article>`;
@@ -73,7 +74,7 @@ export function bindWorkViewer(root,{id,defaultView='list',onOpen,initialFilter=
   for(const node of template.content.querySelectorAll('[data-work-key]')){
    const visual=node.querySelector('.work-item-visual'),image=visual?.querySelector('img'),old=visuals.get(node.dataset.workKey);
    if(image&&old?.querySelector('img')?.getAttribute('src')===image.getAttribute('src')){
-    visual.replaceWith(old);
+    old.dataset.open=node.dataset.workKey;visual.replaceWith(old);
    }else if(image){
     visual.dataset.imageState=image.complete&&image.naturalWidth?'ready':'loading';
     image.addEventListener('load',()=>{visual.dataset.imageState='ready';},{once:true});
@@ -81,6 +82,7 @@ export function bindWorkViewer(root,{id,defaultView='list',onOpen,initialFilter=
    }
   }
   root.replaceChildren(template.content);
+  for(const surface of root.querySelectorAll('.preview-surface'))preparePreviewImage(surface,surface.querySelector('img'));
   settleMotionLayout(root,motionBefore);
   for(const item of rows)fresh.delete(reviewKey(item));
   void hydrateProjectIcons(root);
