@@ -189,7 +189,7 @@ html[data-presentation-motion=calm] .work-item-visual[data-image-state=loading]:
 
 /* Selection belongs to the trailing edge; source-kind glyphs are decorative. */
 .work-viewer[data-view=list] .work-item{grid-template-columns:96px minmax(0,1fr) 44px!important}
-.work-viewer[data-view=list] .work-select{grid-column:3;grid-row:1;min-width:44px;min-height:44px;display:grid;place-items:center;align-self:center}
+.work-viewer[data-view=list] .work-select{grid-column:3;grid-row:1;min-width:44px;min-height:44px;display:grid;place-items:center;align-self:start}
 .work-viewer[data-view=list] .work-item-visual{grid-column:1;grid-row:1}.work-viewer[data-view=list] .work-item-copy{grid-column:2;grid-row:1}
 .work-viewer[data-view=visual] .work-select{left:auto!important;right:10px;min-width:44px;min-height:44px;padding:0;display:grid;place-items:center}
 .work-open{text-decoration:none!important;cursor:pointer}.work-open::after{content:' ›';color:var(--color-text-secondary)}.work-open:focus-visible{outline:2px solid var(--feature-accent,var(--ctrl-accent));outline-offset:4px;border-radius:4px}
