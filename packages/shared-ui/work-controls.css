@@ -1,5 +1,8 @@
 /* Shared, scoped reconstruction of the approved CTRL filter/organize component. */
-.work-view-controls{--work-control-surface:var(--color-raised,#292724);--work-control-choice:var(--color-surface,#1c1b19);--work-control-text:var(--color-text,#f2f1ee);--work-control-muted:var(--color-text-secondary,#c2bfba);--work-control-accent:#be3f50;--work-control-on-accent:#fff;--work-control-done:#f2f1ee;--work-control-on-done:#24221f}
+.work-view-controls{--work-control-surface:var(--color-raised,#292724);--work-control-choice:var(--color-surface,#1c1b19);--work-control-text:var(--color-text-primary,#f2f1ee);--work-control-muted:var(--color-text-secondary,#c2bfba);--work-control-accent:#be3f50;--work-control-on-accent:#fff;--work-control-done:#f2f1ee;--work-control-on-done:#24221f}
+/* One platter groups the controls on pages and inside raised dialogs. */
+.work-view-controls{box-sizing:border-box;padding:12px;border-radius:18px;background:var(--color-surface)}
+:is(.work-detail-dialog,.relay-file-manager) .work-view-controls{background:var(--color-raised);--work-control-surface:var(--color-surface);--work-control-choice:var(--color-raised)}
 .work-view-controls button:disabled{opacity:.45;cursor:not-allowed}
 .work-view-controls .work-control-panel{display:block;box-sizing:border-box;margin-top:10px;padding:22px;border-radius:22px;background:var(--work-control-surface);min-width:0;box-shadow:none;container-type:inline-size}
 .work-view-controls .work-control-panel .work-control-label{margin:0 0 10px;color:var(--work-control-muted);font-size:13px;font-weight:400}

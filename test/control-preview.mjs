@@ -50,15 +50,15 @@ export async function controlPreviewChecks(browser){
     await page.screenshot({path:'qa-evidence/reply-recovery-TEST-DATA-390.png'});captures.push('reply-recovery-TEST-DATA-390.png');
    }
    await page.locator('.workspace-context [data-relay-open]').click();await page.locator('dialog[data-motion=settled]').waitFor();
-   assert.equal(await page.locator('.relay-compact-ring strong').textContent(),'60%','compact panel consumes same snapshot');assert.equal(await page.locator('.relay-compact-chart').count(),1);
+   assert.equal(await page.locator('.relay-compact-ring strong').textContent(),'60%','compact panel consumes same snapshot');assert.equal(await page.locator('.relay-compact-chart').count(),1);assert.equal(await page.locator('.relay-compact-counts>strong').evaluate(el=>getComputedStyle(el).color),'rgb(181, 71, 31)','Relay panel uses Sienna');
    await page.screenshot({path:`qa-evidence/combined-relay-TEST-DATA-${width}.png`});captures.push(`combined-relay-TEST-DATA-${width}.png`);await page.keyboard.press('Escape');await page.getByRole('dialog',{name:'relay',exact:true}).waitFor({state:'hidden'});
    await page.locator('.operator-nav [data-feature=inspector]').click();await page.locator('#inspector-review-focus .review-focus-media img').waitFor();await page.mouse.move(width-5,5);await page.evaluate(()=>document.activeElement?.blur());await page.waitForTimeout(400);
-   await page.screenshot({path:`qa-evidence/combined-inspector-TEST-DATA-${width}.png`});captures.push(`combined-inspector-TEST-DATA-${width}.png`);
+   assert.equal(await page.locator('#inspector-review-focus .review-focus-kicker').evaluate(el=>getComputedStyle(el).color),'rgb(24, 175, 192)','Inspector review highlight uses blue');await page.screenshot({path:`qa-evidence/combined-inspector-TEST-DATA-${width}.png`});captures.push(`combined-inspector-TEST-DATA-${width}.png`);
    const filters=page.locator('[data-control-menu=filters]');await filters.locator(':scope > summary').click();await filters.locator('.work-control-panel').waitFor();
    assert.ok(await filters.locator('.work-filter-bar button').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize)<=14),'expanded controls retain compact text');
    assert.ok(await filters.locator('.work-control-panel').evaluate(panel=>{const r=panel.getBoundingClientRect(),footer=panel.querySelector('.work-controls-footer').getBoundingClientRect();return panel.scrollWidth<=panel.clientWidth+1&&r.bottom-footer.bottom<=24&&r.bottom>=footer.bottom;}),'expanded controls fit their content without unused space below the footer');
    assert.equal(await filters.locator('.work-controls-done').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(242, 241, 238)','Done retains the approved neutral-white surface');
-   assert.equal(await filters.locator('[data-filter][aria-pressed=true]').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(190, 63, 80)','selection retains the approved deeper rose');
+   assert.equal(await filters.locator('[data-filter][aria-pressed=true]').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(24, 175, 192)','Inspector selections use the Inspector accent');
    await page.screenshot({path:`qa-evidence/inspector-expanded-controls-${width}.png`});
    await filters.locator('[data-close-menu]').click();assert.equal(await filters.getAttribute('open'),null);
    await page.locator('.notification-bell').click();await page.locator('.notification-menu:popover-open').waitFor();

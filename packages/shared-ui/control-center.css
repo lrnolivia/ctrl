@@ -176,7 +176,7 @@ html[data-presentation-motion=calm] .mosaic-meter i{transition:none}
 .assignment-reply-form .review-decision label{min-width:0}.assignment-reply-form .review-decision label span{width:100%;box-sizing:border-box;justify-content:center;border-color:transparent;font-weight:400;padding:10px 8px;font-size:13px;white-space:normal}
 .assignment-reply-note-tools{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:4px 0 8px}.assignment-reply-note-tools button{padding:8px 0;min-height:36px;border:0;box-shadow:none;background:transparent;color:var(--color-text-secondary);font:inherit;font-size:13px;text-decoration:underline;text-underline-offset:3px}
 .assignment-reply-form [hidden]{display:none!important}.assignment-reply-form .review-note-label{display:block;font-size:13px;font-weight:600}.assignment-reply-form textarea{display:block;box-sizing:border-box;width:100%;resize:vertical;min-height:86px;margin:0 0 10px}.assignment-reply-form .review-note-label small{font-size:12px;color:var(--color-text-secondary);font-weight:400}
-.assignment-reply-form .review-reply-actions{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-top:16px}.assignment-reply-form [data-send]{min-width:200px;max-width:100%;justify-content:center;background:#be3f50;color:#fff;font-weight:700;border:0;border-radius:13px}.assignment-reply-form [data-send]:disabled{opacity:.45}.assignment-reply-done{background:var(--color-raised);color:var(--color-text-primary);border:0;border-radius:13px;min-height:44px;padding:10px 16px}
+.assignment-reply-form .review-reply-actions{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-top:16px}.assignment-reply-form [data-send]{min-width:200px;max-width:100%;justify-content:center;background:var(--page-accent,#be3f50);color:#151412;font-weight:700;border:0;border-radius:13px}.assignment-reply-form [data-send]:disabled{opacity:.45}.assignment-reply-done{background:var(--color-raised);color:var(--color-text-primary);border:0;border-radius:13px;min-height:44px;padding:10px 16px}
 .assignment-reply-status{margin-top:20px;padding-top:16px;border-top:1px solid var(--color-border)}.assignment-reply-status>p{font-size:13px}.assignment-reply-status pre{white-space:pre-wrap;overflow-wrap:anywhere}
 @media(max-width:600px){.assignment-reply-form [data-send]{min-width:0;flex:1}.assignment-reply-form .review-reply-actions{gap:24px}.work-detail-body>.work-detail-title{font-size:30px}.assignment-reply-form .review-decision label span{gap:6px}}
 
@@ -267,12 +267,32 @@ html[data-presentation-motion=calm] .metric-ring-value{transition:none}
 @media(max-width:900px){.control-mosaic>.mosaic-panel>.mosaic-full{display:none}.control-mosaic>.mosaic-panel .mosaic-glance .mosaic-heading{min-height:44px}.mosaic-glance-body{display:flex;flex-direction:column;justify-content:center;flex:1;min-width:0}.control-mosaic>.mosaic-motion .mosaic-glance-body .mosaic-projects{flex:0;align-content:center}.mosaic-glance-body .progress-ring{flex:none}.mosaic-glance .mosaic-expand-hint{margin-top:0}}
 
 :is(.work-detail-controls,.relay-file-controls) .work-search-compact{display:block;min-width:0;margin:0 0 12px}
-:is(.work-detail-controls,.relay-file-controls) .work-search-compact input{box-sizing:border-box;width:100%;min-height:46px;padding:12px 14px;border:0;border-radius:12px;background:var(--color-raised);color:var(--color-text);font:inherit;font-size:15px;box-shadow:none}
+:is(.work-detail-controls,.relay-file-controls) .work-search-compact input{box-sizing:border-box;width:100%;min-height:46px;padding:12px 14px;border:0;border-radius:12px;background:var(--color-surface);color:var(--color-text-primary);font:inherit;font-size:15px;box-shadow:none}
+:is(.work-detail-controls,.relay-file-controls) .work-control-menu>summary{box-sizing:border-box;width:100%;background:var(--color-surface)}
 :is(.work-detail-controls,.relay-file-controls) .work-search-compact input::placeholder{color:var(--color-text-secondary);opacity:1}
 :is(.work-detail-controls,.relay-file-controls) .work-view-switch:empty{display:none}
 :is(.work-detail-controls,.relay-file-controls) input:focus-visible{outline:2px solid var(--work-control-accent);outline-offset:3px}
-.work-detail-dialog .work-detail-controls{padding:0;background:transparent;box-sizing:border-box;width:100%}
+.work-detail-dialog .work-detail-controls{box-sizing:border-box;width:100%}
 .work-detail-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 .work-detail-controls .work-control-summary{width:100%;min-width:0}.work-detail-controls .work-control-menu>summary{box-sizing:border-box;width:100%}
 .mosaic-count-action>strong{font:inherit}
 @media(max-width:900px){.mosaic-glance-body .progress-ring{width:96px;height:96px;margin-bottom:14px}.mosaic-glance-body .ring-copy strong{font-size:28px}.mosaic-glance-body .ring-copy span{font-size:10px;white-space:nowrap}.mosaic-quick-counts{gap:6px}.mosaic-quick-counts .mosaic-count-action{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px!important;min-height:58px;padding:8px 4px}.mosaic-quick-counts .mosaic-count-action>strong{font-size:18px;line-height:1;font-weight:600}}
+
+.runner-telemetry{--feature-today:var(--feature-runner);--feature-accent:var(--feature-runner)}
+.mosaic-assignment-actions{display:flex;flex-wrap:wrap;gap:10px}.mosaic-assignment-actions>.mosaic-count-action{flex:1 1 180px;min-width:0}
+
+/* Keep each route's product UI and its detached details on that feature's palette. */
+body{--page-accent:var(--feature-today)}
+body[data-ctrl-feature=runner]{--page-accent:var(--feature-runner)}
+body[data-ctrl-feature=inspector]{--page-accent:var(--feature-inspector)}
+body[data-ctrl-feature=night-shift]{--page-accent:var(--feature-night-shift)}
+:is(.react-operator-shell>:not(.workspace-context),.work-detail-dialog,.qa-stage,.night-shift-dialog){--feature-accent:var(--page-accent);--color-accent:var(--page-accent);--color-focus:var(--page-accent)}
+body:not([data-ctrl-feature=now]) :is(.react-operator-shell>:not(.workspace-context),.work-detail-dialog,.qa-stage,.night-shift-dialog){--feature-today:var(--page-accent)}
+:is(.react-operator-shell>:not(.workspace-context),.work-detail-dialog) .work-view-controls{--work-control-accent:var(--page-accent);--work-control-on-accent:#151412}
+
+.relay-engine-panel{--ctrl-accent:var(--feature-relay);--color-accent:var(--feature-relay);--color-focus:var(--feature-relay)}
+body:has(.relay-engine-panel[open]) .work-detail-dialog{--page-accent:var(--feature-relay);--feature-today:var(--feature-relay)}
+
+.relay-file-manager .work-view-controls{--work-control-accent:var(--feature-relay);--work-control-on-accent:#fff}
+
+.relay-file-manager .work-controls-footer{background:transparent;padding:0;margin-top:24px}
