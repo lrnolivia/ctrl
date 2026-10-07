@@ -71,8 +71,16 @@ html[data-ctrl-hidden=true] .relay-pulse i{animation-play-state:paused!important
 .relay-engine-panel{width:min(640px,calc(100vw - 32px))}
 .relay-engine-heading{display:grid;grid-template-columns:60px minmax(0,1fr) 44px;align-items:center;gap:12px;margin-bottom:20px}
 .relay-engine-heading>img{grid-column:1;grid-row:1}.relay-engine-heading>div:not(.relay-engine-actions){grid-column:2;grid-row:1;min-width:0}
+.relay-engine-heading>.relay-engine-brand{grid-column:1/3;grid-row:1;display:flex;align-items:center;gap:12px;min-width:0;color:inherit;text-decoration:none}
+.relay-engine-brand>div{min-width:0}.relay-engine-brand:focus-visible{outline:2px solid var(--ctrl-accent);outline-offset:4px;border-radius:12px}
+.relay-engine-brand>img{width:44px;height:44px;flex:none}
 .relay-engine-heading>[data-relay-close]{grid-column:3;grid-row:1;margin:0;align-self:start}
 .relay-engine-heading>.relay-engine-actions{grid-column:1/-1;grid-row:2;display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:4px}
 .relay-engine-heading .relay-engine-actions :is(button,a){box-sizing:border-box;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;background:var(--color-raised);color:inherit;border:0;border-radius:12px;text-decoration:none;font:13px/1.4 Inter,system-ui,sans-serif;margin:0;width:auto;height:auto;flex:none}
 .relay-engine-actions svg{width:18px;height:18px;flex:none}.relay-engine-heading h2{overflow-wrap:anywhere}
+@media(max-width:600px){
+ .relay-engine-heading>.relay-engine-actions{flex-wrap:nowrap;gap:6px}
+ .relay-engine-heading .relay-engine-actions :is(button,a){flex:1;min-width:0;padding:10px 6px;gap:5px;font-size:12px;white-space:nowrap}
+ .relay-engine-actions svg{width:16px;height:16px}
+}
 @media(max-width:600px){.relay-engine-panel{width:100vw;height:100dvh;max-height:100dvh;border-radius:0;padding-top:max(20px,env(safe-area-inset-top))!important}.relay-engine-heading{grid-template-columns:44px minmax(0,1fr) 44px}.relay-engine-heading>img{width:44px;height:44px}.relay-sheet-handle{display:none}}
