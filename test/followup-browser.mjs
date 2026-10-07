@@ -26,6 +26,7 @@ export async function followupChecks(browser){
    await page.locator(`.operator-nav a[data-feature=${feature}]`).click();
    await page.getByRole("heading",{name:feature==='runner'?'runner':'night shift',exact:true}).waitFor();
    await page.locator('.control-mosaic').waitFor();
+   if(feature==='night-shift'){const tiles=page.locator('.night-shift-telemetry .domain-tile');assert.equal(await tiles.count(),4);const first=await tiles.nth(0).boundingBox(),second=await tiles.nth(1).boundingBox();assert.ok(width<=600?second.y>=first.y+first.height:Math.abs(second.y-first.y)<1,'Night Shift preserves one phone column and two desktop columns');assert.equal(await page.locator('.night-shift-telemetry .domain-full-detail:visible').count(),0,'detailed records remain in metric dialogs');}
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    const ring=page.locator('.mosaic-progress .progress-ring:visible');
    if(feature==='runner')

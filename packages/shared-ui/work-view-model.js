@@ -1,3 +1,4 @@
+import {workState,evidenceNextAction} from './work-state.js';
 import {projectInGroup} from "./project-groups.js";
 import { activityTime, workRevision } from './work-activity.js';
 import {assignmentPresentation} from './presentation-copy.js';
@@ -52,10 +53,10 @@ export function reviewTransition(previous, action) {
   if(reviewStates.includes(action)) return {...old,status:action,archived:false};
   throw new Error('Unknown review action.');
 }
-export async function assignmentItem(project, source) {
+export async function assignmentItem(project, source, semantics = workState(source)) {
   const copy=assignmentPresentation(source);
   return {project,kind:'assignment',id:source.assignment,title:copy.title,
-    detail:copy.detail,next:copy.next,sourceState:source.state || 'not reported',
+    detail:semantics.kind==='unavailable'?'Current progress could not refresh. The last recorded source remains in details.':semantics.kind==='stale'?'Progress is stale. Refresh before relying on current activity.':copy.detail,next:evidenceNextAction(['stale','unavailable'].includes(semantics.kind)?{state:semantics.kind}:source).label,sourceState:semantics.kind,workState:semantics,
     time:activityTime(source),priority:source.priority || null,revision:await sourceRevision(source),
     href:'/#/runner/'+encodeURIComponent(project)+'/'+encodeURIComponent(source.assignment)+'?project='+encodeURIComponent(project),source};
 }
@@ -67,7 +68,7 @@ export async function evidenceItem(source) {
 
 export function workerSource(worker) {
  return {assignment:worker.id,goal:worker.name || worker.id,state:worker.runtime?.status,
-   next_action:worker.runtime?.last_summary,waiting_reason:worker.runtime?.last_error,
+   last_summary:worker.runtime?.last_summary,waiting_reason:worker.runtime?.last_error,
    latest_event:{at:worker.runtime?.last_run_at},last_meaningful_progress_at:worker.runtime?.last_run_at};
 }
 export async function checkItem(worker) {

@@ -1,9 +1,10 @@
+import {featureIconMarkup,featureLabels} from './feature-icons.js';
 import {summaryText} from './presentation-copy.js';
 import { glyph } from './glyphs.js';
 
 const storageKey = 'relay.notifications.v1';
-const features = new Set(['relay', 'today', 'runner', 'inspector', 'night-shift']);
-const labels = { relay: 'Relay', today: 'Today', runner: 'Runner', inspector: 'Inspector', 'night-shift': 'Night Shift' };
+const features = new Set(['relay', 'today', 'now', 'runner', 'inspector', 'night-shift']);
+const labels = featureLabels;
 let entries = null;
 const listeners = new Set();
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -56,7 +57,7 @@ function messageMarkup(item, toast = false) {
   const severity = item.resolved ? 'Recovered' : item.severity === 'error' ? 'Problem' : item.severity === 'warning' ? 'Needs attention' : 'Update';
   const feature = features.has(item.feature) ? item.feature : 'relay';
   return '<article class="notification-message" data-feature="' + feature + '" data-severity="' + escape(item.severity) + '">' +
-    '<div class="notification-source"><span class="notification-source-icon" aria-hidden="true">' + glyph(feature === 'relay' ? 'projects' : feature === 'night-shift' ? 'moon' : feature === 'runner' ? 'play' : feature === 'inspector' ? 'review' : feature) + '</span><span>' + escape(labels[feature]) + (item.project ? ' · ' + escape(item.project) : '') + '</span><small>' + severity + '</small></div>' +
+    '<div class="notification-source"><span class="notification-source-icon" aria-hidden="true">' + featureIconMarkup(feature) + '</span><span>' + escape(labels[feature]) + (item.project ? ' · ' + escape(item.project) : '') + '</span><small>' + severity + '</small></div>' +
     '<strong>' + escape(item.title) + '</strong><p>' + escape(item.message) + '</p>' +
     '<div class="notification-actions">' + (href ? '<a href="' + escape(href) + '"'+projectAction+'>' + escape(item.action) + '</a>' : '') +
     (toast ? '<button type="button" data-dismiss-notification="' + escape(item.id) + '" aria-label="Dismiss notification">' + glyph('close') + '</button>' : '<small>' + (item.resolved ? 'Recovered' : item.dismissed ? 'Toast dismissed · ' : '') + new Date(item.createdAt).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) + '</small>') + '</div></article>';

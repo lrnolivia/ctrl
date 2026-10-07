@@ -7,12 +7,13 @@ async function json<T>(path: string, timeout = 15000): Promise<T> {
 }
 
 export async function loadDashboard(onSnapshot?: (snapshot: DashboardSnapshot) => void, previous?: DashboardSnapshot | null): Promise<DashboardSnapshot> {
-  const [{ projects }, workers] = await Promise.all([
+  const [{ projects }, observer] = await Promise.all([
     json<{ projects: ProjectRegistration[] }>("/api/projects"),
-    json<RunnerWorker[]>("/api/workers")
+    json<RunnerWorker[]>("/api/workers").then(workers=>{if(!Array.isArray(workers))throw Error("Observer results unavailable");return {workers,available:true as const};}).catch(()=>({workers:previous?.workers||[],available:false as const}))
   ]);
   let snapshot: DashboardSnapshot = {
-    fetchedAt: new Date().toISOString(), projects, workers,
+    fetchedAt: new Date().toISOString(), projects, workers:observer.workers,
+    observerState:observer.available?"available":previous?.workers?.length?"stale":"unavailable",
     coordination: Object.fromEntries(projects.filter(project=>previous?.coordination?.[project.id]).map(project=>[project.id,previous!.coordination![project.id]])),
     progress: Object.fromEntries(projects.filter(project => previous?.progress[project.id]).map(project => [project.id, previous!.progress[project.id]])),
     loadingProgress: projects.map(project => project.id), failedProgress: []

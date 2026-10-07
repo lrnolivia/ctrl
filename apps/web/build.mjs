@@ -12,6 +12,7 @@ import {inspectorWebsiteNavigation} from './public/inspector-navigation.js';
 const here=path.dirname(fileURLToPath(import.meta.url)),root=path.resolve(here,'../..'),out=path.join(root,'dist');
 await fs.rm(out,{recursive:true,force:true});await fs.mkdir(out,{recursive:true});
 const src=name=>fs.readFile(path.join(here,'public',name),'utf8');
+for(const name of ['manifest.webmanifest','sw.js'])await fs.copyFile(path.join(here,'public',name),path.join(out,name));
 const assets=JSON.parse(await src('brand-assets.json'));
 await fs.mkdir(path.join(out,'brand'),{recursive:true});
 for(const [name,url] of Object.entries(assets))await fs.writeFile(path.join(out,'brand',name+'.png'),Buffer.from(url.split(',')[1],'base64'));
@@ -23,7 +24,7 @@ for(const item of outputs){const target=path.join(out,item.fileName);await fs.mk
 const js=(await esbuild({entryPoints:[path.join(here,'public/operator.js')],bundle:true,write:false,format:'iife',target:'es2022',minify:true})).outputFiles[0].text;
 await fs.writeFile(path.join(out,'relay-app.js'),js);
 const cssFiles=['apps/web/public/operator.css','packages/shared-ui/tokens.css','packages/shared-ui/components.css','apps/web/public/operator-1.8.css','apps/web/public/qa.css','packages/shared-ui/notifications.css','packages/shared-ui/telemetry.css','packages/shared-ui/responsive-shell.css','packages/shared-ui/motion.css','packages/shared-ui/relay-utility.css','packages/shared-ui/momo.css','packages/shared-ui/polish.css'];
-cssFiles.push('packages/shared-ui/control-center.css');
+cssFiles.push('packages/shared-ui/control-center.css','packages/shared-ui/work-controls.css');
 let css=(await Promise.all(cssFiles.map(p=>fs.readFile(path.join(root,p),'utf8')))).join('\n');
 css+='\n.operator-brand strong,.operator-nav .nav-copy strong,.nav-label{font-family:"Momo Trust Display",Inter,system-ui,sans-serif;font-weight:400}';
 await fs.writeFile(path.join(out,'inspector.css'),css);

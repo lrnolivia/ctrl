@@ -1,10 +1,11 @@
 import { glyph } from './glyphs.js';
+import {bindPwa} from './pwa.js';
 // Keep independent device preferences; resizing never writes a new choice.
 const defaults={desktop:'rail',nav:'bottom',overview:'compact',brand:'compact',richness:'simple',motion:'full'};
 const choices={desktop:['rail','bottom'],nav:['sidebar','bottom'],overview:['compact'],brand:['compact','roomy'],richness:['simple','rich'],motion:['full','calm']};
 const optionRow=(name,title,options)=>`<fieldset class="presentation-choice"><legend>${title}</legend><div class="presentation-options">${options.map(([value,label])=>`<label><input type="radio" name="${name}" value="${value}"><span>${label}</span></label>`).join('')}</div></fieldset>`;
 export function presentationMenu(){
- return `<details class="presentation-menu"><summary aria-label="Settings" title="Settings">${glyph('settings')}</summary><div class="presentation-panel" popover="manual"><strong>settings</strong><p>Saved in this browser</p>${optionRow('nav','Mobile navigation',[['bottom','Bottom bar'],['sidebar','Sidebar drawer']])}${optionRow('desktop','Desktop navigation',[['rail','Sidebar'],['bottom','Bottom bar']])}<fieldset><legend>Appearance</legend><button id="theme-toggle" class="utility-button" type="button"><span class="utility-icon" aria-hidden="true">${glyph('sun')}</span><span class="utility-label">Light mode</span></button></fieldset>${optionRow('motion','Motion',[['full','Standard'],['calm','Reduced']])}<p>Your system's reduced-motion preference is always respected.</p><button type="button" data-presentation-reset>Reset browser preferences</button></div></details>`;
+ return `<details class="presentation-menu"><summary aria-label="Settings" title="Settings">${glyph('settings')}</summary><div class="presentation-panel" popover="manual"><strong>settings</strong><p>Saved in this browser</p>${optionRow('nav','Mobile navigation',[['bottom','Bottom bar'],['sidebar','Sidebar drawer']])}${optionRow('desktop','Desktop navigation',[['rail','Sidebar'],['bottom','Bottom bar']])}<fieldset><legend>Appearance</legend><button id="theme-toggle" class="utility-button" type="button"><span class="utility-icon" aria-hidden="true">${glyph('sun')}</span><span class="utility-label">Light mode</span></button></fieldset>${optionRow('motion','Motion',[['full','Standard'],['calm','Reduced']])}<p>Your system's reduced-motion preference is always respected.</p><fieldset><legend>App</legend><button type="button" data-pwa-install>Install ctrl</button><button type="button" data-pwa-update hidden>Update available</button><p data-pwa-guidance hidden></p></fieldset><button type="button" data-presentation-reset>Reset browser preferences</button></div></details>`;
 }
 export function normalizePresentation(saved = {}) {
   return Object.fromEntries(Object.entries(defaults).map(([key, value]) => [key, key==='nav'&&saved?.nav==='top'?'sidebar':choices[key].includes(saved?.[key]) ? saved[key] : value]));
@@ -12,6 +13,7 @@ export function normalizePresentation(saved = {}) {
 export function bindPresentation() {
   const menu = document.querySelector('.presentation-menu');
   if (!menu) return () => {};
+  const stopPwa=bindPwa();
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem('relay-presentation') || '{}'); } catch {}
   let prefs = normalizePresentation(saved);
@@ -74,7 +76,7 @@ export function bindPresentation() {
   const outside = event => { if (!menu.contains(event.target)) menu.open = false; };
   document.addEventListener('pointerdown', outside);
   apply(); menu.addEventListener('change', change); menu.querySelector('[data-presentation-reset]').addEventListener('click', reset); document.addEventListener('keydown', escape);
-  return () => { window.visualViewport?.removeEventListener('resize',clearance);window.visualViewport?.removeEventListener('scroll',clearance);if(nav&&nav.parentNode!==home)marker.after(nav);marker.remove();drawer.remove();brand?.removeEventListener('click',openDrawer);menu.removeEventListener('toggle',positionPanel,true);if(panel.matches(':popover-open'))panel.hidePopover();observer.disconnect(); window.removeEventListener('resize', clearance); document.removeEventListener('pointerdown', outside); menu.removeEventListener('change', change); menu.querySelector('[data-presentation-reset]').removeEventListener('click', reset); document.removeEventListener('keydown', escape); };
+  return () => { stopPwa();window.visualViewport?.removeEventListener('resize',clearance);window.visualViewport?.removeEventListener('scroll',clearance);if(nav&&nav.parentNode!==home)marker.after(nav);marker.remove();drawer.remove();brand?.removeEventListener('click',openDrawer);menu.removeEventListener('toggle',positionPanel,true);if(panel.matches(':popover-open'))panel.hidePopover();observer.disconnect(); window.removeEventListener('resize', clearance); document.removeEventListener('pointerdown', outside); menu.removeEventListener('change', change); menu.querySelector('[data-presentation-reset]').removeEventListener('click', reset); document.removeEventListener('keydown', escape); };
 }
 
 // Discrete units, never a fabricated timeline, percentage or trend.
