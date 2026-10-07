@@ -36,6 +36,7 @@ function Shell() {
   const location = useLocation();
   const pageLabel = location.pathname.startsWith("/inspector") ? "inspector" : location.pathname.startsWith("/runner") ? "runner" : location.pathname.startsWith("/night-shift") ? "night shift" : "now";
   const tone = state === "live" ? "good" : state === "offline" ? "bad" : "quiet";
+  useEffect(()=>{document.body.dataset.ctrlFeature=pageLabel.replace(" ","-");return()=>{delete document.body.dataset.ctrlFeature;};},[pageLabel]);
 
   return (
     <>
@@ -74,7 +75,7 @@ function Shell() {
 
       <main className="operator-shell react-operator-shell">
         <div className="workspace-context">
-          <div className="workspace-left"><span>your workspace <span aria-hidden="true">/</span> {pageLabel}</span></div>
+          <div className="workspace-left"><span>ctrl <span aria-hidden="true">/</span> {pageLabel}</span></div>
           <div className="connection-tools"><button type="button" data-file-manager aria-label="Open files" title="Files" dangerouslySetInnerHTML={{__html:fileManagerIcon}}/><NotificationCenter /><span dangerouslySetInnerHTML={{__html:relayTelemetry()}} /></div>
         </div>
         <Routes>
