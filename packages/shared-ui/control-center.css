@@ -266,7 +266,8 @@ html[data-presentation-motion=calm] .metric-ring-value{transition:none}
 .control-mosaic>.domain-tile .domain-metric-body{flex:1}
 @media(max-width:900px){.control-mosaic>.mosaic-panel>.mosaic-full{display:none}.control-mosaic>.mosaic-panel .mosaic-glance .mosaic-heading{min-height:44px}.mosaic-glance-body{display:flex;flex-direction:column;justify-content:center;flex:1;min-width:0}.control-mosaic>.mosaic-motion .mosaic-glance-body .mosaic-projects{flex:0;align-content:center}.mosaic-glance-body .progress-ring{flex:none}.mosaic-glance .mosaic-expand-hint{margin-top:0}}
 
-:is(.work-detail-controls,.relay-file-controls) .work-search-compact{display:block;min-width:0;margin:0 0 12px}
+.work-view-controls{row-gap:8px}
+:is(.work-detail-controls,.relay-file-controls) .work-search-compact{display:block;min-width:0;margin:0}
 .work-view-controls .work-search-compact input{background:var(--color-panel-cap)}
 :is(.work-detail-controls,.relay-file-controls) .work-search-compact input{box-sizing:border-box;width:100%;min-height:46px;padding:12px 14px;border:0;border-radius:12px;background:var(--color-panel-cap);color:var(--color-text-primary);font:inherit;font-size:15px;box-shadow:none}
 :is(.work-detail-controls,.relay-file-controls) .work-control-menu>summary{box-sizing:border-box;width:100%;background:var(--color-surface)}
