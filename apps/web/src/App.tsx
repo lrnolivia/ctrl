@@ -14,6 +14,7 @@ import { LiveRelayProvider, useLiveRelay } from "./live";
 import { TodayPage } from "./pages/TodayPage";
 import { RunnerPage } from "./pages/RunnerPage";
 import { RunnerWorkPage } from "./pages/RunnerWorkPage";
+import { InspectorPage } from "./pages/InspectorPage";
 import { NightShiftPage } from "./pages/NightShiftPage";
 import { NotificationCenter } from './components/NotificationCenter';
 
@@ -33,7 +34,7 @@ function Shell() {
   useEffect(() => { const details = bindWorkDetails(); const presentation = bindPresentation(); const theme = bindTheme(); const motion = bindMotion(); const relay = bindRelayUtility(); return () => { details(); relay(); presentation(); theme?.(); motion(); }; }, []);
   const { state, project } = useLiveRelay();
   const location = useLocation();
-  const pageLabel = location.pathname.startsWith("/runner") ? "runner" : location.pathname.startsWith("/night-shift") ? "night shift" : "now";
+  const pageLabel = location.pathname.startsWith("/inspector") ? "inspector" : location.pathname.startsWith("/runner") ? "runner" : location.pathname.startsWith("/night-shift") ? "night shift" : "now";
   const tone = state === "live" ? "good" : state === "offline" ? "bad" : "quiet";
 
   return (
@@ -55,11 +56,11 @@ function Shell() {
             </NavLink>
           ))}
           <NavLink to={projectHref("/runner",project)} data-feature="runner" className={({isActive})=>isActive?"active":""}><span className="glyph-chip"><NavArtwork feature="runner" src="/brand/runner.png"/></span><span className="nav-copy"><strong>runner</strong><small>coordinate</small></span><span className="nav-chevron" aria-hidden="true">›</span></NavLink>
-          <a href={projectHref("/inspector#review", project)} data-feature="inspector">
+          <NavLink to={projectHref("/inspector", project)} data-feature="inspector">
             <span className="glyph-chip"><NavArtwork feature="inspector" src="/brand/inspector.png"/></span>
             <span className="nav-copy"><strong>inspector</strong><small>review</small></span>
             <span className="nav-chevron" aria-hidden="true">›</span>
-          </a>
+          </NavLink>
           {navItems.slice(2).map(item => (
             <NavLink key={item.to} to={projectHref(item.to, project)} data-feature={item.feature} className={({ isActive }) => isActive ? "active" : ""}>
               <span className="glyph-chip"><NavArtwork feature={item.feature} src={item.icon}/></span>
@@ -81,6 +82,7 @@ function Shell() {
           <Route path="/today" element={<Navigate to={todayAliasTarget(location.search)} replace />} />
           <Route path="/runner" element={<RunnerPage />} />
           <Route path="/runner/:project/:assignment" element={<RunnerWorkPage />} />
+          <Route path="/inspector" element={<InspectorPage />} />
           <Route path="/night-shift" element={<NightShiftPage />} />
           <Route path="*" element={<Navigate to="/now" replace />} />
         </Routes>

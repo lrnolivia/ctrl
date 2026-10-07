@@ -1,3 +1,4 @@
+import {requestWorkReview as request} from './work-review-client.js';
 import {featureIconMarkup} from './feature-icons.js';
 import {renderWorkControls,workControlLabels,applyWorkControlChoice} from './work-controls.js';
 import {bindWorkDetails} from './work-details.js';
@@ -14,11 +15,6 @@ const names={relay:'relay',field:'field',loewfi:'loew.fi',rtxforge:'rtxForge','b
 const name=id=>names[id]||id.replace(/[-_]+/g,' ');
 export function projectBadge(project){return '<button type="button" class="work-project-badge" data-work-project="'+escape(project)+'">'+iconSlot(project)+'<strong>'+escape(name(project))+'</strong></button>';}
 function safeHref(value){try{const url=new URL(value,location.origin);return url.origin===location.origin?url.pathname+url.search+url.hash:'';}catch{return '';}}
-async function request(action,items){
- const response=await fetch('/api/work-review',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action,items}),signal:AbortSignal.timeout(45000)});
- if(!response.ok)throw new Error('Review storage returned '+response.status+'. Refresh before trying again.');
- return response.json();
-}
 export function bindWorkViewer(root,{id,defaultView='list',onOpen,initialFilter='pending',predicates={},extensionControls=[]}={}){
  const releaseDetails=bindWorkDetails();
  let items=[],records={},loaded=false,incomplete=true,project='',view=defaultView,query={filter:initialFilter,search:'',sort:'time',direction:'desc',extensions:{}},selection=new Set(),scope='selected',pending=null,undo=[],busy=false,message='',generation=0,disposed=false;
