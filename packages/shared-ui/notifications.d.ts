@@ -4,3 +4,5 @@ export function resolveNotification(id: string): void;
 export function dismissNotification(id: string): void;
 export function notificationSnapshot(): Array<NotificationInput & { resolved: boolean; dismissed: boolean }>;
 export function bindNotifications(root: HTMLElement): () => void;
+
+export function clearNotifications():void;

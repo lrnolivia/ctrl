@@ -5,20 +5,20 @@ import {renderWorkControls,normalizeWorkControlQuery,applyWorkControlChoice,work
 const render=options=>renderWorkControls({selected:3,visible:9,loaded:true,canAct:()=>true,openMenus:['filters','organize'],...options});
 test('approved human labels retain unchanged review protocol identities',()=>{
  assert.deepEqual(workControlLabels,{pending:'needs me',completed:'reviewed',stale:'outdated',archived:'archived',all:'everything'});
- const html=render();for(const text of ['show me','arrange by','recent updates','put first','newest first','oldest first','choose all 9 shown here','choose what happens next','your next step','mark reviewed','review again','mark outdated','put away or bring back'])assert.ok(html.includes(text),text);
+ const html=render();for(const text of ['show me','arrange by','recent updates','put first','newest first','oldest first','select all 9 shown items','Choose a review action below','update review status','mark reviewed','review again','mark outdated','archive or restore items'])assert.ok(html.includes(text),text);
  assert.match(html,/data-bulk="completed"/);assert.doesNotMatch(html,/mark complete|back to work|<option value="time"/);
 });
 test('Done is a distinct neutral exit, not a mutation or filter option',()=>{
  const html=render();assert.equal((html.match(/class="work-controls-done"/g)||[]).length,2);
  assert.match(html,/class="work-controls-done" data-close-menu="filters">done /);
- assert.match(html,/class="work-controls-done" data-close-menu="organize">done /);
+ assert.match(html,/class="work-controls-done" data-close-menu="organize">close /);
  const css=fs.readFileSync(new URL('../packages/shared-ui/work-controls.css',import.meta.url),'utf8');
  assert.match(css,/--work-control-accent:#be3f50/);assert.match(css,/--work-control-done:#f2f1ee/);
  assert.match(css,/work-controls-done[^}]+background:var\(--work-control-done\)/);
 });
 test('rendering is side-effect free, all mutations still require host confirmation',()=>{
  let calls=0;const fetch=globalThis.fetch;globalThis.fetch=()=>{calls++;throw Error('must not contact backend');};
- try {const html=render();assert.match(html,/nothing changes until you confirm/);assert.equal(calls,0);assert.doesNotMatch(html,/data-confirm/);} finally{globalThis.fetch=fetch;}
+ try {const html=render();assert.match(html,/You will confirm the items before saving/);assert.equal(calls,0);assert.doesNotMatch(html,/data-confirm/);} finally{globalThis.fetch=fetch;}
 });
 test('radio choices expose selected state and one tab stop per group',()=>{
  const html=render({query:{sort:'importance',direction:'asc'}});

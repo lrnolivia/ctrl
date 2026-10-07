@@ -1,4 +1,4 @@
-import {MetricTiles} from './MetricTiles';
+import {MetricTiles,MetricRecordGraphic,TelemetryRecords} from './MetricTiles';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {assignmentPresentation,summaryText,statusLabel} from '../../../../packages/shared-ui/presentation-copy.js';
 import {feedbackApi,feedbackFailure} from '../../../../packages/shared-ui/feedback-client.js';
@@ -77,8 +77,8 @@ export function NightShiftLedger({snapshot,afterTelemetry}:{snapshot:DashboardSn
  const {records}=ledger,unconfirmed=ledger.incomplete;
  const selectionPage=selection?pages[selection.page.project]||selection.page:null;
  const selectedState=selection?.item?nightShiftState(selection.item,{executions:selectionPage?.executions||[],executionAvailable:!selectionPage?.executionError}):null;
- const recordList=(rows:typeof records)=><ul className="work-detail-checklist">{rows.map(({page,item,semantics})=><li key={page.project+item.id}><button type="button" onClick={()=>open(page,item)}><span aria-hidden="true" dangerouslySetInnerHTML={{__html:featureIconMarkup('night-shift',{compact:true})}}/><span><strong>{summaryText(item.summary,'recorded work')}</strong><small>{page.project} · {semantics.label}</small></span></button></li>)}{!rows.length&&<li>{unconfirmed?'Records are not fully confirmed.':'No matching receipts are recorded.'}</li>}</ul>;
- const metric=(title:string,rows:typeof records,icon:string,explanation:string)=>({title,value:!loaded.some(page=>page.catalogueLoaded)&&unconfirmed?'unknown':rows.length,icon,note:unconfirmed?'Loaded records only · some evidence unconfirmed':'All available records loaded',detail:<>{recordList(rows)}<p>{explanation}</p></>});
+ const recordList=(rows:typeof records)=><TelemetryRecords records={rows.map(({page,item,semantics})=>({id:page.project+item.id,title:summaryText(item.summary,'recorded work'),project:page.project,state:semantics.label,onOpen:()=>open(page,item)}))} empty={unconfirmed?'Records are not fully confirmed. Refresh away-work records to try again.':'No matching receipts are recorded. Saved requests and verified results appear here when available.'}/>;
+ const metric=(title:string,rows:typeof records,icon:string,explanation:string)=>({title,value:!loaded.some(page=>page.catalogueLoaded)&&unconfirmed?'unknown':rows.length,icon,note:unconfirmed?'Loaded records only · some evidence unconfirmed':'All available records loaded',visual:<MetricRecordGraphic matches={records.map(row=>rows.includes(row))} kind={icon==='play'||icon==='check'?'ring':'marks'} partial={unconfirmed}/>,detail:<>{recordList(rows)}<p>{explanation}</p></>});
  const telemetry=[
   metric('Requests saved',ledger.requests,'branch','Saved Shift requests are queue receipts. They do not confirm a process started or that the recipient acknowledged the request.'),
   metric('Starts reported',ledger.starts,'play','Only matching, timestamped execution receipts count as reported starts. A reported start is not independent verification of current activity or work duration.'),

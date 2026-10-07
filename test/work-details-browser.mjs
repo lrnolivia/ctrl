@@ -40,6 +40,7 @@ export async function workDetailsChecks(browser){
   assert.equal(writes[1].original_text,'Preserve this exact draft.');assert.notEqual(writes[1].operation_id,writes[0].operation_id);
   await page.keyboard.press('Escape');
   await page.locator('.review-focus .project-id-badge').click();await page.locator('.work-detail-checklist').waitFor();
+  const projectDialog=page.locator('.work-detail-dialog[open]');assert.equal(await projectDialog.locator('.work-detail-stats dd').first().textContent(),'8');await projectDialog.getByRole('searchbox',{name:'search assignments'}).fill('fixture-history-');assert.equal(await projectDialog.locator('[data-collection-row]').count(),7);await projectDialog.locator('[data-control-menu]>summary').click();await projectDialog.locator('[data-state=complete]').click();assert.equal(await projectDialog.locator('[data-collection-row]').count(),6);await projectDialog.screenshot({path:`qa-evidence/project-details-${width}-TEST-DATA.png`});
   await page.keyboard.press('Escape');await page.close();
  }}finally{await app.close();}
 }
