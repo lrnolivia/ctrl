@@ -6,7 +6,8 @@ const writes=new RegExp('^/api/(?:feedback/submit|night-shift/request|work-revie
 const fileRead=/^\/api\/files(?:\/fl_[a-f0-9]{32}(?:\/(?:status|download))?)?$/;
 const fileWrite=/^\/api\/files(?:\/fl_[a-f0-9]{32}\/complete)?$/;
 const fileChunk=/^\/api\/files\/fl_[a-f0-9]{32}\/chunks\/\d+$/;
-export function permitted(path,method){if(['GET','HEAD'].includes(method)&&fileRead.test(path))return true;if(method==='POST'&&fileWrite.test(path))return true;if(method==='PUT'&&fileChunk.test(path))return true;return ['GET','HEAD'].includes(method)?reads.test(path):method==='POST'&&writes.test(path);}
+const fileManage=/^\/api\/files\/fl_[a-f0-9]{32}$/;
+export function permitted(path,method){if(['GET','HEAD'].includes(method)&&fileRead.test(path))return true;if(method==='POST'&&fileWrite.test(path))return true;if(method==='PUT'&&fileChunk.test(path))return true;if(['PATCH','DELETE'].includes(method)&&fileManage.test(path))return true;return ['GET','HEAD'].includes(method)?reads.test(path):method==='POST'&&writes.test(path);}
 export function forwarded(request,path){const url=new URL(request.url);if(path)url.pathname=path;const headers=new Headers();for(const key of ['accept','content-type','cf-access-jwt-assertion','origin','upgrade','sec-websocket-key','sec-websocket-version','sec-websocket-protocol','if-none-match','content-length','x-relay-file-request','x-content-sha256']){const value=request.headers.get(key);if(value)headers.set(key,value);}return new Request(url,{method:request.method,headers,body:['GET','HEAD'].includes(request.method)?undefined:request.body,redirect:'manual',duplex:'half'});}
 export default {async fetch(request,env){
  const url=new URL(request.url);
@@ -19,6 +20,7 @@ export default {async fetch(request,env){
   const changing=!['GET','HEAD'].includes(request.method),socket=url.pathname==='/api/events';
   if((changing||socket)&&request.headers.get('Origin')!==url.origin)return json({error:'Same-origin request required'},403);
   if(changing&&url.pathname.startsWith('/api/files')&&request.headers.get('x-relay-file-request')!=='1')return json({error:'Explicit file request required'},403);
+  if(request.method==='PATCH'&&fileManage.test(url.pathname)&&!request.headers.get('content-type')?.startsWith('application/json'))return json({error:'JSON required'},415);
   if(changing&&!url.pathname.startsWith('/api/files')&&!request.headers.get('content-type')?.startsWith('application/json'))return json({error:'JSON required'},415);
   if(url.pathname==='/api/relay-info'){
    const auth=await env.RELAY.fetch(forwarded(request,'/api/health'));if(!auth.ok)return auth;
@@ -36,4 +38,3 @@ export default {async fetch(request,env){
  if(isPage)headers.set('Content-Security-Policy',"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; frame-src 'self' https://*.loew.fi; object-src 'none'; base-uri 'self'; frame-ancestors 'self'");
  return new Response(response.body,{status:response.status,headers});
 }};
-

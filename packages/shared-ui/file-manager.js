@@ -11,22 +11,44 @@ export function fileKind(filename=''){
 export function filterFiles(files,{search='',state='all',kind='all',sort='newest'}={}){
  return files.filter(item=>(!search.trim()||item.filename.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))&&(state==='all'||(state==='ready'?item.state==='ready':item.state!=='ready'))&&(kind==='all'||fileKind(item.filename)===kind)).sort((a,b)=>sort==='name'?a.filename.localeCompare(b.filename):sort==='size'?b.bytes-a.bytes:b.created_at-a.created_at);
 }
+export function validFileName(name){return typeof name==='string'&&name.trim().length>0&&name.length<=180&&!/[\x00-\x1f\x7f/\\]/.test(name)&&!['.','..'].includes(name.trim());}
 export function bindFileManager(root=document){
- let dialog=null,opener=null,files=[],working=false,paused=false,current=null,message='',refreshing=false,disposed=false;
+ let dialog=null,opener=null,files=[],working=false,paused=false,current=null,message='',refreshing=false,disposed=false,editing=null,mutating=false,capabilities={rename:false,delete:false};
  const controller=new AbortController(),query={search:'',state:'all',kind:'all',sort:'newest'};
- async function request(path='',options={}){const r=await fetch('/api/files'+path,{credentials:'same-origin',cache:'no-store',redirect:'error',signal:AbortSignal.timeout(120000),...options,headers:{'X-Relay-File-Request':'1',...options.headers}});let value;try{value=await r.json()}catch{throw Error('Sign in again, then reopen Files. Your upload can be resumed.')}if(!r.ok)throw Error(value.error||'File request failed');return value;}
+ async function request(path='',options={}){const r=await fetch('/api/files'+path,{credentials:'same-origin',cache:'no-store',redirect:'error',signal:AbortSignal.timeout(120000),...options,headers:{'X-Relay-File-Request':'1',...options.headers}});let value;try{value=await r.json()}catch{throw Error('Sign in again, then reopen Files before trying again.')}if(!r.ok)throw Error(value.error||'File request failed');return value;}
  function el(tag,cls,text){const node=document.createElement(tag);if(cls)node.className=cls;if(text!=null)node.textContent=text;return node}
  function status(text){message=text;if(dialog)dialog.querySelector('[data-file-status]').textContent=text;}
+ function focusAction(id){dialog?.querySelector('[data-file-actions="'+id+'"] summary')?.focus();}
+ function editFile(item,action){if(working||mutating||refreshing)return;editing={id:item.id,action,name:item.filename,error:''};render();dialog.querySelector('.relay-file-edit input, .relay-file-edit [data-file-cancel]')?.focus();}
+ async function saveEdit(item){
+  if(!editing||mutating||working||refreshing)return;
+  const edit=editing,name=edit.name.trim();
+  if(edit.action==='rename'&&!validFileName(name)){edit.error='Use a name of 1–180 characters, without slashes or control characters.';render();dialog.querySelector('.relay-file-edit input')?.focus();return;}
+  mutating=true;render();
+  try{const result=await request('/'+encodeURIComponent(item.id),{method:edit.action==='rename'?'PATCH':'DELETE',...(edit.action==='rename'?{headers:{'Content-Type':'application/json'},body:JSON.stringify({filename:name})}:{})});
+   if(edit.action==='rename'){if(!result.file||result.file.id!==item.id)throw Error('The file service did not confirm the rename. Refresh Files before trying again.');files=files.map(x=>x.id===item.id?result.file:x);status('Renamed to '+result.file.filename+'.');}
+   else{if(result.ok!==true)throw Error('The file service did not confirm deletion. Refresh Files before trying again.');files=files.filter(x=>x.id!==item.id);status(item.filename+' was deleted.');}
+   editing=null;
+  }catch(e){edit.error=e.message;status(e.message)}finally{mutating=false;render();if(editing)dialog.querySelector('.relay-file-edit [data-file-cancel]')?.focus();else if(edit.action==='rename')focusAction(item.id);else dialog.querySelector('[data-file-choose]')?.focus();}
+ }
+ function renderEdit(item,row){
+  const edit=editing,form=el('form','relay-file-edit');form.setAttribute('aria-label',edit.action==='rename'?'Rename '+item.filename:'Delete '+item.filename);
+  if(edit.action==='rename'){const label=el('label','','File name'),input=el('input');input.type='text';input.value=edit.name;input.maxLength=180;input.required=true;input.disabled=mutating;input.oninput=()=>{edit.name=input.value};label.append(input);form.append(label,el('p','','The file contents and expiry stay the same.'));}
+  else form.append(el('strong','','Delete this file?'),el('p','','This removes '+item.filename+' from Files.'));
+  if(edit.error){const error=el('p','relay-file-edit-error',edit.error);error.setAttribute('role','alert');form.append(error);}
+  const actions=el('div','relay-file-edit-actions'),cancel=el('button','','Cancel'),submit=el('button',edit.action==='delete'?'relay-file-delete':'relay-file-save',mutating?(edit.action==='rename'?'Saving…':'Deleting…'):edit.action==='rename'?'Save name':'Delete file');cancel.type='button';cancel.dataset.fileCancel='';cancel.disabled=mutating;submit.disabled=mutating||refreshing;submit.type='submit';cancel.onclick=()=>{editing=null;render();focusAction(item.id)};actions.append(cancel,submit);form.append(actions);form.onsubmit=event=>{event.preventDefault();void saveEdit(item)};form.onkeydown=event=>{if(event.key==='Escape'&&!mutating){event.preventDefault();event.stopPropagation();editing=null;render();focusAction(item.id)}};row.append(form);
+ }
  function render(){if(!dialog)return;const list=dialog.querySelector('[data-file-list]');list.replaceChildren();
   const visible=filterFiles(files,query);dialog.querySelector('[data-file-count]').textContent=visible.length+' of '+files.length+' files';
   for(const item of visible){const row=el('li','relay-file-row'),icon=el('span','relay-file-symbol');icon.innerHTML=fileManagerIcon;const info=el('div','relay-file-info');info.append(el('strong','',item.filename),el('span','',human(item.bytes)+' · '+(item.state==='ready'?'Ready':'Upload incomplete')+' · expires '+new Date(item.expires_at).toLocaleDateString()));const action=el('div','relay-file-actions');
-   if(item.state==='ready'){const a=el('a','relay-file-action','Download');a.href='/api/files/'+encodeURIComponent(item.id)+'/download';a.setAttribute('download',item.filename);action.append(a)}else{const b=el('button','relay-file-action','Resume');b.type='button';b.disabled=working;b.onclick=()=>{current={resume:item};dialog.querySelector('input[type=file]').click()};action.append(b)}row.append(icon,info,action);list.append(row)}
+   if(item.state==='ready'){const a=el('a','relay-file-action','Download');a.href='/api/files/'+encodeURIComponent(item.id)+'/download';a.setAttribute('download',item.filename);action.append(a)}else{const b=el('button','relay-file-action','Resume');b.type='button';b.disabled=working||mutating;b.onclick=()=>{current={resume:item};dialog.querySelector('input[type=file]').click()};action.append(b)}
+   const menu=el('details','relay-file-menu'),trigger=el('summary');menu.dataset.fileActions=item.id;trigger.innerHTML=glyph('more');trigger.setAttribute('aria-label','Actions for '+item.filename);menu.append(trigger);const choices=el('div','relay-file-menu-choices');for(const [key,label] of [['rename','Rename'],['delete','Delete']].filter(([key])=>capabilities[key])){const b=el('button',key==='delete'?'relay-file-delete':'',label);b.type='button';b.disabled=working||mutating||refreshing;b.onclick=()=>editFile(item,key);choices.append(b)}menu.append(choices);if(choices.childElementCount)action.append(menu);row.append(icon,info,action);if(editing?.id===item.id)renderEdit(item,row);list.append(row)}
   if(!visible.length)list.append(el('li','relay-file-empty',refreshing?'Loading files…':files.length?'No files match. Try another filter or clear your search.':'Drop a file here, or use Upload file. Compress folders into a package first.'));
-  dialog.querySelector('[data-file-pause]').hidden=!working;dialog.querySelector('[data-file-pause]').textContent=paused?'Pausing…':'Pause upload';dialog.querySelector('[data-file-choose]').disabled=working;status(message);
+  dialog.querySelector('[data-file-pause]').hidden=!working;dialog.querySelector('[data-file-pause]').textContent=paused?'Pausing…':'Pause upload';dialog.querySelector('[data-file-choose]').disabled=working||mutating;dialog.querySelector('[data-file-refresh]').disabled=mutating;status(message);
  }
- async function refresh(){if(refreshing)return;refreshing=true;render();try{const all=[];let cursor=null;do{const result=await request(cursor?'?cursor='+encodeURIComponent(cursor):'');all.push(...result.files);cursor=result.cursor}while(cursor&&!disposed);files=all;if(!working)status('Private to your signed-in account. Files expire after 3 days.')}catch(e){status(e.message)}finally{refreshing=false;render()}}
+ async function refresh(){if(refreshing)return;refreshing=true;render();try{const all=[];let cursor=null,allCapabilities={rename:true,delete:true};do{const result=await request(cursor?'?cursor='+encodeURIComponent(cursor):'');all.push(...result.files);for(const key of ['rename','delete'])allCapabilities[key]=allCapabilities[key]&&result.capabilities?.[key]===true;cursor=result.cursor}while(cursor&&!disposed);files=all;capabilities=allCapabilities;if(!working)status('Private to your signed-in account. Files expire after 3 days.')}catch(e){status(e.message)}finally{refreshing=false;render()}}
  async function upload(file,resume){
-  if(working)return;if(!file.size||file.size>512*1048576){status('Choose a file between 1 byte and 512 MB.');return}
+  if(working||mutating)return;editing=null;if(!file.size||file.size>512*1048576){status('Choose a file between 1 byte and 512 MB.');return}
   working=true;paused=false;render();const progress=dialog?.querySelector('progress');
   try{
    const hasher=sha256.create(),step=4*1048576;
