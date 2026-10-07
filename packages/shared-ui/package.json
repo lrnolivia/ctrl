@@ -1,9 +1,16 @@
 {
   "name": "@relay/shared-ui",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "exports": {
-    "./tokens.css": "./tokens.css"
+    "./tokens.css": "./tokens.css",
+    "./work-controls": {
+      "types": "./work-controls.d.ts",
+      "default": "./work-controls.js"
+    },
+    "./work-controls/react": "./work-controls-react.jsx",
+    "./work-controls.css": "./work-controls.css",
+    "./work-controls-shell.css": "./work-controls-shell.css"
   },
   "type": "module"
 }

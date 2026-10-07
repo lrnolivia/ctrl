@@ -25,3 +25,5 @@ import '../../../packages/shared-ui/momo.css';
 
 import '../../../packages/shared-ui/polish.css';
 import '../../../packages/shared-ui/control-center.css';
+
+import '../../../packages/shared-ui/work-controls.css';

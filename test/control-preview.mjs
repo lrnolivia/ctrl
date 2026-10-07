@@ -43,7 +43,7 @@ export async function controlPreviewChecks(browser){
     const report={report_id:'fbr_'+'b'.repeat(64),identity:{project:'ctrl',assignment:'ctrl-mobile-review'},status:{saved:{at:new Date().toISOString()},queued:true,delivered:null,seen:null}};
     await page.route('**/api/feedback/submit',async route=>{writes.push(route.request().postDataJSON());if(lost){lost=false;await route.abort('failed');}else await route.fulfill({json:{ok:true,feedback:report}});});
     await page.route('**/api/feedback/status?*',route=>route.fulfill({json:{ok:true,feedback:{...report,status:{...report.status,seen:acknowledged?{actor:'test-caller'}:null}}}}));
-    const form=page.locator('.review-focus .review-reply');await form.locator('textarea').fill('Keep User Text · narrow preview needs more room');await form.locator('button[type=submit]').click();await form.getByRole('status').filter({hasText:'fetch'}).waitFor();
+    const form=page.locator('.review-focus .review-reply');await form.getByRole('button',{name:'Add a note',exact:true}).click();await form.locator('textarea').fill('Keep User Text · narrow preview needs more room');await form.locator('button[type=submit]').click();await form.getByRole('status').filter({hasText:'fetch'}).waitFor();
     await page.reload();await page.locator('.review-reply button[type=submit]:enabled').waitFor();await label(page);
     const recovered=page.locator('.review-focus .review-reply');assert.equal(await recovered.locator('textarea').inputValue(),'Keep User Text · narrow preview needs more room');await recovered.locator('button[type=submit]').click();await recovered.getByRole('status').filter({hasText:'acknowledgement pending'}).waitFor();assert.deepEqual(writes[0],writes[1],'interrupted browser reply retains operation and intent');
     acknowledged=true;await recovered.locator('button[type=submit]').click();await recovered.getByRole('status').filter({hasText:'native delivery unverified'}).waitFor();assert.equal(writes.length,2,'confirmed operation reads status instead of posting again');
@@ -54,9 +54,11 @@ export async function controlPreviewChecks(browser){
    await page.screenshot({path:`qa-evidence/combined-relay-TEST-DATA-${width}.png`});captures.push(`combined-relay-TEST-DATA-${width}.png`);await page.keyboard.press('Escape');await page.getByRole('dialog',{name:'relay',exact:true}).waitFor({state:'hidden'});
    await page.locator('.operator-nav [data-feature=inspector]').click();await page.locator('#inspector-review-focus .review-focus-media img').waitFor();await page.mouse.move(width-5,5);await page.evaluate(()=>document.activeElement?.blur());await page.waitForTimeout(400);
    await page.screenshot({path:`qa-evidence/combined-inspector-TEST-DATA-${width}.png`});captures.push(`combined-inspector-TEST-DATA-${width}.png`);
-   const filters=page.locator('[data-control-menu=filters]');await filters.locator('summary').click();await filters.locator('.work-control-panel').waitFor();
+   const filters=page.locator('[data-control-menu=filters]');await filters.locator(':scope > summary').click();await filters.locator('.work-control-panel').waitFor();
    assert.ok(await filters.locator('.work-filter-bar button').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize)<=14),'expanded controls retain compact text');
-   if(width===1440)assert.ok((await filters.locator('.work-control-panel').boundingBox()).height<260,'expanded filter panel avoids oversized empty space');
+   assert.ok(await filters.locator('.work-control-panel').evaluate(panel=>{const r=panel.getBoundingClientRect(),footer=panel.querySelector('.work-controls-footer').getBoundingClientRect();return panel.scrollWidth<=panel.clientWidth+1&&r.bottom-footer.bottom<=24&&r.bottom>=footer.bottom;}),'expanded controls fit their content without unused space below the footer');
+   assert.equal(await filters.locator('.work-controls-done').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(242, 241, 238)','Done retains the approved neutral-white surface');
+   assert.equal(await filters.locator('[data-filter][aria-pressed=true]').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(190, 63, 80)','selection retains the approved deeper rose');
    await page.screenshot({path:`qa-evidence/inspector-expanded-controls-${width}.png`});
    await filters.locator('[data-close-menu]').click();assert.equal(await filters.getAttribute('open'),null);
    await page.locator('.notification-bell').click();await page.locator('.notification-menu:popover-open').waitFor();

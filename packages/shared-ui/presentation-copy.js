@@ -1,16 +1,17 @@
+import {evidenceNextAction,workState} from './work-state.js';
 // Display-only language; original state and diagnostics remain available in Details.
 const statuses = {
-  'reserved-but-idle': 'ready to start', queued: 'waiting to start', working: 'in progress', running: 'running',
+  'reserved-but-idle': 'reserved; no execution reported', queued: 'queued; start unconfirmed', working: 'in progress', running: 'running',
   'waiting-for-human': 'needs your decision', 'waiting-on-external-system': 'waiting for a response',
-  blocked: 'needs help', failed: 'needs a fix', succeeded: 'finished successfully', cancelled: 'cancelled', starting: 'starting', complete: 'completed', completed: 'completed', held: 'on hold', active: 'in progress',
+  blocked: 'blocked', failed: 'failed', succeeded: 'finished successfully', cancelled: 'cancelled', starting: 'starting', complete: 'completed', completed: 'completed', held: 'on hold', active: 'reserved; execution unverified',
   deployed: 'deployed', verified: 'verified', 'officially-stale': 'update overdue',
   'possibly-stale': 'may need an update', stale: 'last update may be old',
   live: 'up to date', connecting: 'connecting', reconnecting: 'refreshing', offline: 'unavailable',
-  enabled: 'scheduled', paused: 'paused', idle: 'ready', waiting_credentials: 'needs access', recorded: 'update received'
+  enabled: 'scheduled', paused: 'paused', idle: 'idle', waiting_credentials: 'needs access', recorded: 'update received'
 };
-const phases = { checks: 'checking', held: 'on hold', reserved: 'ready to start', 'liveness-check': 'checking for updates', 'pull-request': 'review', reconciliation: 'resolving a mismatch', planning: 'planning', implementation: 'building', coding: 'building', testing: 'checking', verification: 'verifying', review: 'ready for review', delivery: 'delivery', deployment: 'deployment', complete: 'completed' };
+const phases = { checks: 'checking', held: 'on hold', reserved: 'reserved; execution unverified', 'liveness-check': 'checking for updates', 'pull-request': 'review', reconciliation: 'resolving a mismatch', planning: 'planning', implementation: 'building', coding: 'building', testing: 'checking', verification: 'verifying', review: 'ready for review', delivery: 'delivery', deployment: 'deployment', complete: 'completed' };
 const events = { 'claim-created': 'work reserved', 'runner-heartbeat': 'work status refreshed', 'source-commit': 'changes saved', 'pull-request-opened': 'ready for review', 'pull-request-updated': 'review updated', 'check-started': 'check started', 'check-completed': 'check finished', 'cloud-deployment': 'deployed', 'assignment-claimed': 'work picked up', 'work-started': 'work started', 'commit-created': 'changes saved', 'pr-opened': 'ready for review', 'pr-merged': 'changes merged', 'deployment-started': 'deployment started', 'deployment-completed': 'deployment finished', 'verification-passed': 'checks passed', 'verification-failed': 'checks need attention', completed: 'work completed' };
-export function statusLabel(value) { return statuses[value] || 'status not reported'; }
+export function statusLabel(value) { return statuses[value] || (workState({state:value}).kind!=='unknown'?workState({state:value}).label:'status not reported'); }
 export function phaseLabel(value) { return phases[value] || statuses[value] || 'phase not reported'; }
 export function eventLabel(value) { return events[value] || 'progress update'; }
 export function summaryText(value, fallback) {
@@ -26,8 +27,9 @@ export function summaryText(value, fallback) {
 export function assignmentPresentation(item = {}) {
   const request=item.attention_request || {};
   const phase=phaseLabel(item.stage);
-  const fallbackTitle=({implementation:'work in progress',coding:'work in progress',checks:'checking the latest changes',testing:'checking the latest changes',held:'work on hold',review:'work ready to review',complete:'work completed',reconciliation:'work status needs an update'})[item.stage] || 'project work';
+  const ownership=workState(item).kind;
+  const fallbackTitle=({reserved:'reserved work',queued:'queued work',unknown:'project work'})[ownership]||({implementation:'work in progress',coding:'work in progress',checks:'checking the latest changes',testing:'checking the latest changes',held:'work on hold',review:'work ready to review',complete:'work completed',reconciliation:'work status needs an update'})[item.stage] || 'project work';
   const title=summaryText(request.title || item.display_name || item.title || item.goal,fallbackTitle);
   const fallback=({working:'Work is underway. Open details for the latest update.',complete:'This assignment is recorded as complete.',completed:'This assignment is recorded as complete.',held:'Work is paused. Open details for the reason.', 'waiting-for-human':'A recorded request is waiting for review. Open details to see what is needed.', 'waiting-on-external-system':'Waiting for a running check or external response.', blocked:'The work needs a fix before it can continue.',failed:'A check failed and needs attention.'})[item.state] || 'Open details for the latest recorded update.';
-  return {title,detail:summaryText(request.question || item.waiting_reason || item.recovery_action || item.next_action,fallback),next:summaryText(item.next_action,'Open details for the next step.'),phase};
+  return {title,detail:summaryText(request.question || item.waiting_reason || item.recovery_action || item.next_action,fallback),next:evidenceNextAction(item).label,phase};
 }

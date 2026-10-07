@@ -76,6 +76,7 @@ export type RunnerWorker = {
 };
 
 export type DashboardSnapshot = {
+  observerState?: "available" | "stale" | "unavailable";
   fetchedAt: string;
   coordination?: Record<string,{claims:Array<{id:string;state:string;goal?:string;owner?:string;branch?:string;lease_until?:string;primary_staff?:string|null;primary_team?:string|null;created_at?:string;completed_at?:string}>}>;
   projects: ProjectRegistration[];

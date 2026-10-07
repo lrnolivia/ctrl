@@ -2,17 +2,20 @@ import {feedbackApi,sendFeedback} from './feedback-client.js';
 import {glyph} from './glyphs.js';
 export function mountFeedbackForm(root,evidence,{metadata}={}){
  const controller=new AbortController(),signal=controller.signal,key='ctrl.reply.v2.'+evidence.evidence_id,draftKey=key+'.draft';
- let binding=null,busy=false,decision='';
+ let binding=null,busy=false,decision='',notesOpen=false;
  const decisionKey=key+'.decision';
- root.innerHTML='<form class="review-reply"><fieldset class="review-decision"><legend>Your decision</legend><label><input type="radio" name="decision" value="good"><span>'+glyph('check')+'Looks good</span></label><label><input type="radio" name="decision" value="changes"><span>'+glyph('repair')+'Needs changes</span></label></fieldset><label class="review-note-label">Note <span>(optional with a decision)</span><textarea maxlength="8000" rows="2" placeholder="Add a detail or ask a question…" aria-label="Review note"></textarea></label><div class="review-reply-actions"><button type="submit" disabled>'+glyph('save')+'Send review</button></div><p role="status" aria-live="polite">checking reply routing</p><details class="review-reply-receipt" hidden><summary>reply details</summary><pre></pre></details></form>';
+ root.innerHTML='<form class="review-reply assignment-reply-form"><fieldset class="review-decision"><legend>Your decision</legend><label><input type="radio" name="decision" value="good"><span>'+glyph('check')+'Looks good</span></label><label><input type="radio" name="decision" value="changes"><span>'+glyph('repair')+'Needs changes</span></label></fieldset><div class="assignment-reply-note-tools"><button type="button" data-toggle-note aria-expanded="false">Add a note</button><button type="button" data-clear-decision hidden>Remove selection</button></div><label class="review-note-label" data-note-region hidden>Note <span>(optional with a decision)</span><textarea maxlength="8000" rows="2" placeholder="Add a detail or ask a question…" aria-label="Review note"></textarea></label><div class="review-reply-actions"><button type="submit" data-send disabled>'+glyph('save')+'Send review</button></div><p role="status" aria-live="polite">checking reply routing</p><details class="review-reply-receipt" hidden><summary>reply details</summary><pre></pre></details></form>';
  const form=root.querySelector('form'),input=root.querySelector('textarea'),status=root.querySelector('[role=status]'),buttons=[...root.querySelectorAll('button')],details=root.querySelector('details');
  try{input.value=sessionStorage.getItem(draftKey)||'';const saved=sessionStorage.getItem(decisionKey);decision=['good','changes'].includes(saved)?saved:'';}catch{}
- const choices=[...root.querySelectorAll('input[name=decision]')];
- const selectDecision=value=>{decision=value;for(const choice of choices)choice.checked=choice.value===decision;};
+ const choices=[...root.querySelectorAll('input[name=decision]')],noteRegion=root.querySelector('[data-note-region]'),noteToggle=root.querySelector('[data-toggle-note]'),clear=root.querySelector('[data-clear-decision]'),submit=root.querySelector('[data-send]');
+ const renderNote=()=>{noteRegion.hidden=!notesOpen;noteToggle.textContent=notesOpen?'Hide note':'Add a note';noteToggle.setAttribute('aria-expanded',String(notesOpen));clear.hidden=!decision;};
+ const selectDecision=value=>{decision=value;notesOpen=decision==='changes'||Boolean(input.value.trim())||(decision===''&&notesOpen);for(const choice of choices)choice.checked=choice.value===decision;renderNote();};
  selectDecision(decision);
  const reviewText=()=>decision?({good:'Looks good',changes:'Needs changes'}[decision]+(input.value.trim()?'\n\n'+input.value:'')):input.value;
  const retain=()=>{try{sessionStorage.setItem(draftKey,input.value);sessionStorage.setItem(decisionKey,decision);}catch{status.textContent='reload recovery unavailable · keep this reply open';}};
- const setBusy=value=>{busy=value;buttons.forEach(button=>button.disabled=busy||!binding?.available||!reviewText().trim());for(const choice of choices)choice.disabled=busy;input.readOnly=busy;form.setAttribute('aria-busy',String(busy));};
+ const setBusy=value=>{busy=value;submit.disabled=busy||!binding?.available||!reviewText().trim();noteToggle.disabled=busy;clear.disabled=busy;for(const choice of choices)choice.disabled=busy;input.readOnly=busy;form.setAttribute('aria-busy',String(busy));};
+ noteToggle.addEventListener('click',()=>{if(busy)return;notesOpen=!notesOpen;renderNote();if(notesOpen)input.focus();},{signal});
+ clear.addEventListener('click',()=>{if(busy)return;selectDecision('');retain();setBusy(busy);},{signal});
  input.addEventListener('input',()=>{retain();setBusy(busy);},{signal});
  for(const choice of choices)choice.addEventListener('change',()=>{selectDecision(choice.value);retain();setBusy(busy);},{signal});
  form.addEventListener('submit',async event=>{

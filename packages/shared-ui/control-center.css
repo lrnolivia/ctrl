@@ -166,3 +166,22 @@ html[data-presentation-motion=calm] .mosaic-meter i{transition:none}
 
 /* Mobile glance cards size to their content, never a stretched grid track. */
 @media(max-width:900px){.control-mosaic>.mosaic-panel{align-self:start;height:auto;min-height:0}.control-mosaic .mosaic-glance{height:auto;min-height:0}.control-mosaic .mosaic-expand-hint{margin-top:10px;padding-top:0}}
+
+.mosaic-glyph>.canonical-feature-icon,.work-kind-mark .canonical-feature-icon{width:100%;height:100%;object-fit:contain}.work-detail-checklist .canonical-feature-icon{width:24px;height:24px;object-fit:contain;flex:none}
+
+/* Approved assignment reply hierarchy and conditional notes. */
+.work-detail-body>.work-detail-title{font-size:30px;line-height:1.15;letter-spacing:-.035em;margin:18px 0 12px;max-width:28ch}
+.assignment-reply-form{margin-top:24px}.assignment-reply-intro{font-size:13px;line-height:1.5;margin:0 0 22px;color:var(--color-text-secondary)}
+.assignment-reply-form .review-decision{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0;min-width:0}.assignment-reply-form .review-decision legend{grid-column:1/-1;margin-bottom:8px}
+.assignment-reply-form .review-decision label{min-width:0}.assignment-reply-form .review-decision label span{width:100%;box-sizing:border-box;justify-content:center;border-color:transparent;font-weight:400;padding:10px 8px;font-size:13px;white-space:normal}
+.assignment-reply-note-tools{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:4px 0 8px}.assignment-reply-note-tools button{padding:8px 0;min-height:36px;border:0;box-shadow:none;background:transparent;color:var(--color-text-secondary);font:inherit;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.assignment-reply-form [hidden]{display:none!important}.assignment-reply-form .review-note-label{display:block;font-size:13px;font-weight:600}.assignment-reply-form textarea{display:block;box-sizing:border-box;width:100%;resize:vertical;min-height:86px;margin:0 0 10px}.assignment-reply-form .review-note-label small{font-size:12px;color:var(--color-text-secondary);font-weight:400}
+.assignment-reply-form .review-reply-actions{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-top:16px}.assignment-reply-form [data-send]{min-width:200px;max-width:100%;justify-content:center;background:#be3f50;color:#fff;font-weight:700;border:0;border-radius:13px}.assignment-reply-form [data-send]:disabled{opacity:.45}.assignment-reply-done{background:var(--color-raised);color:var(--color-text-primary);border:0;border-radius:13px;min-height:44px;padding:10px 16px}
+.assignment-reply-status{margin-top:20px;padding-top:16px;border-top:1px solid var(--color-border)}.assignment-reply-status>p{font-size:13px}.assignment-reply-status pre{white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:600px){.assignment-reply-form [data-send]{min-width:0;flex:1}.assignment-reply-form .review-reply-actions{gap:24px}.work-detail-body>.work-detail-title{font-size:30px}.assignment-reply-form .review-decision label span{gap:6px}}
+
+/* Four away-work signals retain the approved compact Night Shift layout. */
+.domain-telemetry.night-shift-telemetry{grid-template-columns:repeat(2,minmax(0,1fr));--feature-today:var(--feature-night-shift)}
+.night-shift-telemetry>.domain-tile:last-child{grid-column:auto}
+.night-shift-telemetry .domain-full-detail{display:none}
+@media(max-width:600px){.domain-telemetry.night-shift-telemetry{grid-template-columns:minmax(0,1fr)}}

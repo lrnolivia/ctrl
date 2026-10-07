@@ -1,3 +1,4 @@
+import {projectWorkState} from './work-state.js';
 import {needsHumanReview} from './attention.js';
 const terminal=new Set(['complete','completed','cancelled','superseded','archived']);
 export const meaningfulEvents=(events=[])=>Array.isArray(events)?events.filter(event=>!['runner-heartbeat','worker-heartbeat','heartbeat'].includes(event.type)):[];
@@ -16,7 +17,7 @@ export function activitySeries(progress={},now=Date.now(),hours=6){
  return {bins,count:bins.reduce((sum,b)=>sum+b.count,0),undated,events:events.sort((a,b)=>Date.parse(b.event.at)-Date.parse(a.event.at)),start:now-hours*3600000,end:now};
 }
 export function controlTelemetry(snapshot,now=Date.now()){
- const progress=snapshot?.progress||{},all=Object.entries(progress).flatMap(([project,payload])=>(payload.progress||[]).map(item=>({project,item})));
+ const progress=snapshot?.progress||{},work=projectWorkState(snapshot),all=work.rows;
  const current=all.filter(({item})=>!terminal.has(item.state)),needs=all.filter(({item})=>needsHumanReview(item));
  const pending=!snapshot||!!(snapshot.loadingProgress?.length||snapshot.failedProgress?.length);
  const claims=Object.values(snapshot?.coordination||{}).flatMap(record=>record.claims||[]).filter(c=>['active','held','completed'].includes(c.state));
@@ -25,8 +26,8 @@ export function controlTelemetry(snapshot,now=Date.now()){
  const dated=(snapshot?.projects||[]).filter(p=>Number.isFinite(Date.parse(p.created_at||''))).sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at));
  return {pending,completed,total,percent:!pending&&total?Math.round(completed/total*100):undefined,
  activeProjects:[...new Set(current.map(row=>row.project))],current,needs,
- moving:current.filter(({item})=>item.state==='working').length,
- waiting:current.filter(({item})=>['waiting-for-human','waiting-on-external-system'].includes(item.state)).length,
+ moving:work.counts.working, waiting:work.counts.waiting,queued:work.counts.queued,held:work.counts.held,
+ failed:work.counts.failed,blocked:work.counts.blocked,stale:work.counts.stale,unavailable:work.counts.unavailable,reserved:work.counts.reserved,unknown:work.counts.unknown,work,
  newest:dated[0]?.id||null,mostUpdates:observed[0]||null,
  activity:activitySeries(progress,now)};
 }

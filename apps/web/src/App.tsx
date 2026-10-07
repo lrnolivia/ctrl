@@ -1,3 +1,5 @@
+import {todayAliasTarget} from '../../../packages/shared-ui/today-alias.js';
+import {featureIcon} from '../../../packages/shared-ui/feature-icons.js';
 import {bindFileManager,fileManagerIcon} from '../../../packages/shared-ui/file-manager.js';
 import '../../../packages/shared-ui/file-manager.css';
 import {bindWorkDetails} from '../../../packages/shared-ui/work-details.js';
@@ -22,8 +24,8 @@ const navItems = [
 ];
 
 function NavArtwork({feature,src}:{feature:string;src:string}){
- const name=feature==='today'?'now':feature;
- return <picture><source media="(max-width: 900px)" srcSet={'/brand-nav/'+name+'.svg'}/><img className="tool-mark" src={src} alt=""/></picture>;
+ const artwork=featureIcon(feature)||src,compact=featureIcon(feature,{compact:true})||artwork;
+ return <picture><source media="(max-width: 900px)" srcSet={compact}/><img className="tool-mark" src={artwork} alt=""/></picture>;
 }
 
 function Shell() {
@@ -76,7 +78,7 @@ function Shell() {
         </div>
         <Routes>
           <Route path="/now" element={<TodayPage />} />
-          <Route path="/today" element={<Navigate to={projectHref("/now",project)} replace />} />
+          <Route path="/today" element={<Navigate to={todayAliasTarget(location.search)} replace />} />
           <Route path="/runner" element={<RunnerPage />} />
           <Route path="/runner/:project/:assignment" element={<RunnerWorkPage />} />
           <Route path="/night-shift" element={<NightShiftPage />} />
