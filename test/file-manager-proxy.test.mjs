@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import worker,{permitted,forwarded} from '../worker/index.js';
 const id='fl_'+'a'.repeat(32);
 test('file proxy permits only narrow read/upload/download routes',()=>{
- for(const [path,method] of [['/api/files','GET'],['/api/files','POST'],['/api/files/'+id+'/status','GET'],['/api/files/'+id+'/download','GET'],['/api/files/'+id+'/complete','POST'],['/api/files/'+id+'/chunks/0','PUT'],['/api/files/'+id,'PATCH'],['/api/files/'+id,'DELETE']])assert.equal(permitted(path,method),true);
- for(const [path,method] of [['/api/files/admin','GET'],['/api/files/'+id+'/download','DELETE'],['/api/files','PATCH'],['/api/files/'+id+'/chunks/-1','PUT'],['/api/files','PUT'],['/api/files/'+id+'/download','POST']])assert.equal(permitted(path,method),false);
+ for(const [path,method] of [['/api/files','GET'],['/api/files','POST'],['/api/files/'+id+'/status','GET'],['/api/files/'+id+'/download','GET'],['/api/files/'+id+'/complete','POST'],['/api/files/'+id+'/restore','POST'],['/api/files/'+id+'/chunks/0','PUT'],['/api/files/'+id,'PATCH'],['/api/files/'+id,'DELETE']])assert.equal(permitted(path,method),true);
+ for(const [path,method] of [['/api/files/admin','GET'],['/api/files/'+id+'/download','DELETE'],['/api/files','PATCH'],['/api/files/'+id+'/restore','DELETE'],['/api/files/'+id+'/chunks/-1','PUT'],['/api/files','PUT'],['/api/files/'+id+'/download','POST']])assert.equal(permitted(path,method),false);
 });
 test('file proxy preserves signed identity and actual origin, requiring explicit same-origin upload',async()=>{
  let seen;const env={CTRL_ENABLED:'true',ASSETS:{fetch:()=>new Response('asset')},RELAY:{fetch:request=>{seen=request;return Response.json({ok:true})}}};
@@ -17,8 +17,8 @@ test('file proxy preserves signed identity and actual origin, requiring explicit
 test('file management requires identity, actual origin, explicit intent and JSON for rename',async()=>{
  let seen;const env={CTRL_ENABLED:'true',ASSETS:{fetch:()=>new Response('asset')},RELAY:{fetch:r=>{seen=r;return Response.json({ok:true})}}};
  const url='https://ctrl.loew.fi/api/files/'+id,headers={'cf-access-jwt-assertion':'test','origin':'https://ctrl.loew.fi','x-relay-file-request':'1','content-type':'application/json'};
- for(const method of ['PATCH','DELETE']){
-  const make=(patch={})=>new Request(url,{method,headers:{...headers,...patch},...(method==='PATCH'?{body:JSON.stringify({filename:'renamed.zip'})}:{})});
+ for(const method of ['PATCH','DELETE','POST']){
+  const make=(patch={})=>new Request(method==='POST'?url+'/restore':url,{method,headers:{...headers,...patch},...(method==='PATCH'?{body:JSON.stringify({filename:'renamed.zip'})}:{})});
   assert.equal((await worker.fetch(make(),env)).status,200);assert.equal(seen.method,method);assert.equal(seen.headers.get('origin'),'https://ctrl.loew.fi');
   assert.equal((await worker.fetch(make({origin:'https://evil.example'}),env)).status,403);
   assert.equal((await worker.fetch(make({'x-relay-file-request':''}),env)).status,403);

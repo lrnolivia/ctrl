@@ -4,7 +4,7 @@ const safeId='[a-zA-Z0-9_-]+';
 const reads=new RegExp('^/api/(?:projects(?:/'+safeId+'(?:/icon)?)?|workers|progress/'+safeId+'|visual(?:/vis_[a-zA-Z0-9-]+(?:/(?:qa|live|image))?)?|retained-preview/rp_[a-f0-9]+(?:/view)?|work-review|events|relay-info|feedback/(?:status|binding)|night-shift/items|execution/jobs)$');
 const writes=new RegExp('^/api/(?:feedback/submit|night-shift/request|work-review|visual/vis_[a-zA-Z0-9-]+/qa|retained-preview/rp_[a-f0-9]+/review|workers/'+safeId+'/(?:toggle|settings|run|doctor|repair))$');
 const fileRead=/^\/api\/files(?:\/fl_[a-f0-9]{32}(?:\/(?:status|download))?)?$/;
-const fileWrite=/^\/api\/files(?:\/fl_[a-f0-9]{32}\/complete)?$/;
+const fileWrite=/^\/api\/files(?:\/fl_[a-f0-9]{32}\/(?:complete|restore))?$/;
 const fileChunk=/^\/api\/files\/fl_[a-f0-9]{32}\/chunks\/\d+$/;
 const fileManage=/^\/api\/files\/fl_[a-f0-9]{32}$/;
 export function permitted(path,method){if(['GET','HEAD'].includes(method)&&fileRead.test(path))return true;if(method==='POST'&&fileWrite.test(path))return true;if(method==='PUT'&&fileChunk.test(path))return true;if(['PATCH','DELETE'].includes(method)&&fileManage.test(path))return true;return ['GET','HEAD'].includes(method)?reads.test(path):method==='POST'&&writes.test(path);}
