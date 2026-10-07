@@ -271,3 +271,6 @@ html[data-presentation-motion=calm] .metric-ring-value{transition:none}
 :is(.work-detail-controls,.relay-file-controls) .work-search-compact input::placeholder{color:var(--color-text-secondary);opacity:1}
 :is(.work-detail-controls,.relay-file-controls) .work-view-switch:empty{display:none}
 :is(.work-detail-controls,.relay-file-controls) input:focus-visible{outline:2px solid var(--work-control-accent);outline-offset:3px}
+.work-detail-dialog .work-detail-controls{padding:0;background:transparent;box-sizing:border-box;width:100%}
+.work-detail-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.work-detail-controls .work-control-summary{width:100%;min-width:0}.work-detail-controls .work-control-menu>summary{box-sizing:border-box;width:100%}
