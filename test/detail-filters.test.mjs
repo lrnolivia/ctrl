@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {filterFiles,fileKind} from '../packages/shared-ui/file-manager.js';
+import {filterFiles,fileKind,validFileName} from '../packages/shared-ui/file-manager.js';
 import {filterWorkCollection} from '../packages/shared-ui/work-details.js';
 test('file filters preserve source readiness and combine filename, type and ordering',()=>{
  const rows=[{filename:'Archive.zip',state:'ready',bytes:20,created_at:1},{filename:'Portrait.png',state:'uploading',bytes:10,created_at:2},{filename:'notes.md',state:'ready',bytes:40,created_at:3}];
@@ -18,4 +18,9 @@ test('assignment filters distinguish explicit review requests, reservation and f
  assert.deepEqual(filterWorkCollection(rows,{project:'ctrl',search:'polish',state:'reserved'}),[rows[0]]);
  assert.deepEqual(filterWorkCollection(rows,{project:'ctrl',state:'working'}),[]);
  assert.equal(rows[0].item.state,'active');
+});
+
+test('file names reject paths, controls, blank names and oversized input',()=>{
+ for(const name of ['picture.png','new package.zip','café.txt'])assert.equal(validFileName(name),true);
+ for(const name of ['', '   ','.','..','../file','a/b','a\\b','a'+String.fromCharCode(0)+'b','x'.repeat(181)])assert.equal(validFileName(name),false);
 });
