@@ -47,6 +47,10 @@ export function dismissNotification(id) {
   if (!item) return;
   item.dismissed = true; item.toastUntil = 0; emit();
 }
+export function clearNotifications() {
+ for(const item of read()){item.cleared=true;item.dismissed=true;item.toastUntil=0;}
+ emit();
+}
 function safeHref(href) {
   try { const url = new URL(href, location.origin); return href && url.origin === location.origin ? url.pathname + url.search + url.hash : ''; } catch { return ''; }
 }
@@ -70,7 +74,7 @@ export function bindNotifications(root) {
   const live = document.createElement('span'); live.className = 'notification-announcement'; live.setAttribute('role','status'); live.setAttribute('aria-live','polite');
   document.body.append(stack, live);
   root.classList.add('notification-center');
-  root.innerHTML = '<button type="button" class="notification-bell" aria-label="Notifications" aria-expanded="false">' + glyph('bell') + '<span data-notification-count hidden></span></button><section class="notification-menu" popover="manual" aria-label="Notifications" hidden><div class="notification-menu-head"><strong>Notifications</strong><button type="button" data-close-notifications aria-label="Close notifications">' + glyph('close') + '</button></div><p class="notification-hint">important changes and actions for your work</p><div data-notification-list></div></section>';
+  root.innerHTML = '<button type="button" class="notification-bell" aria-label="Notifications" aria-expanded="false">' + glyph('bell') + '<span data-notification-count hidden></span></button><section class="notification-menu" popover="manual" aria-label="Notifications" hidden><div class="notification-menu-head"><strong>Notifications</strong><div class="notification-menu-actions"><button type="button" data-clear-notifications>clear all</button><button type="button" data-close-notifications aria-label="Close notifications">' + glyph('close') + '</button></div></div><p class="notification-hint">important changes and actions for your work</p><div data-notification-list></div></section>';
   const bell = root.querySelector('.notification-bell'), menu = root.querySelector('.notification-menu');
   let lastAnnouncement = '';
   function position(){
@@ -81,10 +85,11 @@ export function bindNotifications(root) {
   }
   function render() {
     const focusedLink = root.contains(document.activeElement) && document.activeElement?.closest('a')?.getAttribute('href');
-    const list = read(), active = list.filter(item => !item.resolved && item.severity !== 'info');
+    const list = read().filter(item=>!item.cleared), active = list.filter(item => !item.resolved && item.severity !== 'info');
     const count = root.querySelector('[data-notification-count]'); count.textContent = String(active.length); count.hidden = !active.length;
     bell.setAttribute('aria-label','Notifications' + (active.length ? ', ' + active.length + ' need attention' : ''));
-    root.querySelector('[data-notification-list]').innerHTML = list.length ? list.map(item => messageMarkup(item)).join('') : '<p class="notification-empty">No notifications in this tab yet.</p>';
+    root.querySelector('[data-notification-list]').innerHTML = list.length ? list.map(item => messageMarkup(item)).join('') : '<p class="notification-empty">No notifications to show.</p>';
+    root.querySelector('[data-clear-notifications]').disabled=!list.length;
     if (focusedLink) Array.from(root.querySelectorAll('a')).find(link=>link.getAttribute('href')===focusedLink)?.focus();
     const toasts = list.filter(item => !item.dismissed && !item.resolved && item.toastUntil > (pausedAt || Date.now())).slice(0,2);
     if (!pausedAt) stack.innerHTML = toasts.map(item => messageMarkup(item,true)).join('');
@@ -107,11 +112,12 @@ export function bindNotifications(root) {
     if(open){menu.hidden=false;menu.showPopover();}
     else{if(menu.matches(':popover-open'))menu.hidePopover();menu.hidden=true;}
     bell.setAttribute('aria-expanded',String(open)); render();position();
-    if (open) menu.querySelector('button').focus(); else bell.focus();
+    if (open) menu.querySelector('[data-close-notifications]').focus(); else bell.focus();
   }
   function click(event) {
     const dismiss = event.target.closest('[data-dismiss-notification]');
     if (dismiss) { pausedAt=0; dismissNotification(dismiss.dataset.dismissNotification); }
+    if (event.target.closest('[data-clear-notifications]')) {pausedAt=0;clearNotifications();menu.querySelector('[data-close-notifications]').focus();}
     if (event.target.closest('.notification-bell')) toggle(!open);
     if (event.target.closest('[data-close-notifications]')) toggle(false);
   }

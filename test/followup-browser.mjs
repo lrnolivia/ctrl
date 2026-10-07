@@ -9,7 +9,7 @@ export async function followupChecks(browser){
   await page.goto(app.origin+'/#/now?project=ctrl');
   await page.locator('.project-context [data-work-project=ctrl]').click();
   const dialog=page.locator('.work-detail-dialog:not(.telemetry-dialog)');
-  await dialog.getByText('planned work',{exact:true}).waitFor();
+  await dialog.locator('[data-assignment=ctrl-planned]').waitFor();assert.equal(await dialog.locator('.work-detail-stats dd').last().textContent(),'1','queued work remains visible in the project summary');
   await dialog.getByText('A smaller review view',{exact:true}).waitFor();
   await dialog.locator('[data-assignment=ctrl-mobile-review]').click();
   await dialog.getByText(/67% · 2 of 3 items recorded complete/).waitFor();

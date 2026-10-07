@@ -1,3 +1,4 @@
+import {openWorkDetails} from '../../../../packages/shared-ui/work-details.js';
 import { assignmentPresentation, statusLabel, phaseLabel, eventLabel, summaryText } from "../../../../packages/shared-ui/presentation-copy.js";
 import { projectHref } from "../../../../packages/shared-ui/project-context.js";
 import { useEffect, useMemo, useState, useRef } from "react";
@@ -52,7 +53,7 @@ export function RunnerWorkPage() {
   return (
     <div className="page operator-page react-page work-detail">
       <Link className="back-link" to={projectHref("/runner", contextProject)}>← runner</Link>
-      <SignalDeck cards={cards} />
+      <SignalDeck cards={cards} onInspect={()=>openWorkDetails({project,assignment})} />
       <div className="work-detail-head">
         <div>
           <div className="work-card-meta"><StatusLight tone={status === "live" ? "good" : status === "stale" ? "warn" : "quiet"} label={statusLabel(status)} />{item?.primary_staff && <span>{item.primary_staff}</span>}</div>
