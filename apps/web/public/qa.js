@@ -7,8 +7,6 @@ import { createQaContrast } from "./qa-contrast.js";
 import { splitReviewNotes, joinReviewNotes } from './qa-notes.js';
 import { publishNotification, resolveNotification } from '../../../packages/shared-ui/notifications.js';
 
-const visualContent = document.querySelector('#visual-content');
-const visualHeadingTools = document.querySelector('.visual-heading-tools');
 let stage=null, state=null, questionIndex=0, previewMode='captured';
 let viewportController=null, floatController=null, contrastController=null, historyToken=null;
 let returnFocus=null, background=[];
@@ -22,50 +20,6 @@ async function api(url, options = {}) {
   if (!response.ok){const error=new Error(body.error?.message || body.error || 'Request failed (' + response.status + ').');error.result=body;throw error;}
   return body;
 }
-function selectedEvidenceId() {
-  const active = visualContent && visualContent.querySelector("[data-evidence-id].active");
-  if (active && active.dataset.evidenceId) return active.dataset.evidenceId;
-  const image = visualContent && visualContent.querySelector('img[src*="/api/visual/vis_"]');
-  if (!image) return null;
-  const match = image.getAttribute("src").match(/\/api\/visual\/(vis_[a-zA-Z0-9-]+)\/image/);
-  return match ? match[1] : null;
-}
-
-function ensureLaunch() {
-  if (!visualHeadingTools || document.querySelector("#qa-review-launch")) return;
-  const button = document.createElement("button");
-  button.id = "qa-review-launch";
-  button.className = "qa-launch";
-  button.type = "button";
-  button.textContent = "Review full screen";
-  button.addEventListener("click", function () {
-    const id = selectedEvidenceId();
-    if (id) openQa(id);
-  });
-  visualHeadingTools.prepend(button);
-}
-
-function syncLaunch() {
-  ensureLaunch();
-  const button = document.querySelector("#qa-review-launch");
-  if (!button) return;
-  const id = selectedEvidenceId();
-  button.disabled = !id;
-  button.title = id ? "Review this capture in full-screen QA mode" : "Choose a capture first";
-}
-
-if (visualContent) {
-  new MutationObserver(syncLaunch).observe(visualContent, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ["class"]
-  });
-}
-document.addEventListener("click", function () { setTimeout(syncLaunch, 0); });
-syncLaunch();
-
-
 function buildStage() {
   const node=document.createElement('section');
   node.className='qa-stage'; node.setAttribute('role','dialog'); node.setAttribute('aria-modal','true'); node.setAttribute('aria-label','Inspector review');

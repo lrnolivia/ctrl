@@ -20,7 +20,7 @@ import {readFileSync} from 'node:fs';
 test('explicit HTML routing cannot canonicalize Inspector back into a redirect loop',async()=>{
  const config=JSON.parse(readFileSync(new URL('../wrangler.jsonc',import.meta.url),'utf8'));
  assert.equal(config.assets.html_handling,'none');
- for(const [path,asset] of [['/','/index.html'],['/inspector','/inspector.html'],['/inspector/','/inspector.html'],['/inspector.html','/inspector.html']]){
+ for(const [path,asset] of [['/','/index.html'],['/inspector','/index.html'],['/inspector/','/index.html'],['/inspector.html','/index.html']]){
   let auth=0;const env={CTRL_ENABLED:'true',RELAY:{fetch:async()=>{auth++;return Response.json({ok:true})}},ASSETS:{fetch:async req=>{assert.equal(new URL(req.url).pathname,asset);return new Response('<html>inspector</html>',{headers:{'Content-Type':'text/html'}})}}};
   const response=await worker.fetch(new Request('https://ctrl.loew.fi'+path,{headers:{'Cf-Access-Jwt-Assertion':'fixture'}}),env);
   assert.equal(response.status,200);assert.equal(response.headers.get('Location'),null);assert.equal(auth,1);

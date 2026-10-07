@@ -1,6 +1,6 @@
 import { loadingMarkup } from "./loading.js";
 import { iconSlot, hydrateProjectIcons } from "./project-icons.js";
-import { projectName } from "./operator-projects.js";
+import { projectName } from "./project-display.js";
 
 export function qaEscape(value) {
   return String(value == null ? "" : value).replace(/[&<>"']/g, function (char) {

@@ -9,6 +9,10 @@ import "./styles.css";
 import "../../../packages/shared-ui/telemetry.css";
 import "../../../packages/shared-ui/notifications.css";
 
+if (/^\/inspector(?:\/|\.html)?$/.test(location.pathname)) {
+ const query=location.hash.split('?')[1]||location.search.slice(1);
+ history.replaceState(null,'','/#/inspector'+(query?'?'+query:''));
+}
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
@@ -27,3 +31,5 @@ import '../../../packages/shared-ui/polish.css';
 import '../../../packages/shared-ui/control-center.css';
 
 import '../../../packages/shared-ui/work-controls.css';
+
+import '../public/qa.css';

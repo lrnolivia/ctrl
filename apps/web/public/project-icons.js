@@ -1,6 +1,6 @@
 import { brand } from "./brand.js";
 import { glyph } from "../../../packages/shared-ui/glyphs.js";
-import { esc } from "./operator-projects.js";
+import { esc } from "./project-display.js";
 const cache = new Map();
 export function iconSlot(id) {
   return '<span class="project-icon" data-repo-icon="' + esc(id) + '" aria-hidden="true">' + ((id === "relay" || id === "ctrl") ? '<img src="' + brand[id] + '" alt="">' : glyph("neutral")) + '</span>';

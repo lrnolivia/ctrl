@@ -60,7 +60,7 @@ assert.equal(await page.locator('[data-progress-notice]').count(),0,'no separate
 releaseProgress();
 await page.getByText('Instant update '+width,{exact:true}).first().waitFor({timeout:10000});
 await page.locator('.project-loading-indicator[data-loading=false]').waitFor();await page.unroute(progressRoute);
-await page.locator('.operator-nav a[data-feature=inspector]').click();await page.getByRole('heading',{name:'inspector',exact:true}).waitFor();await page.locator('.work-viewer').waitFor();assert.ok(app.requests.includes('/api/visual?project=field'),'project filter must reach the evidence API before its60-item limit');await page.locator('.workspace-context [data-relay-open]').click();await page.getByRole('dialog',{name:'relay',exact:true}).waitFor();await page.keyboard.press('Escape');await page.getByRole('dialog',{name:'relay',exact:true}).waitFor({state:'hidden'});assert.ok(page.url().includes('/inspector#review'));
+await page.locator('.operator-nav a[data-feature=inspector]').click();await page.getByRole('heading',{name:'inspector',exact:true}).waitFor();await page.locator('.work-viewer').waitFor();assert.ok(app.requests.includes('/api/visual?project=field'),'project filter must reach the evidence API before its60-item limit');await page.locator('.workspace-context [data-relay-open]').click();await page.getByRole('dialog',{name:'relay',exact:true}).waitFor();await page.keyboard.press('Escape');await page.getByRole('dialog',{name:'relay',exact:true}).waitFor({state:'hidden'});assert.ok(page.url().includes('/#/inspector'));
 // Settings are a functional top-layer panel, not decorative controls.
 await page.getByLabel('Settings',{exact:true}).click();
 const settings=page.locator('.presentation-panel');await settings.waitFor({state:'visible'});
