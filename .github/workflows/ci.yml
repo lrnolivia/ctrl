@@ -6,6 +6,10 @@ on:
     branches: [main]
 permissions:
   contents: read
+# Cancel obsolete PR validation, while preserving every main-branch run.
+concurrency:
+  group: ctrl-quality-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   quality:
     runs-on: ubuntu-latest
