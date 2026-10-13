@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "ctrl",
+  "short_name": "ctrl",
+  "description": "Your control center, connected by Relay.",
+  "start_url": "/#/now",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#151412",
+  "theme_color": "#151412",
+  "icons": [
+    {
+      "src": "/brand/ctrl.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

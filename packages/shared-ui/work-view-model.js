@@ -1,0 +1,82 @@
+import {workState,evidenceNextAction} from './work-state.js';
+import {projectInGroup} from "./project-groups.js";
+import { activityTime, workRevision } from './work-activity.js';
+import {assignmentPresentation} from './presentation-copy.js';
+export const reviewStates = ['pending', 'completed', 'stale'];
+export const reviewFilters = ['pending', 'completed', 'stale', 'archived', 'all'];
+export const reviewKey = item => [item.project, item.kind, item.id].map(encodeURIComponent).join('/');
+export async function sourceRevision(source) {
+  const bytes = new TextEncoder().encode(workRevision(source));
+  return [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(n=>n.toString(16).padStart(2,'0')).join('');
+}
+export function effectiveReview(item, record) {
+  if (record?.source_revision === item.revision) return {status:reviewStates.includes(record.status)?record.status:'pending',archived:record.archived===true};
+  if (record?.read_confirmed && record.source_revision && record.source_revision !== item.revision) return {status:'pending',archived:false};
+  if (item.kind === 'evidence' && item.reviewHydration) {
+    // Absence of a modern record is only known after a successful storage read.
+    if (!record?.read_confirmed) return {status:record?.read_failed?'unavailable':'loading',archived:false};
+    if (item.reviewHydration !== 'ready') return {status:item.reviewHydration==='failed'?'unavailable':'loading',archived:false};
+    const legacy=item.source?.qaReview;
+    if(legacy)return {status:legacy.disposition==='archived'?'stale':['completed','stale'].includes(legacy.disposition)?legacy.disposition:legacy.overall?'completed':'pending',archived:legacy.disposition==='archived'};
+  }
+  return {status:'pending',archived:false};
+}
+export function priorityValue(value) {
+  // Provider-specific P0/P1 values have no universal meaning.
+  return ({critical:4,high:3,normal:2,low:1})[String(value || '').toLowerCase()] ?? null;
+}
+export function selectWork(items, {project='',filter='pending',search='',sort='time',direction='desc',extensions={}}={}, records={}, predicates={}) {
+  const query=search.trim().toLocaleLowerCase();
+  const selected=items.filter(item=>{
+    if(!projectInGroup(item.project,project)) return false;
+    const review=effectiveReview(item,records[reviewKey(item)]);
+    const unknown=['loading','unavailable'].includes(review.status);
+    if(filter==='archived' ? !review.archived : filter!=='all' && (review.archived || (review.status!==filter && !(filter==='pending'&&unknown)))) return false;
+    if(query && ![item.title,item.detail,item.next,item.project].join(' ').toLocaleLowerCase().includes(query)) return false;
+    return Object.entries(extensions).every(([key,value])=>!value || !predicates[key] || predicates[key](item,value));
+  });
+  const compareValue=(a,b,dir)=>a==null?(b==null?0:1):b==null?-1:(a-b)*(dir==='asc'?1:-1);
+  return selected.sort((a,b)=>{
+    const order=sort==='importance'?compareValue(priorityValue(a.priority),priorityValue(b.priority),direction):compareValue(a.time,b.time,direction);
+    return order || compareValue(a.time,b.time,'desc') || reviewKey(a).localeCompare(reviewKey(b));
+  });
+}
+export function bulkTargets(items, visible, selection, scope) {
+  const keys=new Set(scope==='selected'?selection:visible.map(reviewKey));
+  // Scope expansion is explicit in the query; never silently bypass its other filters.
+  return items.filter(item=>keys.has(reviewKey(item)));
+}
+export function reviewTransition(previous, action) {
+  const old={status:reviewStates.includes(previous?.status)?previous.status:'pending',archived:previous?.archived===true};
+  if(action==='archive') return {...old,archived:true};
+  if(action==='restore') return {...old,archived:false};
+  if(reviewStates.includes(action)) return {...old,status:action,archived:false};
+  throw new Error('Unknown review action.');
+}
+export async function assignmentItem(project, source, semantics = workState(source)) {
+  const copy=assignmentPresentation(source);
+  return {project,kind:'assignment',id:source.assignment,title:copy.title,
+    detail:semantics.kind==='unavailable'?'Current progress could not refresh. The last recorded source remains in details.':semantics.kind==='stale'?'Progress is stale. Refresh before relying on current activity.':copy.detail,next:evidenceNextAction(['stale','unavailable'].includes(semantics.kind)?{state:semantics.kind}:source).label,sourceState:semantics.kind,workState:semantics,
+    time:activityTime(source),priority:source.priority || null,revision:await sourceRevision(source),
+    href:'/#/runner/'+encodeURIComponent(project)+'/'+encodeURIComponent(source.assignment)+'?project='+encodeURIComponent(project),source};
+}
+export async function evidenceItem(source) {
+  return {project:source.context?.project || 'review',kind:'evidence',id:source.evidence_id,title:source.step_label || source.context?.surface || 'Screen review',
+    detail:source.context?.environment || 'capture',next:'Review this capture',sourceState:'captured',time:activityTime(source),priority:source.priority || null,
+    revision:await sourceRevision(source),screenshot:source.screenshot_url,reviewHydration:source.reviewHydration,source};
+}
+
+export function workerSource(worker) {
+ return {assignment:worker.id,goal:worker.name || worker.id,state:worker.runtime?.status,
+   last_summary:worker.runtime?.last_summary,waiting_reason:worker.runtime?.last_error,
+   latest_event:{at:worker.runtime?.last_run_at},last_meaningful_progress_at:worker.runtime?.last_run_at};
+}
+export async function checkItem(worker) {
+ const item=await assignmentItem(worker.id,workerSource(worker));
+ return {...item,kind:'check',next:worker.runtime?.last_error?'Review the reported check problem':'Review the latest automatic result',href:'/#/night-shift?project='+encodeURIComponent(worker.id)+'&item='+encodeURIComponent(worker.id)};
+}
+
+export function reviewConfirmationIsCurrent(current, selected, records, versions, loaded){
+ if(!loaded||!selected?.length)return false;
+ return selected.every(before=>{const key=reviewKey(before),item=current.find(candidate=>reviewKey(candidate)===key);return item&&item.revision===before.revision&&!['loading','unavailable'].includes(effectiveReview(item,records[key]).status)&&(records[key]?.etag??null)===(versions[key]??null);});
+}

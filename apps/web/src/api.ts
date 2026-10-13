@@ -1,0 +1,73 @@
+import type { DashboardSnapshot, ProgressPayload, ProjectRegistration, RunnerWorker } from "./types";
+
+async function json<T>(path: string, timeout = 15000): Promise<T> {
+  const response = await fetch(path, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(timeout) });
+  if (!response.ok) throw new Error(`Relay returned ${response.status} for ${path}`);
+  return response.json() as Promise<T>;
+}
+
+export async function loadDashboard(onSnapshot?: (snapshot: DashboardSnapshot) => void, previous?: DashboardSnapshot | null): Promise<DashboardSnapshot> {
+  const [{ projects }, observer] = await Promise.all([
+    json<{ projects: ProjectRegistration[] }>("/api/projects"),
+    json<RunnerWorker[]>("/api/workers").then(workers=>{if(!Array.isArray(workers))throw Error("Observer results unavailable");return {workers,available:true as const};}).catch(()=>({workers:previous?.workers||[],available:false as const}))
+  ]);
+  let snapshot: DashboardSnapshot = {
+    fetchedAt: new Date().toISOString(), projects, workers:observer.workers,
+    observerState:observer.available?"available":previous?.workers?.length?"stale":"unavailable",
+    coordination: Object.fromEntries(projects.filter(project=>previous?.coordination?.[project.id]).map(project=>[project.id,previous!.coordination![project.id]])),
+    progress: Object.fromEntries(projects.filter(project => previous?.progress[project.id]).map(project => [project.id, previous!.progress[project.id]])),
+    loadingProgress: projects.map(project => project.id), failedProgress: []
+  };
+  onSnapshot?.(snapshot);
+  await Promise.all(projects.map(async project => {
+    try {
+      if(project.managed===false){snapshot={...snapshot,progress:{...snapshot.progress,[project.id]:{project:project.id,progress:[],queue:[]}},loadingProgress:snapshot.loadingProgress!.filter(id=>id!==project.id)};onSnapshot?.(snapshot);return;}
+      const metadata = await json<{ coordination: { claims: Array<{ id: string; state: string; created_at?: string; completed_at?: string }>; queue?: Array<NonNullable<ProgressPayload["queue"]>[number] & { state: string }> } | null }>(`/api/projects/${encodeURIComponent(project.id)}`);
+      if (!metadata.coordination) throw new Error("Current project coordination is unavailable");
+      snapshot = {...snapshot,coordination:{...snapshot.coordination,[project.id]:metadata.coordination}};
+      const active = metadata.coordination.claims.filter(claim => ["active", "held"].includes(claim.state));
+      const ids = new Set(active.map(claim => claim.id));
+      snapshot = { ...snapshot, progress: { ...snapshot.progress, [project.id]: {
+        project: project.id, observed_progress: true,
+        progress: (snapshot.progress[project.id]?.progress || []).filter(item => ids.has(item.assignment)),
+        queue: (metadata.coordination.queue || []).filter(item => item.state === "queued")
+      } } };
+      onSnapshot?.(snapshot);
+      await Promise.all(active.map(async claim => {
+        try {
+          const payload = await json<ProgressPayload>(`/api/progress/${encodeURIComponent(project.id)}?assignment=${encodeURIComponent(claim.id)}`, 45000);
+          const current = snapshot.progress[project.id];
+          snapshot = { ...snapshot, progress: { ...snapshot.progress, [project.id]: {
+            ...current, progress: [...(current.progress || []).filter(item => item.assignment !== claim.id), ...(payload.progress || []).filter(item => item.assignment === claim.id)]
+          } } };
+        } catch {
+          snapshot = { ...snapshot, failedProgress: [...new Set([...snapshot.failedProgress!, project.id])] };
+        }
+        onSnapshot?.(snapshot);
+      }));
+    } catch {
+      snapshot = { ...snapshot, failedProgress: [...new Set([...snapshot.failedProgress!, project.id])] };
+    }
+    snapshot = { ...snapshot, loadingProgress: snapshot.loadingProgress!.filter(id => id !== project.id) };
+    onSnapshot?.(snapshot);
+  }));
+  return snapshot;
+}
+
+export async function loadAssignment(project: string, assignment: string): Promise<ProgressPayload> {
+  return json<ProgressPayload>(`/api/progress/${encodeURIComponent(project)}?assignment=${encodeURIComponent(assignment)}`);
+}
+
+export function projectLabel(project: ProjectRegistration | string): string {
+  const raw = typeof project === "string" ? project : project.name || project.id;
+  const id = typeof project === "string" ? project : project.id;
+  const known: Record<string, string> = {
+    relay: "relay",
+    field: "field",
+    loewfi: "loew.fi",
+    rtxforge: "rtxForge",
+    "bazzite-custom": "loewOS",
+    gamebridge: "GameBridge"
+  };
+  return known[id] || raw.replace(/[-_]+/g, " ");
+}

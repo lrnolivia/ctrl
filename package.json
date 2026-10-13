@@ -1,0 +1,17 @@
+{
+  "name": "ctrl",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/web",
+    "packages/shared-ui"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace @relay/web",
+    "test": "node --test test/*.test.mjs",
+    "typecheck": "npm run typecheck:2.0 --workspace @relay/web"
+  },
+  "devDependencies": {
+    "playwright": "1.60.0"
+  }
+}
