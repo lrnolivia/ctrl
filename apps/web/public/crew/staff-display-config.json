@@ -1,0 +1,611 @@
+{
+  "staff_count": 21,
+  "chart_version": 6,
+  "staff": [
+    {
+      "id": "julian",
+      "display_name": "Julian",
+      "role": "Project Lead",
+      "sha256": "72bdfb6b6ed9cc1ba6024a2139e9966d3d56f0fff764fad73c4e376256e05420",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/julian.webp",
+      "team": "management-planning",
+      "management": true,
+      "emblem": "night-shift",
+      "avatar": "avatars/julian.png",
+      "avatar_sha256": "b9725fd302f53d6a1cd0c996fceab2df4babb00ce979176f982d770eb29a1f00",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "valentina",
+      "display_name": "Valentina",
+      "role": "Art Director",
+      "sha256": "eb124d8bc00221e1dc9694562b8844155657ff31362a422af7f3763be6b1d18f",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/valentina.webp",
+      "team": "design",
+      "management": true,
+      "emblem": "inspector",
+      "avatar": "avatars/valentina.png",
+      "avatar_sha256": "71f9b542e1206e0b4ef7042b5f858cad12ea384343cc5a0170711ac95c64ae7e",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "vivienne",
+      "display_name": "Vivienne",
+      "role": "Product Designer",
+      "sha256": "0053d9d7320d59ff6350bdbfa3a746d81c23374e150ede1804d954ff218f63fc",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/vivienne.png",
+      "team": "design",
+      "management": false,
+      "emblem": "inspector",
+      "avatar": "avatars/vivienne.png",
+      "avatar_sha256": "3c7ae3cf77b5dbc7d65d57c55b5bb711f1f1cba3bbd1059d65a053e80ea24b74",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "naomi",
+      "display_name": "Naomi",
+      "role": "Research & Planning",
+      "sha256": "0998969d396cb83f0040fe88cac148450705e5a389d168dbe85b130986a2c15b",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/naomi.webp",
+      "team": "management-planning",
+      "management": true,
+      "emblem": "night-shift",
+      "avatar": "avatars/naomi.png",
+      "avatar_sha256": "f3d87e770a972090e5c489ca80abce4ba23a84fff3b117edea217d720491588a",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "ellis",
+      "display_name": "Ellis",
+      "role": "Architect",
+      "sha256": "ca380245fac83e92df02aea36c3fbb4b6f1801e9d83e9c840518badd5b1761d3",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/ellis.webp",
+      "team": "engineering",
+      "management": false,
+      "emblem": "runner",
+      "avatar": "avatars/ellis.png",
+      "avatar_sha256": "c5b1d3d7b7e6eee966bc04c935c1d8bb25711771fe0583e9d4d79f18fe0f754f",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "luca",
+      "display_name": "Luca",
+      "role": "Release Captain",
+      "sha256": "225172182c8e440951156c73a782456a657058819e7ee0826e8c66ad31655f53",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/luca.png",
+      "team": "platform-delivery",
+      "management": false,
+      "emblem": "release",
+      "avatar": "avatars/luca.png",
+      "avatar_sha256": "e48fa14c812f6b77aa0a0b751015236e1906526323d6ac315b38e8b87684de38",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "nico",
+      "display_name": "Nico",
+      "role": "Production Engineer",
+      "sha256": "3c19d6ec65ccf145502b08431e2f033c06685575a9dbef518945b4307a2c8e69",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/nico.webp",
+      "team": "engineering",
+      "management": false,
+      "emblem": "runner",
+      "avatar": "avatars/nico.png",
+      "avatar_sha256": "a8c3755da1246a23f17d5b7b20ff2745ddbf9cf70c79c15fba540257e68f02b8",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "margot",
+      "display_name": "Margot",
+      "role": "Production Designer",
+      "sha256": "8ef511a47d0123011e3a81cc0dd31e8bafd7244e25a6d87c4473d62e7e119cd2",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/margot.webp",
+      "team": "design",
+      "management": false,
+      "emblem": "inspector",
+      "avatar": "avatars/margot.png",
+      "avatar_sha256": "9dac6822a0a8a0c4152cfa0bbaacea0cf6638281d343c741b3573788f046e171",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "roman",
+      "display_name": "Roman",
+      "role": "Quality Lead",
+      "sha256": "77d2c768ce729f15432800e7a2aa15d33e6b955f8bfa2e85dc29b161341a8b49",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/roman.webp",
+      "team": "quality",
+      "management": false,
+      "emblem": "inspector",
+      "avatar": "avatars/roman.png",
+      "avatar_sha256": "fc466434a3be56dfc381bd8cef4d096756e10c9eb6d582caad40d06114d3ec1c",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "imani",
+      "display_name": "Imani",
+      "role": "Knowledge Lead",
+      "sha256": "3be83bb8cc0c5a34d4561ed73eaeb36650562c69a8aac502c03c113069f0d88f",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/imani.webp",
+      "team": "knowledge",
+      "management": false,
+      "emblem": "skills",
+      "avatar": "avatars/imani.png",
+      "avatar_sha256": "6c41c201b80bc34366c61dbed0aa31d3f4fec6dbecde14bb08b5e6c692022a67",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "rafael",
+      "display_name": "Rafael",
+      "role": "Integration Lead",
+      "sha256": "6101892ae8c4dc848b57bffd8a06a86e03fb0a2361b3dcdef2e0fc2bd619a2c1",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/rafael.webp",
+      "team": "engineering",
+      "management": false,
+      "emblem": "runner",
+      "avatar": "avatars/rafael.png",
+      "avatar_sha256": "3bb92e6f786f72bac6a279516fb8b09b2b5e188b2881093ab2e22c5c6d1dfc44",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "adrian",
+      "display_name": "Adrian",
+      "role": "Maintenance Engineer",
+      "sha256": "cdb6b72100ab6c60f25fc63b04add5a1c44dc96c285f1cfd9d58060a63093c4f",
+      "additional_chart_crop": [
+        0.1,
+        0,
+        0.9,
+        0.8
+      ],
+      "source": "portraits/source/adrian.png",
+      "team": "engineering",
+      "management": false,
+      "emblem": "runner",
+      "avatar": "avatars/adrian.png",
+      "avatar_sha256": "f74ed11c57481268b6d1ffdcf9abd1635f0f9baffa1ce17e294c7040875bd8c6",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "gabriel",
+      "display_name": "Gabriel",
+      "role": "CI & Reliability",
+      "sha256": "4671ad97d10017c6562b8c68d85f2762bb2896c43d051f0e56432fe6c12b8a93",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/gabriel.webp",
+      "team": "platform-delivery",
+      "management": false,
+      "emblem": "cloud",
+      "avatar": "avatars/gabriel.png",
+      "avatar_sha256": "2c6b3924d4da79fc4203891ae7be5037a6b2c55c01c5941ecc56234af7741cdf",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "sabine",
+      "display_name": "Sabine",
+      "role": "Motion Director",
+      "sha256": "89fcdca92145773a95c5b626c68dbb91d51815f51f2bc830209aa0e400f4cb25",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/sabine.webp",
+      "team": "design",
+      "management": false,
+      "emblem": "inspector",
+      "avatar": "avatars/sabine.png",
+      "avatar_sha256": "f997d4be0d9e14b5cc9557bfb55299decfdf712bbb6ed530313585c8cae5a394",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "mateo",
+      "display_name": "Mateo",
+      "role": "Integrations Engineer",
+      "sha256": "7966e777a4f3b26867f7145f881bb7ead81628e6feb49e16678ccc48acd827e3",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/mateo.webp",
+      "team": "engineering",
+      "management": false,
+      "emblem": "runner",
+      "avatar": "avatars/mateo.png",
+      "avatar_sha256": "14bccf4d4a2880c4c038cab67031b0264006913f5e286b60a7ae0311df1eb1a7",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "bianca",
+      "display_name": "Bianca",
+      "role": "Brand Designer",
+      "sha256": "9b3e3ca24a4a65c24f10310f770fb8776185658c9053b18c2cb99b352a65dfd3",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/bianca.webp",
+      "team": "design",
+      "management": false,
+      "emblem": "inspector",
+      "avatar": "avatars/bianca.png",
+      "avatar_sha256": "7efb64c511392c78fd56503de4b40a1c4a20a1366a8ff8f38e6bd89232efcd38",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "dominique",
+      "display_name": "Dominique",
+      "role": "Director of Engineering",
+      "sha256": "227d5688651af8ec61830037bd242dbf6735348585df340925ecc5624b93a1a6",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/dominique.webp",
+      "team": "engineering",
+      "management": true,
+      "emblem": "runner",
+      "avatar": "avatars/dominique.png",
+      "avatar_sha256": "8227f5857731f755e615363491c7c330f49c42d4f581b0f76c78cfdbe0cf178b",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "theo",
+      "display_name": "Theo",
+      "role": "Test Automation Engineer",
+      "sha256": "07b98a6fe01d3266477b7fd1ebfc9b67bf0d574e5f7239dde8ecc17bdc059b96",
+      "additional_chart_crop": [
+        0.07,
+        0,
+        0.93,
+        0.86
+      ],
+      "source": "portraits/source/theo.png",
+      "team": "quality",
+      "management": false,
+      "emblem": "inspector",
+      "avatar": "avatars/theo.png",
+      "avatar_sha256": "37dc355dca88d6fc41458e9a60994dbd0012bf768008ac7d6a3cb4e9f20ed4bc",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "celeste",
+      "display_name": "Celeste",
+      "role": "Product QA Analyst",
+      "sha256": "e1b306ff56091f5b2377010c7b8f977c58e63ab73f68916e07f430fb35a19728",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/celeste.png",
+      "team": "quality",
+      "management": false,
+      "emblem": "inspector",
+      "avatar": "avatars/celeste.png",
+      "avatar_sha256": "3ceef21247e3e995709fbb695aea4973150a5bc74fa0e7a51557bb3d5a238640",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "esme",
+      "display_name": "Esme",
+      "role": "Technical Writer",
+      "sha256": "3bf1c1aab15981bf8e714b3b813710d5a56ec951bd17be7ca398a3d2bda56bce",
+      "additional_chart_crop": [
+        0.07,
+        0,
+        0.93,
+        0.86
+      ],
+      "source": "portraits/source/esme.png",
+      "team": "knowledge",
+      "management": false,
+      "emblem": "skills",
+      "avatar": "avatars/esme.png",
+      "avatar_sha256": "e7deb9ea3cf192951a62eee2ef9ec114d03d30514247199d8d4157f116ad51b7",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    },
+    {
+      "id": "darius",
+      "display_name": "Darius",
+      "role": "Knowledge Specialist",
+      "sha256": "5c65e538c73c0896e2129040ec7c6b64cefb659b12a39b4e513c793490b68802",
+      "additional_chart_crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "source": "portraits/source/darius.png",
+      "team": "knowledge",
+      "management": false,
+      "emblem": "skills",
+      "avatar": "avatars/darius.png",
+      "avatar_sha256": "b60b2c7ac31693b3e29bb66cd40329d118e1414e63bc20a56e728587db5789fe",
+      "avatar_usage": "Already framed; object-fit: cover; centered square; do not apply source crop again."
+    }
+  ],
+  "note": "Approved v6 display directory; does not change runtime routing, permissions or participation.",
+  "schema_version": 1,
+  "status": "User-approved display organization; not runtime authorization or canonical activation",
+  "teams": {
+    "management-planning": [
+      "julian",
+      "naomi"
+    ],
+    "design": [
+      "valentina",
+      "margot",
+      "sabine",
+      "bianca",
+      "vivienne"
+    ],
+    "engineering": [
+      "dominique",
+      "ellis",
+      "nico",
+      "rafael",
+      "adrian",
+      "mateo"
+    ],
+    "quality": [
+      "roman",
+      "theo",
+      "celeste"
+    ],
+    "platform-delivery": [
+      "gabriel",
+      "luca"
+    ],
+    "knowledge": [
+      "imani",
+      "esme",
+      "darius"
+    ]
+  },
+  "management_order": [
+    "julian",
+    "naomi",
+    "dominique",
+    "valentina"
+  ],
+  "ceo": {
+    "name": "Lauren Olivia",
+    "role": "CEO",
+    "portrait_included": true,
+    "original_library_id": "libfile_251cba9410ec8191b1a51084adc29e07",
+    "usage": "Original user-authorized CTRL directory portrait. Aspect-preserving fit at 50% 10%; no filters or identity changes.",
+    "portrait": "ceo-original.jpeg"
+  },
+  "assets": [
+    {
+      "path": "avatars/adrian.png",
+      "sha256": "f74ed11c57481268b6d1ffdcf9abd1635f0f9baffa1ce17e294c7040875bd8c6"
+    },
+    {
+      "path": "avatars/bianca.png",
+      "sha256": "7efb64c511392c78fd56503de4b40a1c4a20a1366a8ff8f38e6bd89232efcd38"
+    },
+    {
+      "path": "avatars/celeste.png",
+      "sha256": "3ceef21247e3e995709fbb695aea4973150a5bc74fa0e7a51557bb3d5a238640"
+    },
+    {
+      "path": "avatars/darius.png",
+      "sha256": "b60b2c7ac31693b3e29bb66cd40329d118e1414e63bc20a56e728587db5789fe"
+    },
+    {
+      "path": "avatars/dominique.png",
+      "sha256": "8227f5857731f755e615363491c7c330f49c42d4f581b0f76c78cfdbe0cf178b"
+    },
+    {
+      "path": "avatars/ellis.png",
+      "sha256": "c5b1d3d7b7e6eee966bc04c935c1d8bb25711771fe0583e9d4d79f18fe0f754f"
+    },
+    {
+      "path": "avatars/esme.png",
+      "sha256": "e7deb9ea3cf192951a62eee2ef9ec114d03d30514247199d8d4157f116ad51b7"
+    },
+    {
+      "path": "avatars/gabriel.png",
+      "sha256": "2c6b3924d4da79fc4203891ae7be5037a6b2c55c01c5941ecc56234af7741cdf"
+    },
+    {
+      "path": "avatars/imani.png",
+      "sha256": "6c41c201b80bc34366c61dbed0aa31d3f4fec6dbecde14bb08b5e6c692022a67"
+    },
+    {
+      "path": "avatars/julian.png",
+      "sha256": "b9725fd302f53d6a1cd0c996fceab2df4babb00ce979176f982d770eb29a1f00"
+    },
+    {
+      "path": "avatars/luca.png",
+      "sha256": "e48fa14c812f6b77aa0a0b751015236e1906526323d6ac315b38e8b87684de38"
+    },
+    {
+      "path": "avatars/margot.png",
+      "sha256": "9dac6822a0a8a0c4152cfa0bbaacea0cf6638281d343c741b3573788f046e171"
+    },
+    {
+      "path": "avatars/mateo.png",
+      "sha256": "14bccf4d4a2880c4c038cab67031b0264006913f5e286b60a7ae0311df1eb1a7"
+    },
+    {
+      "path": "avatars/naomi.png",
+      "sha256": "f3d87e770a972090e5c489ca80abce4ba23a84fff3b117edea217d720491588a"
+    },
+    {
+      "path": "avatars/nico.png",
+      "sha256": "a8c3755da1246a23f17d5b7b20ff2745ddbf9cf70c79c15fba540257e68f02b8"
+    },
+    {
+      "path": "avatars/rafael.png",
+      "sha256": "3bb92e6f786f72bac6a279516fb8b09b2b5e188b2881093ab2e22c5c6d1dfc44"
+    },
+    {
+      "path": "avatars/roman.png",
+      "sha256": "fc466434a3be56dfc381bd8cef4d096756e10c9eb6d582caad40d06114d3ec1c"
+    },
+    {
+      "path": "avatars/sabine.png",
+      "sha256": "f997d4be0d9e14b5cc9557bfb55299decfdf712bbb6ed530313585c8cae5a394"
+    },
+    {
+      "path": "avatars/theo.png",
+      "sha256": "37dc355dca88d6fc41458e9a60994dbd0012bf768008ac7d6a3cb4e9f20ed4bc"
+    },
+    {
+      "path": "avatars/valentina.png",
+      "sha256": "71f9b542e1206e0b4ef7042b5f858cad12ea384343cc5a0170711ac95c64ae7e"
+    },
+    {
+      "path": "avatars/vivienne.png",
+      "sha256": "3c7ae3cf77b5dbc7d65d57c55b5bb711f1f1cba3bbd1059d65a053e80ea24b74"
+    },
+    {
+      "path": "ceo-original.jpeg",
+      "sha256": "e0692537030998c5ebe8ba4d1d3d1065066d0243e905de79809099fdd35f6e81"
+    },
+    {
+      "path": "emblems/cloud-dark.svg",
+      "sha256": "292515cb4732b8bf623a5245cb3f60d3a660b47bde2c105350ff304dda32e154"
+    },
+    {
+      "path": "emblems/cloud-light.svg",
+      "sha256": "c0143f903ee644fcc6eab8bbe44cc2a5f85172841adba009a906b6192d7839cc"
+    },
+    {
+      "path": "emblems/inspector-dark.svg",
+      "sha256": "5d14f04409178b8f3e56a52b98d091158f30a789f0d3ba5a12db08b8a0b5ebbc"
+    },
+    {
+      "path": "emblems/inspector-light.svg",
+      "sha256": "24db3eb258a4e77b65e8f4c1c4bea7ad99716cf21e484584ae9d2214da360393"
+    },
+    {
+      "path": "emblems/night-shift-dark.svg",
+      "sha256": "a4321d082c1bb97958e79fe1fcd76a83241ed5e038a5f9a07e9d35958860b814"
+    },
+    {
+      "path": "emblems/night-shift-light.svg",
+      "sha256": "943a15b333db8a21f6d8d357f53d8eb072940655ffc0803314d9ed5e456723ac"
+    },
+    {
+      "path": "emblems/release-dark.svg",
+      "sha256": "1f41078336287284bb513d1c63cd9de315746eca848297b1e325223f1ccb8217"
+    },
+    {
+      "path": "emblems/release-light.svg",
+      "sha256": "09f72ae8352840e273bf2bde954eff5c51465a62d9e3353f2725db6cbf838303"
+    },
+    {
+      "path": "emblems/runner-dark.svg",
+      "sha256": "2ff0452f45d624a94243a79b09d9d129cf64ea812d2e277bfa229bc6cc34383a"
+    },
+    {
+      "path": "emblems/runner-light.svg",
+      "sha256": "0928cdfc844f0f138e0c02f176c6b272c2e9b6d072d6ea362b7fb55de84684a0"
+    },
+    {
+      "path": "emblems/skills-dark.svg",
+      "sha256": "6668bfb55a100147ea3cdf1c4a068b044e8a6bc30128aab67367411d1de87487"
+    },
+    {
+      "path": "emblems/skills-light.svg",
+      "sha256": "3076b9e4da52320354ca3da41c3830509a140ce200571057db4bcf74e62ed144"
+    },
+    {
+      "path": "icons/LICENSE",
+      "sha256": "b5b1f1da112d18ea2147decfd48ddc1bf2b5aeb6c265381579340e95b15a2bb2"
+    },
+    {
+      "path": "icons/clock.svg",
+      "sha256": "b8c6c2899d2b9af48a55ba02ba6d7faf89b757915772dd24f5397f7b0d02aa5c"
+    },
+    {
+      "path": "icons/identification-card.svg",
+      "sha256": "be9c729c7a8d0de193c513a0524fdccc8b16716f35531c2b28235307d7e7e8bf"
+    },
+    {
+      "path": "icons/info.svg",
+      "sha256": "438a1f319d53d86e840af73fb7b1d224c9224a437b9fa449a4e2cb45a82a3552"
+    }
+  ]
+}
