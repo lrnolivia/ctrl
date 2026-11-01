@@ -1,5 +1,11 @@
 export type ConnectionState = "connecting" | "live" | "reconnecting" | "stale" | "offline";
 
+export type AssignmentRecord = {
+  id:string;state:string;goal?:string;owner?:string;branch?:string;lease_until?:string;
+  primary_staff?:string|null;supporting_staff?:string[];primary_team?:string|null;
+  created_at?:string;updated_at?:string;completed_at?:string;next_action?:string|null;
+};
+
 export type ProgressEvent = {
   id?: string;
   type?: string;
@@ -50,6 +56,8 @@ export type ProgressPayload = {
     goal?: string;
     next_action?: string;
     created_at?: string;
+    primary_staff?:string|null;
+    supporting_staff?:string[];
   }>;
 };
 
@@ -78,7 +86,7 @@ export type RunnerWorker = {
 export type DashboardSnapshot = {
   observerState?: "available" | "stale" | "unavailable";
   fetchedAt: string;
-  coordination?: Record<string,{claims:Array<{id:string;state:string;goal?:string;owner?:string;branch?:string;lease_until?:string;primary_staff?:string|null;primary_team?:string|null;created_at?:string;completed_at?:string}>}>;
+  coordination?: Record<string,{claims:AssignmentRecord[]}>;
   projects: ProjectRegistration[];
   progress: Record<string, ProgressPayload>;
   workers: RunnerWorker[];

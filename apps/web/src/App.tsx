@@ -17,6 +17,7 @@ import { RunnerWorkPage } from "./pages/RunnerWorkPage";
 import { InspectorPage } from "./pages/InspectorPage";
 import { NightShiftPage } from "./pages/NightShiftPage";
 import { NotificationCenter } from './components/NotificationCenter';
+import { CrewPanel } from './components/CrewPanel';
 
 const navItems = [
   { to: "/now", label: "now", detail: "focus", feature: "today", icon: "/brand/today.png" },
@@ -34,7 +35,7 @@ function Shell() {
   useEffect(() => { const details = bindWorkDetails(); const presentation = bindPresentation(); const theme = bindTheme(); const motion = bindMotion(); const relay = bindRelayUtility(); return () => { details(); relay(); presentation(); theme?.(); motion(); }; }, []);
   const { state, project } = useLiveRelay();
   const location = useLocation();
-  const pageLabel = location.pathname.startsWith("/inspector") ? "inspector" : location.pathname.startsWith("/runner") ? "runner" : location.pathname.startsWith("/night-shift") ? "night shift" : "now";
+  const pageLabel = location.pathname.startsWith("/crew") ? "crew" : location.pathname.startsWith("/inspector") ? "inspector" : location.pathname.startsWith("/runner") ? "runner" : location.pathname.startsWith("/night-shift") ? "night shift" : "now";
   const tone = state === "live" ? "good" : state === "offline" ? "bad" : "quiet";
   useEffect(()=>{document.body.dataset.ctrlFeature=pageLabel.replace(" ","-");return()=>{delete document.body.dataset.ctrlFeature;};},[pageLabel]);
 
@@ -76,9 +77,10 @@ function Shell() {
       <main className="operator-shell react-operator-shell">
         <div className="workspace-context">
           <div className="workspace-left"><span>ctrl <span aria-hidden="true">/</span> {pageLabel}</span></div>
-          <div className="connection-tools"><button type="button" data-file-manager aria-label="Open files" title="Files" dangerouslySetInnerHTML={{__html:fileManagerIcon}}/><NotificationCenter /><span dangerouslySetInnerHTML={{__html:relayTelemetry()}} /></div>
+          <div className="connection-tools crew-tools"><NavLink className="crew-entry" to={projectHref('/crew',project)} aria-label="Open crew directory">Crew</NavLink><button type="button" data-file-manager aria-label="Open files" title="Files" dangerouslySetInnerHTML={{__html:fileManagerIcon}}/><NotificationCenter /><span dangerouslySetInnerHTML={{__html:relayTelemetry()}} /></div>
         </div>
         <Routes>
+          <Route path="/crew" element={<CrewPanel />} />
           <Route path="/now" element={<TodayPage />} />
           <Route path="/today" element={<Navigate to={todayAliasTarget(location.search)} replace />} />
           <Route path="/runner" element={<RunnerPage />} />
